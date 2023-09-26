@@ -11,11 +11,11 @@ import (
 // User represents information about an individual user.
 type User struct {
 	ID           uuid.UUID
-	Name         string
+	Username     string
 	Email        mail.Address
-	Roles        []Role
+	Bio          string
+	Image        string
 	PasswordHash []byte
-	Department   string
 	Enabled      bool
 	DateCreated  time.Time
 	DateUpdated  time.Time
@@ -23,23 +23,17 @@ type User struct {
 
 // NewUser contains information needed to create a new user.
 type NewUser struct {
-	Name            string
-	Email           mail.Address
-	Roles           []Role
-	Department      string
-	Password        string
-	PasswordConfirm string
+	Username string
+	Email    mail.Address
+	Password string
 }
 
 // UpdateUser contains information needed to update a user.
 type UpdateUser struct {
-	Name            *string
-	Email           *mail.Address
-	Roles           []Role
-	Department      *string
-	Password        *string
-	PasswordConfirm *string
-	Enabled         *bool
+	Email   *mail.Address
+	Bio     *string
+	Image   *string
+	Enabled *bool
 }
 
 // UpdatedEvent constructs an event for when a user is updated.

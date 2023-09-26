@@ -87,11 +87,8 @@ func (c *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 
 	usr := User{
 		ID:           uuid.New(),
-		Name:         nu.Name,
 		Email:        nu.Email,
 		PasswordHash: hash,
-		Roles:        nu.Roles,
-		Department:   nu.Department,
 		Enabled:      true,
 		DateCreated:  now,
 		DateUpdated:  now,
@@ -106,33 +103,22 @@ func (c *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 
 // Update modifies information about a user.
 func (c *Core) Update(ctx context.Context, usr User, uu UpdateUser) (User, error) {
-	if uu.Name != nil {
-		usr.Name = *uu.Name
+	if uu.Bio != nil {
+		usr.Bio = *uu.Bio
 	}
 
 	if uu.Email != nil {
 		usr.Email = *uu.Email
 	}
 
-	if uu.Roles != nil {
-		usr.Roles = uu.Roles
-	}
-
-	if uu.Password != nil {
-		pw, err := bcrypt.GenerateFromPassword([]byte(*uu.Password), bcrypt.DefaultCost)
-		if err != nil {
-			return User{}, fmt.Errorf("generatefrompassword: %w", err)
-		}
-		usr.PasswordHash = pw
-	}
-
-	if uu.Department != nil {
-		usr.Department = *uu.Department
+	if uu.Image != nil {
+		usr.Image = *uu.Image
 	}
 
 	if uu.Enabled != nil {
 		usr.Enabled = *uu.Enabled
 	}
+
 	usr.DateUpdated = time.Now()
 
 	if err := c.storer.Update(ctx, usr); err != nil {
