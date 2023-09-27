@@ -25,7 +25,7 @@ type EventParamsUpdated struct {
 
 // String returns a string representation of the event parameters.
 func (p *EventParamsUpdated) String() string {
-	return fmt.Sprintf("&EventParamsUpdated{UserID:%v, Enabled:%v}", p.UserID, p.Enabled)
+	return "" // fmt.Sprintf("&EventParamsUpdated{UserID:%v, Enabled:%v}", p.UserID, p.Enabled)
 }
 
 // Marshal returns the event parameters encoded as JSON.

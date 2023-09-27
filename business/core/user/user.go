@@ -89,7 +89,6 @@ func (c *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 		ID:           uuid.New(),
 		Email:        nu.Email,
 		PasswordHash: hash,
-		Enabled:      true,
 		DateCreated:  now,
 		DateUpdated:  now,
 	}
@@ -115,18 +114,10 @@ func (c *Core) Update(ctx context.Context, usr User, uu UpdateUser) (User, error
 		usr.Image = *uu.Image
 	}
 
-	if uu.Enabled != nil {
-		usr.Enabled = *uu.Enabled
-	}
-
 	usr.DateUpdated = time.Now()
 
 	if err := c.storer.Update(ctx, usr); err != nil {
 		return User{}, fmt.Errorf("update: %w", err)
-	}
-
-	if err := c.evnCore.SendEvent(ctx, uu.UpdatedEvent(usr.ID)); err != nil {
-		return User{}, fmt.Errorf("failed to send a `%s` event: %w", EventUpdated, err)
 	}
 
 	return usr, nil

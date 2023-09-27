@@ -95,17 +95,13 @@ func (c *Core) ExecuteUnderTransaction(tx transaction.Transaction) (*Core, error
 
 // Create adds a new product to the system.
 func (c *Core) Create(ctx context.Context, np NewProduct) (Product, error) {
-	usr, err := c.usrCore.QueryByID(ctx, np.UserID)
+	_, err := c.usrCore.QueryByID(ctx, np.UserID)
 	if err != nil {
 		return Product{}, fmt.Errorf("user.querybyid: %s: %w", np.UserID, err)
 	}
 
 	if np.Cost < 0 {
 		return Product{}, ErrInvalidCost
-	}
-
-	if !usr.Enabled {
-		return Product{}, ErrInvalidUser
 	}
 
 	now := time.Now()
