@@ -195,7 +195,7 @@ func (test *Test) Token(email string, pass string) string {
 			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		},
-		Roles: dbUsr.Roles,
+		//Roles: dbUsr.Roles,
 	}
 
 	token, err := test.Auth.GenerateToken(kid, claims)
