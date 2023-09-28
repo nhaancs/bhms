@@ -18,7 +18,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/nhaancs/realworld/app/services/api/handlers"
 	"github.com/nhaancs/realworld/app/services/api/handlers/v1/usergrp"
-	"github.com/nhaancs/realworld/business/core/product"
 	"github.com/nhaancs/realworld/business/core/user"
 	"github.com/nhaancs/realworld/business/data/dbtest"
 	"github.com/nhaancs/realworld/business/data/order"

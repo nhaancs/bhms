@@ -11,7 +11,6 @@ import (
 	"sync"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/nhaancs/realworld/business/core/event"
 	"github.com/nhaancs/realworld/business/core/user"
@@ -26,7 +25,6 @@ var ErrForbidden = errors.New("attempted action is not allowed")
 // Claims represents the authorization claims transmitted via a JWT.
 type Claims struct {
 	jwt.RegisteredClaims
-	Roles []user.Role `json:"roles"`
 }
 
 // KeyLookup declares a method set of behavior for looking up
@@ -145,30 +143,7 @@ func (a *Auth) Authenticate(ctx context.Context, bearerToken string) (Claims, er
 		return Claims{}, fmt.Errorf("authentication failed : %w", err)
 	}
 
-	// Check the database for this user to verify they are still enabled.
-
-	if err := a.isUserEnabled(ctx, claims); err != nil {
-		return Claims{}, fmt.Errorf("user not enabled : %w", err)
-	}
-
 	return claims, nil
-}
-
-// Authorize attempts to authorize the user with the provided input roles, if
-// none of the input roles are within the user's claims, we return an error
-// otherwise the user is authorized.
-func (a *Auth) Authorize(ctx context.Context, claims Claims, userID uuid.UUID, rule string) error {
-	input := map[string]any{
-		"Roles":   claims.Roles,
-		"Subject": claims.Subject,
-		"UserID":  userID,
-	}
-
-	if err := a.opaPolicyEvaluation(ctx, opaAuthorization, rule, input); err != nil {
-		return fmt.Errorf("rego evaluation failed : %w", err)
-	}
-
-	return nil
 }
 
 // =============================================================================
@@ -201,7 +176,7 @@ func (a *Auth) publicKeyLookup(kid string) (string, error) {
 	return pem, nil
 }
 
-// opaPolicyEvaluation asks opa to evaulate the token against the specified token
+// opaPolicyEvaluation asks opa to evaluate the token against the specified token
 // policy and public key.
 func (a *Auth) opaPolicyEvaluation(ctx context.Context, opaPolicy string, rule string, input any) error {
 	query := fmt.Sprintf("x = data.%s.%s", opaPackage, rule)
@@ -226,25 +201,6 @@ func (a *Auth) opaPolicyEvaluation(ctx context.Context, opaPolicy string, rule s
 	result, ok := results[0].Bindings["x"].(bool)
 	if !ok || !result {
 		return fmt.Errorf("bindings results[%v] ok[%v]", results, ok)
-	}
-
-	return nil
-}
-
-// isUserEnabled hits the database and checks the user is not disabled. If the
-// no database connection was provided, this check is skipped.
-func (a *Auth) isUserEnabled(ctx context.Context, claims Claims) error {
-	if a.userCore == nil {
-		return nil
-	}
-
-	userID, err := uuid.Parse(claims.Subject)
-	if err != nil {
-		return fmt.Errorf("parse user: %w", err)
-	}
-
-	if _, err := a.userCore.QueryByID(ctx, userID); err != nil {
-		return fmt.Errorf("query user: %w", err)
 	}
 
 	return nil

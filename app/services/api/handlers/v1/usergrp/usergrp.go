@@ -222,7 +222,6 @@ func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Req
 			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		},
-		Roles: usr.Roles,
 	}
 
 	token, err := h.auth.GenerateToken(kid, claims)

@@ -6,11 +6,7 @@ import (
 
 // These the current set of rules we have for auth.
 const (
-	RuleAuthenticate   = "auth"
-	RuleAny            = "ruleAny"
-	RuleAdminOnly      = "ruleAdminOnly"
-	RuleUserOnly       = "ruleUserOnly"
-	RuleAdminOrSubject = "ruleAdminOrSubject"
+	RuleAuthenticate = "auth"
 )
 
 // Package name of our rego code.
@@ -22,7 +18,4 @@ const (
 var (
 	//go:embed rego/authentication.rego
 	opaAuthentication string
-
-	//go:embed rego/authorization.rego
-	opaAuthorization string
 )

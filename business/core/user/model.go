@@ -15,8 +15,8 @@ type User struct {
 	Bio          string
 	Image        string
 	PasswordHash []byte
-	DateCreated  time.Time
-	DateUpdated  time.Time
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 // NewUser contains information needed to create a new user.
