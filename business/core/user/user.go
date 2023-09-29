@@ -7,15 +7,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/mail"
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/nhaancs/realworld/business/core/event"
 	"github.com/nhaancs/realworld/business/data/order"
 	"github.com/nhaancs/realworld/business/data/transaction"
 	"github.com/nhaancs/realworld/foundation/logger"
 	"golang.org/x/crypto/bcrypt"
+	"net/mail"
 )
 
 // Set of error variables for CRUD operations.
@@ -83,14 +81,14 @@ func (c *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 		return User{}, fmt.Errorf("generatefrompassword: %w", err)
 	}
 
-	now := time.Now()
+	//now := time.Now()
 
 	usr := User{
 		ID:           uuid.New(),
 		Email:        nu.Email,
 		PasswordHash: hash,
-		DateCreated:  now,
-		DateUpdated:  now,
+		//DateCreated:  now,
+		//DateUpdated:  now,
 	}
 
 	if err := c.storer.Create(ctx, usr); err != nil {
@@ -114,7 +112,7 @@ func (c *Core) Update(ctx context.Context, usr User, uu UpdateUser) (User, error
 		usr.Image = *uu.Image
 	}
 
-	usr.DateUpdated = time.Now()
+	//usr.DateUpdated = time.Now()
 
 	if err := c.storer.Update(ctx, usr); err != nil {
 		return User{}, fmt.Errorf("update: %w", err)

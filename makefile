@@ -306,6 +306,9 @@ dev-database-restart:
 # ==============================================================================
 # Administration
 
+run:
+	go run app/services/api/main.go
+
 migrate:
 	go run app/tooling/admin/main.go migrate
 
