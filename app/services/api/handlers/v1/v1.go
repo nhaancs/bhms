@@ -49,9 +49,7 @@ func Routes(app *web.App, cfg Config) {
 	ugh := usergrp.New(usrCore, cfg.Auth)
 
 	app.Handle(http.MethodGet, version, "/users/token/:kid", ugh.Token)
-	app.Handle(http.MethodGet, version, "/users", ugh.Query, authen)
 	app.Handle(http.MethodGet, version, "/users/:user_id", ugh.QueryByID, authen)
 	app.Handle(http.MethodPost, version, "/users", ugh.Create, authen)
 	app.Handle(http.MethodPut, version, "/users/:user_id", ugh.Update, authen, tran)
-	app.Handle(http.MethodDelete, version, "/users/:user_id", ugh.Delete, authen, tran)
 }
