@@ -6,7 +6,7 @@ A copy of the Apache 2.0 License can be found in the `LICENSE` file.
 ardanlabs/service
 Copyright (c) 2017 William Kennedy <bill@ardanlabs.com>, and other contributors.
 The files below were originally created under the Apache 2.0 License in https://github.com/ardanlabs/service repository:
-- All files under `pkg/pgx` directory
-- All files under `pkg/logger` directory
+- All files under `foundation/pgx` directory
+- All files under `foundation/logger` directory
 The files have been copied into this project and modified. All modifications are licensed under the Apache 2.0 License.
 A copy of the Apache 2.0 license can be found in the `LICENSE` file.

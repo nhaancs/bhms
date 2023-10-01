@@ -6,7 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/nhaancs/go-realworld/pkg/logger"
+	"github.com/nhaancs/go-realworld/foundation/logger"
 	"net/url"
 	"strings"
 	"time"
