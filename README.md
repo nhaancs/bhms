@@ -1,4 +1,6 @@
-# realworld
+# go-realworld
 Exemplary Medium.com clone APIs powered by Go.
 
 [Documentation](https://www.realworld.how/docs/intro)
+
+Inspired by [ardanlabs/service](https://github.com/ardanlabs/service)
