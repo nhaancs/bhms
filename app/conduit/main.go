@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/nhaancs/go-realworld/logger"
-	"github.com/nhaancs/go-realworld/pgx"
+	"github.com/nhaancs/go-realworld/pkg/logger"
+	"github.com/nhaancs/go-realworld/pkg/pgx"
 	"net/http"
 	"os"
 )
