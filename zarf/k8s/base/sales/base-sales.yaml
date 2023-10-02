@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sales-system
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sales
+  namespace: sales-system
+
+spec:
+  selector:
+    matchLabels:
+      app: sales
+
+  template:
+    metadata:
+      labels:
+        app: sales
+
+    spec:
+      terminationGracePeriodSeconds: 60
+
+      initContainers:
+      - name: init-migrate
+        image: service-image
+        command: ['./sales-admin', 'migrate']
+
+      - name: init-seed
+        image: service-image
+        command: ['./sales-admin', 'seed']
+
+      containers:
+      - name: sales-api
+        image: service-image
+
+        ports:
+        - name: sales-api
+          containerPort: 3000
+        - name: sales-api-debug
+          containerPort: 4000
+
+        readinessProbe: # readiness probes mark the service available to accept traffic.
+          httpGet:
+            path: /v1/readiness
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 2
+
+        livenessProbe: # liveness probes mark the service alive or dead (to be restarted).
+          httpGet:
+            path: /v1/liveness
+            port: 3000
+          initialDelaySeconds: 2
+          periodSeconds: 5
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 2
+
+        env:
+        - name: SALES_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: db_host
+              optional: true
+
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
+
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: KUBERNETES_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: KUBERNETES_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: KUBERNETES_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
+      - name: metrics
+        image: metrics-image
+
+        ports:
+        - name: metrics
+          containerPort: 3001
+        - name: prometheus
+          containerPort: 3002
+
+        env:
+          - name: GOMAXPROCS
+            valueFrom:
+              resourceFieldRef:
+                resource: limits.cpu
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: sales-api
+  namespace: sales-system
