@@ -4,8 +4,8 @@ import (
 	"net/mail"
 	"time"
 
-	"github.com/ardanlabs/service/business/core/event"
 	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/business/core/event"
 )
 
 // User represents information about an individual user.

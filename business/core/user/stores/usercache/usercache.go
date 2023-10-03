@@ -6,11 +6,11 @@ import (
 	"net/mail"
 	"sync"
 
-	"github.com/ardanlabs/service/business/core/user"
-	"github.com/ardanlabs/service/business/data/order"
-	"github.com/ardanlabs/service/business/data/transaction"
-	"github.com/ardanlabs/service/foundation/logger"
 	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/business/core/user"
+	"github.com/nhaancs/bhms/business/data/order"
+	"github.com/nhaancs/bhms/business/data/transaction"
+	"github.com/nhaancs/bhms/foundation/logger"
 )
 
 // Store manages the set of APIs for user data and caching.

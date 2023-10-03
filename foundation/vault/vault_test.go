@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ardanlabs/service/foundation/docker"
-	"github.com/ardanlabs/service/foundation/vault"
+	"github.com/nhaancs/bhms/foundation/docker"
+	"github.com/nhaancs/bhms/foundation/vault"
 )
 
 func Test_Vault(t *testing.T) {

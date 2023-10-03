@@ -10,14 +10,14 @@ import (
 	"fmt"
 	"net/mail"
 
-	"github.com/ardanlabs/service/business/core/user"
-	db "github.com/ardanlabs/service/business/data/dbsql/pgx"
-	"github.com/ardanlabs/service/business/data/dbsql/pgx/dbarray"
-	"github.com/ardanlabs/service/business/data/order"
-	"github.com/ardanlabs/service/business/data/transaction"
-	"github.com/ardanlabs/service/foundation/logger"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/nhaancs/bhms/business/core/user"
+	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
+	"github.com/nhaancs/bhms/business/data/dbsql/pgx/dbarray"
+	"github.com/nhaancs/bhms/business/data/order"
+	"github.com/nhaancs/bhms/business/data/transaction"
+	"github.com/nhaancs/bhms/foundation/logger"
 )
 
 // Store manages the set of APIs for user database access.

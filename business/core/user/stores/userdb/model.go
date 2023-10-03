@@ -6,9 +6,9 @@ import (
 	"net/mail"
 	"time"
 
-	"github.com/ardanlabs/service/business/core/user"
-	"github.com/ardanlabs/service/business/data/dbsql/pgx/dbarray"
 	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/business/core/user"
+	"github.com/nhaancs/bhms/business/data/dbsql/pgx/dbarray"
 )
 
 // dbUser represent the structure we need for moving data

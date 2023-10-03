@@ -11,23 +11,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ardanlabs/service/business/core/event"
-	"github.com/ardanlabs/service/business/core/home"
-	"github.com/ardanlabs/service/business/core/home/stores/homedb"
-	"github.com/ardanlabs/service/business/core/product"
-	"github.com/ardanlabs/service/business/core/product/stores/productdb"
-	"github.com/ardanlabs/service/business/core/user"
-	"github.com/ardanlabs/service/business/core/user/stores/userdb"
-	"github.com/ardanlabs/service/business/core/usersummary"
-	"github.com/ardanlabs/service/business/core/usersummary/stores/usersummarydb"
-	"github.com/ardanlabs/service/business/data/dbmigrate"
-	db "github.com/ardanlabs/service/business/data/dbsql/pgx"
-	"github.com/ardanlabs/service/business/web/auth"
-	"github.com/ardanlabs/service/foundation/docker"
-	"github.com/ardanlabs/service/foundation/logger"
-	"github.com/ardanlabs/service/foundation/web"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
+	"github.com/nhaancs/bhms/business/core/event"
+	"github.com/nhaancs/bhms/business/core/user"
+	"github.com/nhaancs/bhms/business/core/user/stores/userdb"
+	"github.com/nhaancs/bhms/business/data/dbmigrate"
+	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
+	"github.com/nhaancs/bhms/business/web/auth"
+	"github.com/nhaancs/bhms/foundation/docker"
+	"github.com/nhaancs/bhms/foundation/logger"
+	"github.com/nhaancs/bhms/foundation/web"
 )
 
 // StartDB starts a database instance.
@@ -233,24 +227,15 @@ func FloatPointer(f float64) *float64 {
 
 // CoreAPIs represents all the core api's needed for testing.
 type CoreAPIs struct {
-	User        *user.Core
-	Product     *product.Core
-	Home        *home.Core
-	UserSummary *usersummary.Core
+	User *user.Core
 }
 
 func newCoreAPIs(log *logger.Logger, db *sqlx.DB) CoreAPIs {
 	evnCore := event.NewCore(log)
 	usrCore := user.NewCore(log, evnCore, userdb.NewStore(log, db))
-	prdCore := product.NewCore(log, evnCore, usrCore, productdb.NewStore(log, db))
-	hmeCore := home.NewCore(log, evnCore, usrCore, homedb.NewStore(log, db))
-	usmCore := usersummary.NewCore(usersummarydb.NewStore(log, db))
 
 	return CoreAPIs{
-		User:        usrCore,
-		Product:     prdCore,
-		UserSummary: usmCore,
-		Home:        hmeCore,
+		User: usrCore,
 	}
 }
 

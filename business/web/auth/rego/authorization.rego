@@ -1,4 +1,4 @@
-package ardan.rego
+package nhaancs.rego
 
 default ruleAny = false
 default ruleAdminOnly = false

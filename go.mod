@@ -1,4 +1,4 @@
-module github.com/ardanlabs/service
+module github.com/nhaancs/bhms
 
 go 1.21
 

@@ -5,8 +5,8 @@ import (
 	"net/mail"
 	"time"
 
-	"github.com/ardanlabs/service/foundation/validate"
 	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/foundation/validate"
 )
 
 // QueryFilter holds the available fields a query can be filtered on.

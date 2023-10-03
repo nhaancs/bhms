@@ -68,7 +68,7 @@ SHELL = $(if $(wildcard $(SHELL_PATH)),/bin/ash,/bin/bash)
 # 	To generate a private/public key PEM file.
 # 	$ openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
 # 	$ openssl rsa -pubout -in private.pem -out public.pem
-# 	$ ./sales-admin genkey
+# 	$ ./admin genkey
 #
 # Testing Coverage
 # 	$ go test -coverprofile p.out
@@ -79,19 +79,11 @@ SHELL = $(if $(wildcard $(SHELL_PATH)),/bin/ash,/bin/bash)
 # 	$ export VAULT_TOKEN=mytoken
 # 	$ export VAULT_ADDR='http://localhost:8200'
 # 	$ vault secrets list
-# 	$ vault kv get secret/sales
-# 	$ vault kv put secret/sales key="some data"
-# 	$ kubectl logs --namespace=sales-system -l app=sales -c init-vault-server
+# 	$ vault kv get secret/api
+# 	$ vault kv put secret/api key="some data"
+# 	$ kubectl logs --namespace=api-system -l app=api -c init-vault-server
 # 	$ curl -H "X-Vault-Token: mytoken" -X GET http://localhost:8200/v1/secret/data/54bb2165-71e1-41a6-af3e-7da4a0e1e2c1
 # 	$ curl -H "X-Vault-Token: mytoken" -H "Content-Type: application/json" -X POST -d '{"data":{"pk":"PEM"}}' http://localhost:8200/v1/secret/data/54bb2165-71e1-41a6-af3e-7da4a0e1e2c1
-#
-# Module Call Examples
-# 	$ curl https://proxy.golang.org/github.com/ardanlabs/conf/@v/list
-# 	$ curl https://proxy.golang.org/github.com/ardanlabs/conf/v3/@v/list
-# 	$ curl https://proxy.golang.org/github.com/ardanlabs/conf/v3/@v/v3.1.1.info
-# 	$ curl https://proxy.golang.org/github.com/ardanlabs/conf/v3/@v/v3.1.1.mod
-# 	$ curl https://proxy.golang.org/github.com/ardanlabs/conf/v3/@v/v3.1.1.zip
-# 	$ curl https://sum.golang.org/lookup/github.com/ardanlabs/conf/v3@v3.1.1
 #
 # OPA Playground
 # 	https://play.openpolicyagent.org/
@@ -112,11 +104,11 @@ TEMPO           := grafana/tempo:2.2.0
 LOKI            := grafana/loki:2.9.0
 PROMTAIL        := grafana/promtail:2.9.0
 
-KIND_CLUSTER    := ardan-starter-cluster
-NAMESPACE       := sales-system
-APP             := sales
-BASE_IMAGE_NAME := ardanlabs/service
-SERVICE_NAME    := sales-api
+KIND_CLUSTER    := bhms-cluster
+NAMESPACE       := api-system
+APP             := api
+BASE_IMAGE_NAME := nhaancs/bhms
+SERVICE_NAME    := api
 VERSION         := 0.0.1
 SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 METRICS_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME)-metrics:$(VERSION)
@@ -161,7 +153,7 @@ all: service metrics
 
 service:
 	docker build \
-		-f zarf/docker/dockerfile.service \
+		-f zarf/docker/dockerfile-api \
 		-t $(SERVICE_IMAGE) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
@@ -169,7 +161,7 @@ service:
 
 metrics:
 	docker build \
-		-f zarf/docker/dockerfile.metrics \
+		-f zarf/docker/dockerfile-metrics \
 		-t $(METRICS_IMAGE) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
@@ -200,10 +192,10 @@ dev-down:
 # ------------------------------------------------------------------------------
 
 dev-load:
-	cd zarf/k8s/dev/sales; kustomize edit set image service-image=$(SERVICE_IMAGE)
+	cd zarf/k8s/dev/api; kustomize edit set image service-image=$(SERVICE_IMAGE)
 	kind load docker-image $(SERVICE_IMAGE) --name $(KIND_CLUSTER)
 
-	cd zarf/k8s/dev/sales; kustomize edit set image metrics-image=$(METRICS_IMAGE)
+	cd zarf/k8s/dev/api; kustomize edit set image metrics-image=$(METRICS_IMAGE)
 	kind load docker-image $(METRICS_IMAGE) --name $(KIND_CLUSTER)
 
 dev-apply:
@@ -227,7 +219,7 @@ dev-apply:
 	kustomize build zarf/k8s/dev/promtail | kubectl apply -f -
 	kubectl wait pods --namespace=$(NAMESPACE) --selector app=promtail --timeout=120s --for=condition=Ready
 
-	kustomize build zarf/k8s/dev/sales | kubectl apply -f -
+	kustomize build zarf/k8s/dev/api | kubectl apply -f -
 	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(APP) --timeout=120s --for=condition=Ready
 
 dev-restart:
@@ -260,7 +252,7 @@ dev-describe:
 dev-describe-deployment:
 	kubectl describe deployment --namespace=$(NAMESPACE) $(APP)
 
-dev-describe-sales:
+dev-describe-api:
 	kubectl describe pod --namespace=$(NAMESPACE) -l app=$(APP)
 
 dev-describe-telepresence:
@@ -289,7 +281,7 @@ dev-logs-promtail:
 # ------------------------------------------------------------------------------
 
 dev-services-delete:
-	kustomize build zarf/k8s/dev/sales | kubectl delete -f -
+	kustomize build zarf/k8s/dev/api | kubectl delete -f -
 	kustomize build zarf/k8s/dev/grafana | kubectl delete -f -
 	kustomize build zarf/k8s/dev/tempo | kubectl delete -f -
 	kustomize build zarf/k8s/dev/loki | kubectl delete -f -
@@ -307,7 +299,7 @@ dev-events-warn:
 	kubectl get ev --field-selector type=Warning --sort-by metadata.creationTimestamp
 
 dev-shell:
-	kubectl exec --namespace=$(NAMESPACE) -it $(shell kubectl get pods --namespace=$(NAMESPACE) | grep sales | cut -c1-26) --container sales-api -- /bin/sh
+	kubectl exec --namespace=$(NAMESPACE) -it $(shell kubectl get pods --namespace=$(NAMESPACE) | grep api | cut -c1-26) --container api -- /bin/sh
 
 dev-database-restart:
 	kubectl rollout restart statefulset database --namespace=$(NAMESPACE)
@@ -316,13 +308,13 @@ dev-database-restart:
 # Administration
 
 migrate:
-	go run app/tooling/sales-admin/main.go migrate
+	go run app/tooling/admin/main.go migrate
 
 seed: migrate
-	go run app/tooling/sales-admin/main.go seed
+	go run app/tooling/admin/main.go seed
 
 vault:
-	go run app/tooling/sales-admin/main.go vault
+	go run app/tooling/admin/main.go vault
 
 pgcli:
 	pgcli postgresql://postgres:postgres@localhost
@@ -334,7 +326,7 @@ readiness:
 	curl -il http://localhost:3000/v1/readiness
 
 token-gen:
-	go run app/tooling/sales-admin/main.go gentoken 5cf37266-3473-4006-984f-9325122678b7 54bb2165-71e1-41a6-af3e-7da4a0e1e2c1
+	go run app/tooling/admin/main.go gentoken 5cf37266-3473-4006-984f-9325122678b7 54bb2165-71e1-41a6-af3e-7da4a0e1e2c1
 
 # ==============================================================================
 # Metrics and Tracing
@@ -441,36 +433,3 @@ admin-gui-start-build: admin-gui-build
 	pnpm -C ${ADMIN_FRONTEND_PREFIX} run preview 
 
 admin-gui-run: write-token-to-env admin-gui-start-build
-
-# ==============================================================================
-# Running using Service Weaver.
-
-wea-dev-gotooling: dev-gotooling
-	go install github.com/ServiceWeaver/weaver/cmd/weaver@latest
-	go install github.com/ServiceWeaver/weaver-kube/cmd/weaver-kube@latest
-
-wea-dev-up:
-	kind create cluster \
-		--image $(KIND) \
-		--name $(KIND_CLUSTER) \
-		--config zarf/k8s/dev/kind-config.yaml
-
-	kubectl --context=kind-$(KIND_CLUSTER) wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
-
-	kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER)
-
-wea-dev-down:
-	kind delete cluster --name $(KIND_CLUSTER)
-
-# ------------------------------------------------------------------------------
-
-wea-dev-apply:
-	kustomize build zarf/k8s/dev/database | kubectl --context=kind-$(KIND_CLUSTER) apply -f -
-	kubectl rollout status --context=kind-$(KIND_CLUSTER) --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
-
-	cd app/weaver/sales-api; GOOS=linux GOARCH=amd64 go build .
-	$(eval WEAVER_YAML := $(shell weaver-kube deploy app/weaver/sales-api/dev.toml))
-	kind load docker-image $(SERVICE_IMAGE) --name $(KIND_CLUSTER)
-
-	kubectl --context=kind-$(KIND_CLUSTER) apply -f $(WEAVER_YAML)
-	kubectl wait pods --namespace=$(NAMESPACE) --selector appName=$(APP)-api --timeout=120s --for=condition=Ready

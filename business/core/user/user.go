@@ -10,11 +10,11 @@ import (
 	"net/mail"
 	"time"
 
-	"github.com/ardanlabs/service/business/core/event"
-	"github.com/ardanlabs/service/business/data/order"
-	"github.com/ardanlabs/service/business/data/transaction"
-	"github.com/ardanlabs/service/foundation/logger"
 	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/business/core/event"
+	"github.com/nhaancs/bhms/business/data/order"
+	"github.com/nhaancs/bhms/business/data/transaction"
+	"github.com/nhaancs/bhms/foundation/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 
