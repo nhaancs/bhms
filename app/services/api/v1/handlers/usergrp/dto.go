@@ -9,8 +9,8 @@ import (
 	"github.com/nhaancs/bhms/foundation/validate"
 )
 
-// AppUser represents information about an individual user.
-type AppUser struct {
+// UserDTO represents information about an individual user.
+type UserDTO struct {
 	ID           string   `json:"id"`
 	Name         string   `json:"name"`
 	Email        string   `json:"email"`
@@ -22,13 +22,13 @@ type AppUser struct {
 	DateUpdated  string   `json:"dateUpdated"`
 }
 
-func toAppUser(usr user.User) AppUser {
+func toUserDTO(usr user.UserEntity) UserDTO {
 	roles := make([]string, len(usr.Roles))
 	for i, role := range usr.Roles {
 		roles[i] = role.Name()
 	}
 
-	return AppUser{
+	return UserDTO{
 		ID:           usr.ID.String(),
 		Name:         usr.Name,
 		Email:        usr.Email.Address,
@@ -41,10 +41,10 @@ func toAppUser(usr user.User) AppUser {
 	}
 }
 
-func toAppUsers(users []user.User) []AppUser {
-	items := make([]AppUser, len(users))
+func toUserDTOs(users []user.UserEntity) []UserDTO {
+	items := make([]UserDTO, len(users))
 	for i, usr := range users {
-		items[i] = toAppUser(usr)
+		items[i] = toUserDTO(usr)
 	}
 
 	return items
@@ -52,8 +52,8 @@ func toAppUsers(users []user.User) []AppUser {
 
 // =============================================================================
 
-// AppNewUser contains information needed to create a new user.
-type AppNewUser struct {
+// NewUserDTO contains information needed to create a new user.
+type NewUserDTO struct {
 	Name            string   `json:"name" validate:"required"`
 	Email           string   `json:"email" validate:"required,email"`
 	Roles           []string `json:"roles" validate:"required"`
@@ -62,35 +62,35 @@ type AppNewUser struct {
 	PasswordConfirm string   `json:"passwordConfirm" validate:"eqfield=Password"`
 }
 
-func toCoreNewUser(app AppNewUser) (user.NewUser, error) {
-	roles := make([]user.Role, len(app.Roles))
-	for i, roleStr := range app.Roles {
+func toNewUserEntity(u NewUserDTO) (user.NewUserEntity, error) {
+	roles := make([]user.Role, len(u.Roles))
+	for i, roleStr := range u.Roles {
 		role, err := user.ParseRole(roleStr)
 		if err != nil {
-			return user.NewUser{}, fmt.Errorf("parsing role: %w", err)
+			return user.NewUserEntity{}, fmt.Errorf("parsing role: %w", err)
 		}
 		roles[i] = role
 	}
 
-	addr, err := mail.ParseAddress(app.Email)
+	addr, err := mail.ParseAddress(u.Email)
 	if err != nil {
-		return user.NewUser{}, fmt.Errorf("parsing email: %w", err)
+		return user.NewUserEntity{}, fmt.Errorf("parsing email: %w", err)
 	}
 
-	usr := user.NewUser{
-		Name:            app.Name,
+	usr := user.NewUserEntity{
+		Name:            u.Name,
 		Email:           *addr,
 		Roles:           roles,
-		Department:      app.Department,
-		Password:        app.Password,
-		PasswordConfirm: app.PasswordConfirm,
+		Department:      u.Department,
+		Password:        u.Password,
+		PasswordConfirm: u.PasswordConfirm,
 	}
 
 	return usr, nil
 }
 
 // Validate checks the data in the model is considered clean.
-func (app AppNewUser) Validate() error {
+func (app NewUserDTO) Validate() error {
 	if err := validate.Check(app); err != nil {
 		return err
 	}
@@ -100,8 +100,8 @@ func (app AppNewUser) Validate() error {
 
 // =============================================================================
 
-// AppUpdateUser contains information needed to update a user.
-type AppUpdateUser struct {
+// UpdateUserDTO contains information needed to update a user.
+type UpdateUserDTO struct {
 	Name            *string  `json:"name"`
 	Email           *string  `json:"email" validate:"omitempty,email"`
 	Roles           []string `json:"roles"`
@@ -111,14 +111,14 @@ type AppUpdateUser struct {
 	Enabled         *bool    `json:"enabled"`
 }
 
-func toCoreUpdateUser(app AppUpdateUser) (user.UpdateUser, error) {
+func toUpdateUserEntity(app UpdateUserDTO) (user.UpdateUserEntity, error) {
 	var roles []user.Role
 	if app.Roles != nil {
 		roles = make([]user.Role, len(app.Roles))
 		for i, roleStr := range app.Roles {
 			role, err := user.ParseRole(roleStr)
 			if err != nil {
-				return user.UpdateUser{}, fmt.Errorf("parsing role: %w", err)
+				return user.UpdateUserEntity{}, fmt.Errorf("parsing role: %w", err)
 			}
 			roles[i] = role
 		}
@@ -129,11 +129,11 @@ func toCoreUpdateUser(app AppUpdateUser) (user.UpdateUser, error) {
 		var err error
 		addr, err = mail.ParseAddress(*app.Email)
 		if err != nil {
-			return user.UpdateUser{}, fmt.Errorf("parsing email: %w", err)
+			return user.UpdateUserEntity{}, fmt.Errorf("parsing email: %w", err)
 		}
 	}
 
-	nu := user.UpdateUser{
+	nu := user.UpdateUserEntity{
 		Name:            app.Name,
 		Email:           addr,
 		Roles:           roles,
@@ -147,7 +147,7 @@ func toCoreUpdateUser(app AppUpdateUser) (user.UpdateUser, error) {
 }
 
 // Validate checks the data in the model is considered clean.
-func (app AppUpdateUser) Validate() error {
+func (app UpdateUserDTO) Validate() error {
 	if err := validate.Check(app); err != nil {
 		return fmt.Errorf("validate: %w", err)
 	}

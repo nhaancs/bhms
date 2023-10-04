@@ -51,14 +51,14 @@ func (s *Store) ExecuteUnderTransaction(tx transaction.Transaction) (user.Storer
 }
 
 // Create inserts a new user into the database.
-func (s *Store) Create(ctx context.Context, usr user.User) error {
+func (s *Store) Create(ctx context.Context, usr user.UserEntity) error {
 	const q = `
 	INSERT INTO users
 		(user_id, name, email, password_hash, roles, enabled, department, date_created, date_updated)
 	VALUES
 		(:user_id, :name, :email, :password_hash, :roles, :enabled, :department, :date_created, :date_updated)`
 
-	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBUser(usr)); err != nil {
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, toUserRow(usr)); err != nil {
 		if errors.Is(err, db.ErrDBDuplicatedEntry) {
 			return fmt.Errorf("namedexeccontext: %w", user.ErrUniqueEmail)
 		}
@@ -69,7 +69,7 @@ func (s *Store) Create(ctx context.Context, usr user.User) error {
 }
 
 // Update replaces a user document in the database.
-func (s *Store) Update(ctx context.Context, usr user.User) error {
+func (s *Store) Update(ctx context.Context, usr user.UserEntity) error {
 	const q = `
 	UPDATE
 		users
@@ -83,7 +83,7 @@ func (s *Store) Update(ctx context.Context, usr user.User) error {
 	WHERE
 		user_id = :user_id`
 
-	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBUser(usr)); err != nil {
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, toUserRow(usr)); err != nil {
 		if errors.Is(err, db.ErrDBDuplicatedEntry) {
 			return user.ErrUniqueEmail
 		}
@@ -94,7 +94,7 @@ func (s *Store) Update(ctx context.Context, usr user.User) error {
 }
 
 // Delete removes a user from the database.
-func (s *Store) Delete(ctx context.Context, usr user.User) error {
+func (s *Store) Delete(ctx context.Context, usr user.UserEntity) error {
 	data := struct {
 		UserID string `db:"user_id"`
 	}{
@@ -115,7 +115,7 @@ func (s *Store) Delete(ctx context.Context, usr user.User) error {
 }
 
 // Query retrieves a list of existing users from the database.
-func (s *Store) Query(ctx context.Context, filter user.QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]user.User, error) {
+func (s *Store) Query(ctx context.Context, filter user.QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]user.UserEntity, error) {
 	data := map[string]interface{}{
 		"offset":        (pageNumber - 1) * rowsPerPage,
 		"rows_per_page": rowsPerPage,
@@ -138,12 +138,12 @@ func (s *Store) Query(ctx context.Context, filter user.QueryFilter, orderBy orde
 	buf.WriteString(orderByClause)
 	buf.WriteString(" OFFSET :offset ROWS FETCH NEXT :rows_per_page ROWS ONLY")
 
-	var dbUsrs []dbUser
+	var dbUsrs []userRow
 	if err := db.NamedQuerySlice(ctx, s.log, s.db, buf.String(), data, &dbUsrs); err != nil {
 		return nil, fmt.Errorf("namedqueryslice: %w", err)
 	}
 
-	usrs, err := toCoreUserSlice(dbUsrs)
+	usrs, err := toUserEntities(dbUsrs)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func (s *Store) Count(ctx context.Context, filter user.QueryFilter) (int, error)
 }
 
 // QueryByID gets the specified user from the database.
-func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, error) {
+func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.UserEntity, error) {
 	data := struct {
 		ID string `db:"user_id"`
 	}{
@@ -190,24 +190,24 @@ func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, err
 	WHERE 
 		user_id = :user_id`
 
-	var dbUsr dbUser
+	var dbUsr userRow
 	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &dbUsr); err != nil {
 		if errors.Is(err, db.ErrDBNotFound) {
-			return user.User{}, fmt.Errorf("namedquerystruct: %w", user.ErrNotFound)
+			return user.UserEntity{}, fmt.Errorf("namedquerystruct: %w", user.ErrNotFound)
 		}
-		return user.User{}, fmt.Errorf("namedquerystruct: %w", err)
+		return user.UserEntity{}, fmt.Errorf("namedquerystruct: %w", err)
 	}
 
-	usr, err := toCoreUser(dbUsr)
+	usr, err := toUserEntity(dbUsr)
 	if err != nil {
-		return user.User{}, err
+		return user.UserEntity{}, err
 	}
 
 	return usr, nil
 }
 
 // QueryByIDs gets the specified users from the database.
-func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.User, error) {
+func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.UserEntity, error) {
 	ids := make([]string, len(userIDs))
 	for i, userID := range userIDs {
 		ids[i] = userID.String()
@@ -230,7 +230,7 @@ func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.Use
 	WHERE
 		user_id = ANY(:user_id)`
 
-	var dbUsrs []dbUser
+	var dbUsrs []userRow
 	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &dbUsrs); err != nil {
 		if errors.Is(err, db.ErrDBNotFound) {
 			return nil, user.ErrNotFound
@@ -238,7 +238,7 @@ func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.Use
 		return nil, fmt.Errorf("namedquerystruct: %w", err)
 	}
 
-	usrs, err := toCoreUserSlice(dbUsrs)
+	usrs, err := toUserEntities(dbUsrs)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +247,7 @@ func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.Use
 }
 
 // QueryByEmail gets the specified user from the database by email.
-func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.User, error) {
+func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.UserEntity, error) {
 	data := struct {
 		Email string `db:"email"`
 	}{
@@ -262,17 +262,17 @@ func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.User
 	WHERE
 		email = :email`
 
-	var dbUsr dbUser
+	var dbUsr userRow
 	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &dbUsr); err != nil {
 		if errors.Is(err, db.ErrDBNotFound) {
-			return user.User{}, fmt.Errorf("namedquerystruct: %w", user.ErrNotFound)
+			return user.UserEntity{}, fmt.Errorf("namedquerystruct: %w", user.ErrNotFound)
 		}
-		return user.User{}, fmt.Errorf("namedquerystruct: %w", err)
+		return user.UserEntity{}, fmt.Errorf("namedquerystruct: %w", err)
 	}
 
-	usr, err := toCoreUser(dbUsr)
+	usr, err := toUserEntity(dbUsr)
 	if err != nil {
-		return user.User{}, err
+		return user.UserEntity{}, err
 	}
 
 	return usr, nil

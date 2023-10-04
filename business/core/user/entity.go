@@ -8,8 +8,8 @@ import (
 	"github.com/nhaancs/bhms/business/core/event"
 )
 
-// User represents information about an individual user.
-type User struct {
+// UserEntity represents information about an individual user.
+type UserEntity struct {
 	ID           uuid.UUID
 	Name         string
 	Email        mail.Address
@@ -21,8 +21,8 @@ type User struct {
 	DateUpdated  time.Time
 }
 
-// NewUser contains information needed to create a new user.
-type NewUser struct {
+// NewUserEntity contains information needed to create a new user.
+type NewUserEntity struct {
 	Name            string
 	Email           mail.Address
 	Roles           []Role
@@ -31,8 +31,8 @@ type NewUser struct {
 	PasswordConfirm string
 }
 
-// UpdateUser contains information needed to update a user.
-type UpdateUser struct {
+// UpdateUserEntity contains information needed to update a user.
+type UpdateUserEntity struct {
 	Name            *string
 	Email           *mail.Address
 	Roles           []Role
@@ -43,10 +43,10 @@ type UpdateUser struct {
 }
 
 // UpdatedEvent constructs an event for when a user is updated.
-func (uu UpdateUser) UpdatedEvent(userID uuid.UUID) event.Event {
+func (uu UpdateUserEntity) UpdatedEvent(userID uuid.UUID) event.Event {
 	params := EventParamsUpdated{
 		UserID: userID,
-		UpdateUser: UpdateUser{
+		UpdateUserEntity: UpdateUserEntity{
 			Enabled: uu.Enabled,
 		},
 	}

@@ -20,7 +20,7 @@ const (
 // EventParamsUpdated is the event parameters for the updated event.
 type EventParamsUpdated struct {
 	UserID uuid.UUID
-	UpdateUser
+	UpdateUserEntity
 }
 
 // String returns a string representation of the event parameters.

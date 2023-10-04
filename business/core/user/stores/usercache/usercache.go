@@ -17,7 +17,7 @@ import (
 type Store struct {
 	log    *logger.Logger
 	storer user.Storer
-	cache  map[string]user.User
+	cache  map[string]user.UserEntity
 	mu     sync.RWMutex
 }
 
@@ -26,7 +26,7 @@ func NewStore(log *logger.Logger, storer user.Storer) *Store {
 	return &Store{
 		log:    log,
 		storer: storer,
-		cache:  map[string]user.User{},
+		cache:  map[string]user.UserEntity{},
 	}
 }
 
@@ -37,7 +37,7 @@ func (s *Store) ExecuteUnderTransaction(tx transaction.Transaction) (user.Storer
 }
 
 // Create inserts a new user into the database.
-func (s *Store) Create(ctx context.Context, usr user.User) error {
+func (s *Store) Create(ctx context.Context, usr user.UserEntity) error {
 	if err := s.storer.Create(ctx, usr); err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (s *Store) Create(ctx context.Context, usr user.User) error {
 }
 
 // Update replaces a user document in the database.
-func (s *Store) Update(ctx context.Context, usr user.User) error {
+func (s *Store) Update(ctx context.Context, usr user.UserEntity) error {
 	if err := s.storer.Update(ctx, usr); err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (s *Store) Update(ctx context.Context, usr user.User) error {
 }
 
 // Delete removes a user from the database.
-func (s *Store) Delete(ctx context.Context, usr user.User) error {
+func (s *Store) Delete(ctx context.Context, usr user.UserEntity) error {
 	if err := s.storer.Delete(ctx, usr); err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (s *Store) Delete(ctx context.Context, usr user.User) error {
 }
 
 // Query retrieves a list of existing users from the database.
-func (s *Store) Query(ctx context.Context, filter user.QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]user.User, error) {
+func (s *Store) Query(ctx context.Context, filter user.QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]user.UserEntity, error) {
 	return s.storer.Query(ctx, filter, orderBy, pageNumber, rowsPerPage)
 }
 
@@ -80,7 +80,7 @@ func (s *Store) Count(ctx context.Context, filter user.QueryFilter) (int, error)
 }
 
 // QueryByID gets the specified user from the database.
-func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, error) {
+func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.UserEntity, error) {
 	cachedUsr, ok := s.readCache(userID.String())
 	if ok {
 		return cachedUsr, nil
@@ -88,7 +88,7 @@ func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, err
 
 	usr, err := s.storer.QueryByID(ctx, userID)
 	if err != nil {
-		return user.User{}, err
+		return user.UserEntity{}, err
 	}
 
 	s.writeCache(usr)
@@ -97,7 +97,7 @@ func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, err
 }
 
 // QueryByIDs gets the specified users from the database.
-func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.User, error) {
+func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.UserEntity, error) {
 	usr, err := s.storer.QueryByIDs(ctx, userIDs)
 	if err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.Use
 }
 
 // QueryByEmail gets the specified user from the database by email.
-func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.User, error) {
+func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.UserEntity, error) {
 	cachedUsr, ok := s.readCache(email.Address)
 	if ok {
 		return cachedUsr, nil
@@ -115,7 +115,7 @@ func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.User
 
 	usr, err := s.storer.QueryByEmail(ctx, email)
 	if err != nil {
-		return user.User{}, err
+		return user.UserEntity{}, err
 	}
 
 	s.writeCache(usr)
@@ -126,20 +126,20 @@ func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.User
 // =============================================================================
 
 // readCache performs a safe search in the cache for the specified key.
-func (s *Store) readCache(key string) (user.User, bool) {
+func (s *Store) readCache(key string) (user.UserEntity, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	usr, exists := s.cache[key]
 	if !exists {
-		return user.User{}, false
+		return user.UserEntity{}, false
 	}
 
 	return usr, true
 }
 
 // writeCache performs a safe write to the cache for the specified user.
-func (s *Store) writeCache(usr user.User) {
+func (s *Store) writeCache(usr user.UserEntity) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -148,7 +148,7 @@ func (s *Store) writeCache(usr user.User) {
 }
 
 // deleteCache performs a safe removal from the cache for the specified user.
-func (s *Store) deleteCache(usr user.User) {
+func (s *Store) deleteCache(usr user.UserEntity) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

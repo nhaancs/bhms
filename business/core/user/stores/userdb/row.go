@@ -11,9 +11,9 @@ import (
 	"github.com/nhaancs/bhms/business/data/dbsql/pgx/dbarray"
 )
 
-// dbUser represent the structure we need for moving data
+// userRow represent the structure we need for moving data
 // between the app and the database.
-type dbUser struct {
+type userRow struct {
 	ID           uuid.UUID      `db:"user_id"`
 	Name         string         `db:"name"`
 	Email        string         `db:"email"`
@@ -25,13 +25,13 @@ type dbUser struct {
 	DateUpdated  time.Time      `db:"date_updated"`
 }
 
-func toDBUser(usr user.User) dbUser {
+func toUserRow(usr user.UserEntity) userRow {
 	roles := make([]string, len(usr.Roles))
 	for i, role := range usr.Roles {
 		roles[i] = role.Name()
 	}
 
-	return dbUser{
+	return userRow{
 		ID:           usr.ID,
 		Name:         usr.Name,
 		Email:        usr.Email.Address,
@@ -47,7 +47,7 @@ func toDBUser(usr user.User) dbUser {
 	}
 }
 
-func toCoreUser(dbUsr dbUser) (user.User, error) {
+func toUserEntity(dbUsr userRow) (user.UserEntity, error) {
 	addr := mail.Address{
 		Address: dbUsr.Email,
 	}
@@ -57,11 +57,11 @@ func toCoreUser(dbUsr dbUser) (user.User, error) {
 		var err error
 		roles[i], err = user.ParseRole(value)
 		if err != nil {
-			return user.User{}, fmt.Errorf("parse role: %w", err)
+			return user.UserEntity{}, fmt.Errorf("parse role: %w", err)
 		}
 	}
 
-	usr := user.User{
+	usr := user.UserEntity{
 		ID:           dbUsr.ID,
 		Name:         dbUsr.Name,
 		Email:        addr,
@@ -76,11 +76,11 @@ func toCoreUser(dbUsr dbUser) (user.User, error) {
 	return usr, nil
 }
 
-func toCoreUserSlice(dbUsers []dbUser) ([]user.User, error) {
-	usrs := make([]user.User, len(dbUsers))
+func toUserEntities(dbUsers []userRow) ([]user.UserEntity, error) {
+	usrs := make([]user.UserEntity, len(dbUsers))
 	for i, dbUsr := range dbUsers {
 		var err error
-		usrs[i], err = toCoreUser(dbUsr)
+		usrs[i], err = toUserEntity(dbUsr)
 		if err != nil {
 			return nil, err
 		}
