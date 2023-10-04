@@ -1,5 +1,5 @@
 # bhms
-Hệ thống quản lý nhà trọ được phát triển với Go, Angular, Flutter, và Kubernetes.
+Hệ thống quản lý nhà trọ được phát triển với Go, Flutter, Angular, Postgres, và Kubernetes.
 
 ## Tính năng dành cho chủ trọ (MVP)
 - Tạo khu trọ và quản lý danh sách phòng
