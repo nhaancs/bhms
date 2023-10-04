@@ -25,35 +25,35 @@ type userRow struct {
 	DateUpdated  time.Time      `db:"date_updated"`
 }
 
-func toUserRow(usr user.UserEntity) userRow {
-	roles := make([]string, len(usr.Roles))
-	for i, role := range usr.Roles {
+func toUserRow(e user.UserEntity) userRow {
+	roles := make([]string, len(e.Roles))
+	for i, role := range e.Roles {
 		roles[i] = role.Name()
 	}
 
 	return userRow{
-		ID:           usr.ID,
-		Name:         usr.Name,
-		Email:        usr.Email.Address,
+		ID:           e.ID,
+		Name:         e.Name,
+		Email:        e.Email.Address,
 		Roles:        roles,
-		PasswordHash: usr.PasswordHash,
+		PasswordHash: e.PasswordHash,
 		Department: sql.NullString{
-			String: usr.Department,
-			Valid:  usr.Department != "",
+			String: e.Department,
+			Valid:  e.Department != "",
 		},
-		Enabled:     usr.Enabled,
-		DateCreated: usr.DateCreated.UTC(),
-		DateUpdated: usr.DateUpdated.UTC(),
+		Enabled:     e.Enabled,
+		DateCreated: e.DateCreated.UTC(),
+		DateUpdated: e.DateUpdated.UTC(),
 	}
 }
 
-func toUserEntity(dbUsr userRow) (user.UserEntity, error) {
+func toUserEntity(r userRow) (user.UserEntity, error) {
 	addr := mail.Address{
-		Address: dbUsr.Email,
+		Address: r.Email,
 	}
 
-	roles := make([]user.Role, len(dbUsr.Roles))
-	for i, value := range dbUsr.Roles {
+	roles := make([]user.Role, len(r.Roles))
+	for i, value := range r.Roles {
 		var err error
 		roles[i], err = user.ParseRole(value)
 		if err != nil {
@@ -62,23 +62,23 @@ func toUserEntity(dbUsr userRow) (user.UserEntity, error) {
 	}
 
 	usr := user.UserEntity{
-		ID:           dbUsr.ID,
-		Name:         dbUsr.Name,
+		ID:           r.ID,
+		Name:         r.Name,
 		Email:        addr,
 		Roles:        roles,
-		PasswordHash: dbUsr.PasswordHash,
-		Enabled:      dbUsr.Enabled,
-		Department:   dbUsr.Department.String,
-		DateCreated:  dbUsr.DateCreated.In(time.Local),
-		DateUpdated:  dbUsr.DateUpdated.In(time.Local),
+		PasswordHash: r.PasswordHash,
+		Enabled:      r.Enabled,
+		Department:   r.Department.String,
+		DateCreated:  r.DateCreated.In(time.Local),
+		DateUpdated:  r.DateUpdated.In(time.Local),
 	}
 
 	return usr, nil
 }
 
-func toUserEntities(dbUsers []userRow) ([]user.UserEntity, error) {
-	usrs := make([]user.UserEntity, len(dbUsers))
-	for i, dbUsr := range dbUsers {
+func toUserEntities(rows []userRow) ([]user.UserEntity, error) {
+	usrs := make([]user.UserEntity, len(rows))
+	for i, dbUsr := range rows {
 		var err error
 		usrs[i], err = toUserEntity(dbUsr)
 		if err != nil {

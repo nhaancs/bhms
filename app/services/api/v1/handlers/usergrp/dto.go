@@ -22,22 +22,22 @@ type UserDTO struct {
 	DateUpdated  string   `json:"dateUpdated"`
 }
 
-func toUserDTO(usr user.UserEntity) UserDTO {
-	roles := make([]string, len(usr.Roles))
-	for i, role := range usr.Roles {
+func toUserDTO(u user.UserEntity) UserDTO {
+	roles := make([]string, len(u.Roles))
+	for i, role := range u.Roles {
 		roles[i] = role.Name()
 	}
 
 	return UserDTO{
-		ID:           usr.ID.String(),
-		Name:         usr.Name,
-		Email:        usr.Email.Address,
+		ID:           u.ID.String(),
+		Name:         u.Name,
+		Email:        u.Email.Address,
 		Roles:        roles,
-		PasswordHash: usr.PasswordHash,
-		Department:   usr.Department,
-		Enabled:      usr.Enabled,
-		DateCreated:  usr.DateCreated.Format(time.RFC3339),
-		DateUpdated:  usr.DateUpdated.Format(time.RFC3339),
+		PasswordHash: u.PasswordHash,
+		Department:   u.Department,
+		Enabled:      u.Enabled,
+		DateCreated:  u.DateCreated.Format(time.RFC3339),
+		DateUpdated:  u.DateUpdated.Format(time.RFC3339),
 	}
 }
 
@@ -90,8 +90,8 @@ func toNewUserEntity(u NewUserDTO) (user.NewUserEntity, error) {
 }
 
 // Validate checks the data in the model is considered clean.
-func (app NewUserDTO) Validate() error {
-	if err := validate.Check(app); err != nil {
+func (dto NewUserDTO) Validate() error {
+	if err := validate.Check(dto); err != nil {
 		return err
 	}
 
@@ -111,11 +111,11 @@ type UpdateUserDTO struct {
 	Enabled         *bool    `json:"enabled"`
 }
 
-func toUpdateUserEntity(app UpdateUserDTO) (user.UpdateUserEntity, error) {
+func toUpdateUserEntity(uu UpdateUserDTO) (user.UpdateUserEntity, error) {
 	var roles []user.Role
-	if app.Roles != nil {
-		roles = make([]user.Role, len(app.Roles))
-		for i, roleStr := range app.Roles {
+	if uu.Roles != nil {
+		roles = make([]user.Role, len(uu.Roles))
+		for i, roleStr := range uu.Roles {
 			role, err := user.ParseRole(roleStr)
 			if err != nil {
 				return user.UpdateUserEntity{}, fmt.Errorf("parsing role: %w", err)
@@ -125,30 +125,30 @@ func toUpdateUserEntity(app UpdateUserDTO) (user.UpdateUserEntity, error) {
 	}
 
 	var addr *mail.Address
-	if app.Email != nil {
+	if uu.Email != nil {
 		var err error
-		addr, err = mail.ParseAddress(*app.Email)
+		addr, err = mail.ParseAddress(*uu.Email)
 		if err != nil {
 			return user.UpdateUserEntity{}, fmt.Errorf("parsing email: %w", err)
 		}
 	}
 
 	nu := user.UpdateUserEntity{
-		Name:            app.Name,
+		Name:            uu.Name,
 		Email:           addr,
 		Roles:           roles,
-		Department:      app.Department,
-		Password:        app.Password,
-		PasswordConfirm: app.PasswordConfirm,
-		Enabled:         app.Enabled,
+		Department:      uu.Department,
+		Password:        uu.Password,
+		PasswordConfirm: uu.PasswordConfirm,
+		Enabled:         uu.Enabled,
 	}
 
 	return nu, nil
 }
 
 // Validate checks the data in the model is considered clean.
-func (app UpdateUserDTO) Validate() error {
-	if err := validate.Check(app); err != nil {
+func (dto UpdateUserDTO) Validate() error {
+	if err := validate.Check(dto); err != nil {
 		return fmt.Errorf("validate: %w", err)
 	}
 
