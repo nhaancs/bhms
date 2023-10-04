@@ -11,13 +11,13 @@ Hệ thống quản lý nhà trọ được phát triển với Go, Angular, Flu
 
 ### Bảng `users`
 
-| Tên cột         | Kiểu dữ liệu | Bắt buộc  | Mô tả            |
-|-----------------|--------------|:---------:|------------------|
-| `id`            | uuid         |    [x]    | Primary key      |
-| `fullname`      | text         |    [x]    |                  |
-| `phone`         | text         |    [x]    | Used for login   |
-| `password_hash` | text         |    [x]    |                  |
-| `roles`         | text[]       |    [x]    | USER, ADMIN      |
-| `status`        | text         |    [x]    | ACTIVE, DISABLED |
-| `created_at`    | timestamp    |    [x]    |                  |
-| `updated_at`    | timestamp    |    [ ]    |                  |
+| Tên cột         | Kiểu dữ liệu | Bắt buộc | Mô tả            |
+|-----------------|--------------|:--------:|------------------|
+| `id`            | uuid         | &check;  | Primary key      |
+| `fullname`      | text         | &check;  |                  |
+| `phone`         | text         | &check;  | Used for login   |
+| `password_hash` | text         | &check;  |                  |
+| `roles`         | text[]       | &check;  | USER, ADMIN      |
+| `status`        | text         | &check;  | ACTIVE, DISABLED |
+| `created_at`    | timestamp    | &check;  |                  |
+| `updated_at`    | timestamp    | &cross;  |                  |
