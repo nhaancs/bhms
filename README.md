@@ -105,7 +105,7 @@ Bảng `payment_methods` lưu thông tin thanh toán (tài khoản ngân hàng) 
 | `updated_at`     | timestamp    | &cross;  | Thời gian cập nhật                            |
 
 ### Bảng `sessions`
-Bảng `sessions` lưu thông tin thuê của từng phòng theo thời gian trên hợp đồng.
+Bảng `sessions` lưu thông tin thuê phòng theo thời gian trên hợp đồng.
 
 | Tên cột            | Kiểu dữ liệu | Bắt buộc | Mô tả                            |
 |--------------------|--------------|:--------:|----------------------------------|
