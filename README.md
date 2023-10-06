@@ -1,16 +1,26 @@
 # bhms
 Hệ thống quản lý nhà trọ được phát triển với Go, Flutter, Angular, Postgres, và Kubernetes.
 
-## Tính năng dành cho chủ trọ (MVP)
+## Bản thử nghiệm (MVP)
+
+### Kế hoạch phát triển
+- [ ] **Xác định các tính năng cho bản thử nghiệm và thiết kế cơ sở dữ liệu &larr;**
+- [ ] Thiết kế và phát triển API cho ứng dụng di động
+- [ ] Thiết kế và phát triển ứng dụng Android, iOS
+- [ ] Thiết kế và phát triển API cho backoffice
+- [ ] Thiết kế và phát triển backoffice cho đội ngũ vận hành
+
+### Tính năng dành cho chủ trọ
 - Tạo khu trọ và quản lý danh sách phòng
 - Tạo hợp đồng cho người đến thuê
 - Quản lý điện, nước, và các dịch vụ khác
 - Quản lý thông tin thanh toán (tài khoản ngân hàng)
 - Tạo và chia sẻ hóa đơn cho từng phòng
 
-## Thiết kế cơ sở dữ liệu
 
-### Bảng `users`
+### Thiết kế cơ sở dữ liệu
+
+#### Bảng `users`
 Bảng `users` lưu các thông tin cần thiết của người dùng.
 
 | Tên cột         | Kiểu dữ liệu | Bắt buộc | Mô tả                                   |
@@ -25,7 +35,7 @@ Bảng `users` lưu các thông tin cần thiết của người dùng.
 | `created_at`    | timestamp    | &check;  | Thời gian khởi tạo                      |
 | `updated_at`    | timestamp    | &cross;  | Thời gian cập nhật                      |
 
-### Bảng `divisions`
+#### Bảng `divisions`
 Bảng `divisions` lưu thông tin các đơn vị hành chính của Việt Nam.
 
 | Tên cột      | Kiểu dữ liệu | Bắt buộc | Mô tả                                                                     |
@@ -34,11 +44,11 @@ Bảng `divisions` lưu thông tin các đơn vị hành chính của Việt Nam
 | `name`       | text         | &check;  | Tên đơn vị hành chính                                                     |
 | `code`       | integer      | &check;  | Mã đơn vị hành chính                                                      |
 | `level`      | smallint     | &check;  | Cấp đơn vị hành chính - 1: Tỉnh, thành phố, 2: quận, huyện, 3: xã, phường |
-| `parent_id`  | uuid         | &check;  | ID của cấp cao hơn                                                        |
+| `parent_id`  | uuid         | &cross;  | ID của cấp cao hơn                                                        |
 | `created_at` | timestamp    | &check;  | Thời gian khởi tạo                                                        |
 | `updated_at` | timestamp    | &cross;  | Thời gian cập nhật                                                        |
 
-### Bảng `properties`
+#### Bảng `properties`
 Bảng `properties` lưu các thông tin cần thiết của khu trọ.
 
 | Tên cột             | Kiểu dữ liệu | Bắt buộc | Mô tả                                |
@@ -54,7 +64,7 @@ Bảng `properties` lưu các thông tin cần thiết của khu trọ.
 | `created_at`        | timestamp    | &check;  | Thời gian khởi tạo                   |
 | `updated_at`        | timestamp    | &cross;  | Thời gian cập nhật                   |
 
-### Bảng `blocks`
+#### Bảng `blocks`
 Bảng `blocks` lưu thông tin các dãy của khu trọ.
 
 | Tên cột       | Kiểu dữ liệu | Bắt buộc | Mô tả              |
@@ -65,7 +75,7 @@ Bảng `blocks` lưu thông tin các dãy của khu trọ.
 | `created_at`  | timestamp    | &check;  | Thời gian khởi tạo |
 | `updated_at`  | timestamp    | &cross;  | Thời gian cập nhật |
 
-### Bảng `floors`
+#### Bảng `floors`
 Bảng `floors` lưu thông tin các tầng của khu trọ.
 
 | Tên cột      | Kiểu dữ liệu | Bắt buộc | Mô tả              |
@@ -76,7 +86,7 @@ Bảng `floors` lưu thông tin các tầng của khu trọ.
 | `created_at` | timestamp    | &check;  | Thời gian khởi tạo |
 | `updated_at` | timestamp    | &cross;  | Thời gian cập nhật |
 
-### Bảng `units`
+#### Bảng `units`
 Bảng `units` lưu thông tin các phòng của khu trọ.
 
 | Tên cột       | Kiểu dữ liệu | Bắt buộc | Mô tả              |
@@ -89,7 +99,7 @@ Bảng `units` lưu thông tin các phòng của khu trọ.
 | `created_at`  | timestamp    | &check;  | Thời gian khởi tạo |
 | `updated_at`  | timestamp    | &cross;  | Thời gian cập nhật |
 
-### Bảng `payment_methods`
+#### Bảng `payment_methods`
 Bảng `payment_methods` lưu thông tin thanh toán (tài khoản ngân hàng) của các chủ trọ.
 
 | Tên cột          | Kiểu dữ liệu | Bắt buộc | Mô tả                                         |
@@ -104,7 +114,7 @@ Bảng `payment_methods` lưu thông tin thanh toán (tài khoản ngân hàng) 
 | `created_at`     | timestamp    | &check;  | Thời gian khởi tạo                            |
 | `updated_at`     | timestamp    | &cross;  | Thời gian cập nhật                            |
 
-### Bảng `sessions`
+#### Bảng `sessions`
 Bảng `sessions` lưu thông tin thuê phòng theo thời gian trên hợp đồng.
 
 | Tên cột            | Kiểu dữ liệu | Bắt buộc | Mô tả                            |
@@ -121,7 +131,7 @@ Bảng `sessions` lưu thông tin thuê phòng theo thời gian trên hợp đ�
 | `created_at`       | timestamp    | &check;  | Thời gian khởi tạo               |
 | `updated_at`       | timestamp    | &cross;  | Thời gian cập nhật               |
 
-### Bảng `services`
+#### Bảng `services`
 Bảng `services` lưu thông tin các dịch vụ của khu trọ.
 
 | Tên cột        | Kiểu dữ liệu | Bắt buộc | Mô tả                                                             |
@@ -137,7 +147,7 @@ Bảng `services` lưu thông tin các dịch vụ của khu trọ.
 | `updated_at`   | timestamp    | &cross;  | Thời gian cập nhật                                                |
 
 
-### Bảng `session_services`
+#### Bảng `session_services`
 Bảng `session_services` lưu thông tin các dịch vụ của từng session.
 
 | Tên cột        | Kiểu dữ liệu | Bắt buộc | Mô tả          |
