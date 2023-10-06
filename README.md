@@ -121,12 +121,26 @@ Bảng `sessions` lưu thông tin thuê phòng theo thời gian trên hợp đ�
 | `created_at`       | timestamp    | &check;  | Thời gian khởi tạo               |
 | `updated_at`       | timestamp    | &cross;  | Thời gian cập nhật               |
 
-### Bảng `session_services`
-Bảng `session_services` lưu thông tin các dịch vụ đăng ký trong hợp đồng.
+### Bảng `services`
+Bảng `services` lưu thông tin các dịch vụ của khu trọ.
 
-| Tên cột            | Kiểu dữ liệu | Bắt buộc | Mô tả                      |
-|--------------------|--------------|:--------:|----------------------------|
-| `id`               | uuid         | &check;  | Khóa chính                 |
-| `enabled`          | boolean      | &check;  | Trạng thái bật/tắt dịch vụ |
-| `created_at`       | timestamp    | &check;  | Thời gian khởi tạo         |
-| `updated_at`       | timestamp    | &cross;  | Thời gian cập nhật         |
+| Tên cột        | Kiểu dữ liệu | Bắt buộc | Mô tả                                                             |
+|----------------|--------------|:--------:|-------------------------------------------------------------------|
+| `id`           | uuid         | &check;  | Khóa chính                                                        |
+| `property_id`  | uuid         | &check;  | ID của khu trọ                                                    |
+| `name`         | text         | &check;  | Tên dịch vụ                                                       |
+| `price`        | bigint       | &check;  | Giá dịch vụ                                                       |
+| `unit`         | text         | &check;  | Đơn vị: kwh, m3, room, member, piece, time                        |
+| `invoice_type` | text         | &check;  | Đơn vị tính: PER_USAGE, PER_ROOM, PER_MEMBER, PER_PIECE, PER_TIME | 
+| `enabled`      | boolean      | &check;  | Trạng thái bật/tắt dịch vụ                                        |
+| `created_at`   | timestamp    | &check;  | Thời gian khởi tạo                                                |
+| `updated_at`   | timestamp    | &cross;  | Thời gian cập nhật                                                |
+
+
+### Bảng `session_services`
+Bảng `session_services` lưu thông tin các dịch vụ của từng session.
+
+| Tên cột        | Kiểu dữ liệu | Bắt buộc | Mô tả          |
+|----------------|--------------|:--------:|----------------|
+| `session_id`   | uuid         | &check;  | ID của session |
+| `service_id`   | uuid         | &check;  | ID của dịch vụ |
