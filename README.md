@@ -120,3 +120,13 @@ Bảng `sessions` lưu thông tin thuê phòng theo thời gian trên hợp đ�
 | `enabled`          | boolean      | &check;  | Trạng thái bật/tắt của session   |
 | `created_at`       | timestamp    | &check;  | Thời gian khởi tạo               |
 | `updated_at`       | timestamp    | &cross;  | Thời gian cập nhật               |
+
+### Bảng `session_services`
+Bảng `session_services` lưu thông tin các dịch vụ đăng ký trong hợp đồng.
+
+| Tên cột            | Kiểu dữ liệu | Bắt buộc | Mô tả                      |
+|--------------------|--------------|:--------:|----------------------------|
+| `id`               | uuid         | &check;  | Khóa chính                 |
+| `enabled`          | boolean      | &check;  | Trạng thái bật/tắt dịch vụ |
+| `created_at`       | timestamp    | &check;  | Thời gian khởi tạo         |
+| `updated_at`       | timestamp    | &cross;  | Thời gian cập nhật         |

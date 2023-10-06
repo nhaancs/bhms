@@ -94,8 +94,8 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 			Password     string `conf:"default:postgres,mask"`
 			Host         string `conf:"default:database-service.api-system.svc.cluster.local"`
 			Name         string `conf:"default:postgres"`
-			MaxIdleConns int    `conf:"default:2"`
-			MaxOpenConns int    `conf:"default:0"`
+			MaxIdleConns int    `conf:"default:100"`
+			MaxOpenConns int    `conf:"default:1000"`
 			DisableTLS   bool   `conf:"default:true"`
 		}
 		Tempo struct {
