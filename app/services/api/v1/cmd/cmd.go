@@ -106,7 +106,7 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 	}{
 		Version: conf.Version{
 			Build: build,
-			Desc:  "BILL KENNEDY",
+			Desc:  "Nhan Nguyen",
 		},
 	}
 
