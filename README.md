@@ -4,8 +4,8 @@ Hệ thống quản lý nhà trọ được phát triển với Go, Flutter, Ang
 ## Bản thử nghiệm (MVP)
 
 ### Kế hoạch phát triển
-- [ ] **Xác định các tính năng cho bản thử nghiệm và thiết kế cơ sở dữ liệu &larr;**
-- [ ] Thiết kế và phát triển API cho ứng dụng di động
+- [x] ~~Xác định các tính năng cho bản thử nghiệm và thiết kế cơ sở dữ liệu~~
+- [ ] **Thiết kế và phát triển API cho ứng dụng di động &larr;**
 - [ ] Thiết kế và phát triển ứng dụng Android, iOS
 - [ ] Thiết kế và phát triển API cho backoffice
 - [ ] Thiết kế và phát triển backoffice cho đội ngũ vận hành
