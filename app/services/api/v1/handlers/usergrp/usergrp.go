@@ -64,7 +64,7 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 		return request.NewError(err, http.StatusBadRequest)
 	}
 
-	usr, err := h.user.Create(ctx, nc)
+	usr, err := h.user.Register(ctx, nc)
 	if err != nil {
 		if errors.Is(err, user.ErrUniqueEmail) {
 			return request.NewError(err, http.StatusConflict)

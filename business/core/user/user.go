@@ -25,8 +25,7 @@ var (
 
 // =============================================================================
 
-// Storer interface declares the behavior this package needs to perists and
-// retrieve data.
+// Storer interface declares the behavior this package needs to perists and retrieve data.
 type Storer interface {
 	ExecuteUnderTransaction(tx transaction.Transaction) (Storer, error)
 	Create(ctx context.Context, usr UserEntity) error
@@ -69,8 +68,8 @@ func (c *Core) ExecuteUnderTransaction(tx transaction.Transaction) (*Core, error
 	return c, nil
 }
 
-// Create adds a new user to the system.
-func (c *Core) Create(ctx context.Context, nu RegisterEntity) (UserEntity, error) {
+// Register adds a new user to the system.
+func (c *Core) Register(ctx context.Context, nu RegisterEntity) (UserEntity, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(nu.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return UserEntity{}, fmt.Errorf("generatefrompassword: %w", err)
