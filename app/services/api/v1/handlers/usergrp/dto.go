@@ -100,63 +100,6 @@ func (dto RegisterDTO) Validate() error {
 
 // =============================================================================
 
-// UpdateUserDTO contains information needed to update a user.
-type UpdateUserDTO struct {
-	Name            *string  `json:"name"`
-	Email           *string  `json:"email" validate:"omitempty,email"`
-	Roles           []string `json:"roles"`
-	Department      *string  `json:"department"`
-	Password        *string  `json:"password"`
-	PasswordConfirm *string  `json:"passwordConfirm" validate:"omitempty,eqfield=Password"`
-	Enabled         *bool    `json:"enabled"`
-}
-
-func toUpdateUserEntity(uu UpdateUserDTO) (user.UpdateUserEntity, error) {
-	var roles []user.Role
-	if uu.Roles != nil {
-		roles = make([]user.Role, len(uu.Roles))
-		for i, roleStr := range uu.Roles {
-			role, err := user.ParseRole(roleStr)
-			if err != nil {
-				return user.UpdateUserEntity{}, fmt.Errorf("parsing role: %w", err)
-			}
-			roles[i] = role
-		}
-	}
-
-	var addr *mail.Address
-	if uu.Email != nil {
-		var err error
-		addr, err = mail.ParseAddress(*uu.Email)
-		if err != nil {
-			return user.UpdateUserEntity{}, fmt.Errorf("parsing email: %w", err)
-		}
-	}
-
-	nu := user.UpdateUserEntity{
-		Name:            uu.Name,
-		Email:           addr,
-		Roles:           roles,
-		Department:      uu.Department,
-		Password:        uu.Password,
-		PasswordConfirm: uu.PasswordConfirm,
-		Enabled:         uu.Enabled,
-	}
-
-	return nu, nil
-}
-
-// Validate checks the data in the model is considered clean.
-func (dto UpdateUserDTO) Validate() error {
-	if err := validate.Check(dto); err != nil {
-		return fmt.Errorf("validate: %w", err)
-	}
-
-	return nil
-}
-
-// =============================================================================
-
 type token struct {
 	Token string `json:"token"`
 }

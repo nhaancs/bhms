@@ -104,87 +104,11 @@ func (c *Core) Create(ctx context.Context, nu RegisterEntity) (UserEntity, error
 	return usr, nil
 }
 
-// Update modifies information about a user.
-func (c *Core) Update(ctx context.Context, usr UserEntity, uu UpdateUserEntity) (UserEntity, error) {
-	if uu.Name != nil {
-		usr.Name = *uu.Name
-	}
-
-	if uu.Email != nil {
-		usr.Email = *uu.Email
-	}
-
-	if uu.Roles != nil {
-		usr.Roles = uu.Roles
-	}
-
-	if uu.Password != nil {
-		pw, err := bcrypt.GenerateFromPassword([]byte(*uu.Password), bcrypt.DefaultCost)
-		if err != nil {
-			return UserEntity{}, fmt.Errorf("generatefrompassword: %w", err)
-		}
-		usr.PasswordHash = pw
-	}
-
-	if uu.Department != nil {
-		usr.Department = *uu.Department
-	}
-
-	if uu.Enabled != nil {
-		usr.Enabled = *uu.Enabled
-	}
-	usr.DateUpdated = time.Now()
-
-	if err := c.storer.Update(ctx, usr); err != nil {
-		return UserEntity{}, fmt.Errorf("update: %w", err)
-	}
-
-	if err := c.evnCore.SendEvent(ctx, uu.UpdatedEvent(usr.ID)); err != nil {
-		return UserEntity{}, fmt.Errorf("failed to send a `%s` event: %w", EventUpdated, err)
-	}
-
-	return usr, nil
-}
-
-// Delete removes the specified user.
-func (c *Core) Delete(ctx context.Context, usr UserEntity) error {
-	if err := c.storer.Delete(ctx, usr); err != nil {
-		return fmt.Errorf("delete: %w", err)
-	}
-
-	return nil
-}
-
-// Query retrieves a list of existing users.
-func (c *Core) Query(ctx context.Context, filter QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]UserEntity, error) {
-	users, err := c.storer.Query(ctx, filter, orderBy, pageNumber, rowsPerPage)
-	if err != nil {
-		return nil, fmt.Errorf("query: %w", err)
-	}
-
-	return users, nil
-}
-
-// Count returns the total number of users.
-func (c *Core) Count(ctx context.Context, filter QueryFilter) (int, error) {
-	return c.storer.Count(ctx, filter)
-}
-
 // QueryByID finds the user by the specified ID.
 func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (UserEntity, error) {
 	user, err := c.storer.QueryByID(ctx, userID)
 	if err != nil {
 		return UserEntity{}, fmt.Errorf("query: userID[%s]: %w", userID, err)
-	}
-
-	return user, nil
-}
-
-// QueryByIDs finds the users by a specified UserEntity IDs.
-func (c *Core) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]UserEntity, error) {
-	user, err := c.storer.QueryByIDs(ctx, userIDs)
-	if err != nil {
-		return nil, fmt.Errorf("query: userIDs[%s]: %w", userIDs, err)
 	}
 
 	return user, nil
