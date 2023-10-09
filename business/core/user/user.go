@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nhaancs/bhms/business/core/event"
 	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/foundation/logger"
 	"golang.org/x/crypto/bcrypt"
@@ -42,32 +41,29 @@ type Storer interface {
 
 // Core manages the set of APIs for user access.
 type Core struct {
-	storer  Storer
-	evnCore *event.Core
-	log     *logger.Logger
+	store Storer
+	log   *logger.Logger
 }
 
 // NewCore constructs a core for user api access.
-func NewCore(log *logger.Logger, evnCore *event.Core, storer Storer) *Core {
+func NewCore(log *logger.Logger, store Storer) *Core {
 	return &Core{
-		storer:  storer,
-		evnCore: evnCore,
-		log:     log,
+		store: store,
+		log:   log,
 	}
 }
 
 // ExecuteUnderTransaction constructs a new Core value that will use the
 // specified transaction in any store related calls.
 func (c *Core) ExecuteUnderTransaction(tx transaction.Transaction) (*Core, error) {
-	trS, err := c.storer.ExecuteUnderTransaction(tx)
+	trS, err := c.store.ExecuteUnderTransaction(tx)
 	if err != nil {
 		return nil, err
 	}
 
 	c = &Core{
-		log:     c.log,
-		storer:  trS,
-		evnCore: c.evnCore,
+		log:   c.log,
+		store: trS,
 	}
 
 	return c, nil
@@ -94,7 +90,7 @@ func (c *Core) Create(ctx context.Context, nu RegisterEntity) (UserEntity, error
 		DateUpdated:  now,
 	}
 
-	if err := c.storer.Create(ctx, usr); err != nil {
+	if err := c.store.Create(ctx, usr); err != nil {
 		return UserEntity{}, fmt.Errorf("create: %w", err)
 	}
 
@@ -103,7 +99,7 @@ func (c *Core) Create(ctx context.Context, nu RegisterEntity) (UserEntity, error
 
 // QueryByID finds the user by the specified ID.
 func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (UserEntity, error) {
-	user, err := c.storer.QueryByID(ctx, userID)
+	user, err := c.store.QueryByID(ctx, userID)
 	if err != nil {
 		return UserEntity{}, fmt.Errorf("query: userID[%s]: %w", userID, err)
 	}
@@ -113,7 +109,7 @@ func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (UserEntity, err
 
 // QueryByEmail finds the user by a specified user email.
 func (c *Core) QueryByEmail(ctx context.Context, email mail.Address) (UserEntity, error) {
-	user, err := c.storer.QueryByEmail(ctx, email)
+	user, err := c.store.QueryByEmail(ctx, email)
 	if err != nil {
 		return UserEntity{}, fmt.Errorf("query: email[%s]: %w", email, err)
 	}
