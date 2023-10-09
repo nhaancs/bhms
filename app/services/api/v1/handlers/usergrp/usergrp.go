@@ -12,7 +12,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/core/user"
-	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/foundation/validate"
 	"github.com/nhaancs/bhms/foundation/web"
@@ -30,26 +29,6 @@ func New(user *user.Core, auth *auth.Auth) *Handlers {
 		user: user,
 		auth: auth,
 	}
-}
-
-// executeUnderTransaction constructs a new Handlers value with the core apis
-// using a store transaction that was created via middleware.
-func (h *Handlers) executeUnderTransaction(ctx context.Context) (*Handlers, error) {
-	if tx, ok := transaction.Get(ctx); ok {
-		user, err := h.user.ExecuteUnderTransaction(tx)
-		if err != nil {
-			return nil, err
-		}
-
-		h = &Handlers{
-			user: user,
-			auth: h.auth,
-		}
-
-		return h, nil
-	}
-
-	return h, nil
 }
 
 // Register adds a new user to the system.

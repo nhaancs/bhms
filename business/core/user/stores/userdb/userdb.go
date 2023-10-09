@@ -14,7 +14,6 @@ import (
 	"github.com/nhaancs/bhms/business/core/user"
 	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
 	"github.com/nhaancs/bhms/business/data/dbsql/pgx/dbarray"
-	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/foundation/logger"
 )
 
@@ -30,22 +29,6 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 		log: log,
 		db:  db,
 	}
-}
-
-// ExecuteUnderTransaction constructs a new Store value replacing the sqlx DB
-// value with a sqlx DB value that is currently inside a transaction.
-func (s *Store) ExecuteUnderTransaction(tx transaction.Transaction) (user.Storer, error) {
-	ec, err := db.GetExtContext(tx)
-	if err != nil {
-		return nil, err
-	}
-
-	s = &Store{
-		log: s.log,
-		db:  ec,
-	}
-
-	return s, nil
 }
 
 // Create inserts a new user into the database.

@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/foundation/logger"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -27,7 +26,6 @@ var (
 
 // Storer interface declares the behavior this package needs to perists and retrieve data.
 type Storer interface {
-	ExecuteUnderTransaction(tx transaction.Transaction) (Storer, error)
 	Create(ctx context.Context, usr UserEntity) error
 	Update(ctx context.Context, usr UserEntity) error
 	Delete(ctx context.Context, usr UserEntity) error
@@ -50,22 +48,6 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 		store: store,
 		log:   log,
 	}
-}
-
-// ExecuteUnderTransaction constructs a new Core value that will use the
-// specified transaction in any store related calls.
-func (c *Core) ExecuteUnderTransaction(tx transaction.Transaction) (*Core, error) {
-	trS, err := c.store.ExecuteUnderTransaction(tx)
-	if err != nil {
-		return nil, err
-	}
-
-	c = &Core{
-		log:   c.log,
-		store: trS,
-	}
-
-	return c, nil
 }
 
 // Register adds a new user to the system.
