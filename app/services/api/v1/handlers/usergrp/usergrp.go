@@ -55,12 +55,12 @@ func (h *Handlers) executeUnderTransaction(ctx context.Context) (*Handlers, erro
 
 // Create adds a new user to the system.
 func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var app NewUserDTO
+	var app RegisterDTO
 	if err := web.Decode(r, &app); err != nil {
 		return request.NewError(err, http.StatusBadRequest)
 	}
 
-	nc, err := toNewUserEntity(app)
+	nc, err := toRegisterEntity(app)
 	if err != nil {
 		return request.NewError(err, http.StatusBadRequest)
 	}

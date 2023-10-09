@@ -52,8 +52,8 @@ func toUserDTOs(users []user.UserEntity) []UserDTO {
 
 // =============================================================================
 
-// NewUserDTO contains information needed to create a new user.
-type NewUserDTO struct {
+// RegisterDTO contains information needed to create a new user.
+type RegisterDTO struct {
 	Name            string   `json:"name" validate:"required"`
 	Email           string   `json:"email" validate:"required,email"`
 	Roles           []string `json:"roles" validate:"required"`
@@ -62,22 +62,22 @@ type NewUserDTO struct {
 	PasswordConfirm string   `json:"passwordConfirm" validate:"eqfield=Password"`
 }
 
-func toNewUserEntity(u NewUserDTO) (user.NewUserEntity, error) {
+func toRegisterEntity(u RegisterDTO) (user.RegisterEntity, error) {
 	roles := make([]user.Role, len(u.Roles))
 	for i, roleStr := range u.Roles {
 		role, err := user.ParseRole(roleStr)
 		if err != nil {
-			return user.NewUserEntity{}, fmt.Errorf("parsing role: %w", err)
+			return user.RegisterEntity{}, fmt.Errorf("parsing role: %w", err)
 		}
 		roles[i] = role
 	}
 
 	addr, err := mail.ParseAddress(u.Email)
 	if err != nil {
-		return user.NewUserEntity{}, fmt.Errorf("parsing email: %w", err)
+		return user.RegisterEntity{}, fmt.Errorf("parsing email: %w", err)
 	}
 
-	usr := user.NewUserEntity{
+	usr := user.RegisterEntity{
 		Name:            u.Name,
 		Email:           *addr,
 		Roles:           roles,
@@ -90,7 +90,7 @@ func toNewUserEntity(u NewUserDTO) (user.NewUserEntity, error) {
 }
 
 // Validate checks the data in the model is considered clean.
-func (dto NewUserDTO) Validate() error {
+func (dto RegisterDTO) Validate() error {
 	if err := validate.Check(dto); err != nil {
 		return err
 	}

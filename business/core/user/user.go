@@ -77,7 +77,7 @@ func (c *Core) ExecuteUnderTransaction(tx transaction.Transaction) (*Core, error
 }
 
 // Create adds a new user to the system.
-func (c *Core) Create(ctx context.Context, nu NewUserEntity) (UserEntity, error) {
+func (c *Core) Create(ctx context.Context, nu RegisterEntity) (UserEntity, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(nu.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return UserEntity{}, fmt.Errorf("generatefrompassword: %w", err)

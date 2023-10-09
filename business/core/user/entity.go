@@ -21,8 +21,8 @@ type UserEntity struct {
 	DateUpdated  time.Time
 }
 
-// NewUserEntity contains information needed to create a new user.
-type NewUserEntity struct {
+// RegisterEntity contains information needed to create a new user.
+type RegisterEntity struct {
 	Name            string
 	Email           mail.Address
 	Roles           []Role
