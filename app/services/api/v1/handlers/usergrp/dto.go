@@ -41,15 +41,6 @@ func toUserDTO(u user.UserEntity) UserDTO {
 	}
 }
 
-func toUserDTOs(users []user.UserEntity) []UserDTO {
-	items := make([]UserDTO, len(users))
-	for i, usr := range users {
-		items[i] = toUserDTO(usr)
-	}
-
-	return items
-}
-
 // =============================================================================
 
 // RegisterDTO contains information needed to create a new user.

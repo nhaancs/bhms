@@ -2,7 +2,6 @@
 package userdb
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"database/sql/driver"
@@ -15,7 +14,6 @@ import (
 	"github.com/nhaancs/bhms/business/core/user"
 	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
 	"github.com/nhaancs/bhms/business/data/dbsql/pgx/dbarray"
-	"github.com/nhaancs/bhms/business/data/order"
 	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/foundation/logger"
 )
@@ -112,66 +110,6 @@ func (s *Store) Delete(ctx context.Context, usr user.UserEntity) error {
 	}
 
 	return nil
-}
-
-// Query retrieves a list of existing users from the database.
-func (s *Store) Query(ctx context.Context, filter user.QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]user.UserEntity, error) {
-	data := map[string]interface{}{
-		"offset":        (pageNumber - 1) * rowsPerPage,
-		"rows_per_page": rowsPerPage,
-	}
-
-	const q = `
-	SELECT
-		user_id, name, email, password_hash, roles, enabled, department, date_created, date_updated
-	FROM
-		users`
-
-	buf := bytes.NewBufferString(q)
-	s.applyFilter(filter, data, buf)
-
-	orderByClause, err := orderByClause(orderBy)
-	if err != nil {
-		return nil, err
-	}
-
-	buf.WriteString(orderByClause)
-	buf.WriteString(" OFFSET :offset ROWS FETCH NEXT :rows_per_page ROWS ONLY")
-
-	var dbUsrs []userRow
-	if err := db.NamedQuerySlice(ctx, s.log, s.db, buf.String(), data, &dbUsrs); err != nil {
-		return nil, fmt.Errorf("namedqueryslice: %w", err)
-	}
-
-	usrs, err := toUserEntities(dbUsrs)
-	if err != nil {
-		return nil, err
-	}
-
-	return usrs, nil
-}
-
-// Count returns the total number of users in the DB.
-func (s *Store) Count(ctx context.Context, filter user.QueryFilter) (int, error) {
-	data := map[string]interface{}{}
-
-	const q = `
-	SELECT
-		count(1)
-	FROM
-		users`
-
-	buf := bytes.NewBufferString(q)
-	s.applyFilter(filter, data, buf)
-
-	var count struct {
-		Count int `db:"count"`
-	}
-	if err := db.NamedQueryStruct(ctx, s.log, s.db, buf.String(), data, &count); err != nil {
-		return 0, fmt.Errorf("namedquerystruct: %w", err)
-	}
-
-	return count.Count, nil
 }
 
 // QueryByID gets the specified user from the database.

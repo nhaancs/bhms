@@ -12,7 +12,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nhaancs/bhms/business/core/event"
-	"github.com/nhaancs/bhms/business/data/order"
 	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/foundation/logger"
 	"golang.org/x/crypto/bcrypt"
@@ -34,8 +33,6 @@ type Storer interface {
 	Create(ctx context.Context, usr UserEntity) error
 	Update(ctx context.Context, usr UserEntity) error
 	Delete(ctx context.Context, usr UserEntity) error
-	Query(ctx context.Context, filter QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]UserEntity, error)
-	Count(ctx context.Context, filter QueryFilter) (int, error)
 	QueryByID(ctx context.Context, userID uuid.UUID) (UserEntity, error)
 	QueryByIDs(ctx context.Context, userID []uuid.UUID) ([]UserEntity, error)
 	QueryByEmail(ctx context.Context, email mail.Address) (UserEntity, error)
