@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/mail"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -45,7 +44,7 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 
 	usr, err := h.user.Register(ctx, nc)
 	if err != nil {
-		if errors.Is(err, user.ErrUniqueEmail) {
+		if errors.Is(err, user.ErrUniquePhone) {
 			return request.NewError(err, http.StatusConflict)
 		}
 		return fmt.Errorf("create: usr[%+v]: %w", usr, err)
@@ -61,17 +60,14 @@ func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return validate.NewFieldsError("kid", errors.New("missing kid"))
 	}
 
-	email, pass, ok := r.BasicAuth()
+	phone, pass, ok := r.BasicAuth()
 	if !ok {
 		return auth.NewAuthError("must provide email and password in Basic auth")
 	}
 
-	addr, err := mail.ParseAddress(email)
-	if err != nil {
-		return auth.NewAuthError("invalid email format")
-	}
+	// todo: validate phone
 
-	usr, err := h.user.Authenticate(ctx, *addr, pass)
+	usr, err := h.user.Authenticate(ctx, phone, pass)
 	if err != nil {
 		switch {
 		case errors.Is(err, user.ErrNotFound):

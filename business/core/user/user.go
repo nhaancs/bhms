@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/mail"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,7 +17,7 @@ import (
 // Set of error variables for CRUD operations.
 var (
 	ErrNotFound              = errors.New("user not found")
-	ErrUniqueEmail           = errors.New("email is not unique")
+	ErrUniquePhone           = errors.New("phone is not unique")
 	ErrAuthenticationFailure = errors.New("authentication failed")
 )
 
@@ -31,7 +30,7 @@ type Storer interface {
 	Delete(ctx context.Context, usr UserEntity) error
 	QueryByID(ctx context.Context, userID uuid.UUID) (UserEntity, error)
 	QueryByIDs(ctx context.Context, userID []uuid.UUID) ([]UserEntity, error)
-	QueryByEmail(ctx context.Context, email mail.Address) (UserEntity, error)
+	QueryByPhone(ctx context.Context, phone string) (UserEntity, error)
 }
 
 // =============================================================================
@@ -88,11 +87,11 @@ func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (UserEntity, err
 	return user, nil
 }
 
-// QueryByEmail finds the user by a specified user email.
-func (c *Core) QueryByEmail(ctx context.Context, email mail.Address) (UserEntity, error) {
-	user, err := c.store.QueryByEmail(ctx, email)
+// QueryByPhone finds the user by a specified user phone.
+func (c *Core) QueryByPhone(ctx context.Context, phone string) (UserEntity, error) {
+	user, err := c.store.QueryByPhone(ctx, phone)
 	if err != nil {
-		return UserEntity{}, fmt.Errorf("query: email[%s]: %w", email, err)
+		return UserEntity{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
 	}
 
 	return user, nil
@@ -100,13 +99,13 @@ func (c *Core) QueryByEmail(ctx context.Context, email mail.Address) (UserEntity
 
 // =============================================================================
 
-// Authenticate finds a user by their email and verifies their password. On
+// Authenticate finds a user by their phone and verifies their password. On
 // success it returns a Claims UserEntity representing this user. The claims can be
 // used to generate a token for future authentication.
-func (c *Core) Authenticate(ctx context.Context, email mail.Address, password string) (UserEntity, error) {
-	usr, err := c.QueryByEmail(ctx, email)
+func (c *Core) Authenticate(ctx context.Context, phone, password string) (UserEntity, error) {
+	usr, err := c.QueryByPhone(ctx, phone)
 	if err != nil {
-		return UserEntity{}, fmt.Errorf("query: email[%s]: %w", email, err)
+		return UserEntity{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword(usr.PasswordHash, []byte(password)); err != nil {

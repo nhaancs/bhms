@@ -1,6 +1,9 @@
 # bhms
 Hệ thống quản lý nhà trọ được phát triển với Go, Flutter, Angular, Postgres, và Kubernetes.
 
+todo:
+- Setup with docker-compose first
+
 ## Bản thử nghiệm (MVP)
 
 ### Kế hoạch phát triển
@@ -28,7 +31,7 @@ Bảng `users` lưu các thông tin cần thiết của người dùng.
 | `id`            | uuid         | &check;  | Khóa chính                                       |
 | `first_name`    | text         | &check;  | Tên                                              |
 | `last_name`     | text         | &cross;  | Họ và chữ lót                                    |
-| `phone`         | text         | &check;  | Dùng để đăng nhập                                |
+| `phone`         | text         | &check;  | Dùng để đăng nhập, unique                        |
 | `password_hash` | text         | &check;  | Mật khẩu đã được mã hóa                          |
 | `roles`         | text[]       | &check;  | Phân quyền: USER, ADMIN                          |
 | `status`        | text         | &check;  | Trạng thái người dùng: CREATED, ACTIVE, DISABLED |

@@ -177,7 +177,7 @@ func (test *Test) Token(email string, pass string) string {
 	addr, _ := mail.ParseAddress(email)
 
 	store := userdb.NewStore(test.Log, test.DB)
-	dbUsr, err := store.QueryByEmail(context.Background(), *addr)
+	dbUsr, err := store.QueryByPhone(context.Background(), *addr)
 	if err != nil {
 		return ""
 	}

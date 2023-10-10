@@ -3,7 +3,6 @@ package usercache
 
 import (
 	"context"
-	"net/mail"
 	"sync"
 
 	"github.com/google/uuid"
@@ -88,14 +87,14 @@ func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.Use
 	return usr, nil
 }
 
-// QueryByEmail gets the specified user from the database by email.
-func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.UserEntity, error) {
-	cachedUsr, ok := s.readCache(email.Address)
+// QueryByPhone gets the specified user from the database by email.
+func (s *Store) QueryByPhone(ctx context.Context, phone string) (user.UserEntity, error) {
+	cachedUsr, ok := s.readCache(phone)
 	if ok {
 		return cachedUsr, nil
 	}
 
-	usr, err := s.store.QueryByEmail(ctx, email)
+	usr, err := s.store.QueryByPhone(ctx, phone)
 	if err != nil {
 		return user.UserEntity{}, err
 	}
@@ -126,7 +125,7 @@ func (s *Store) writeCache(usr user.UserEntity) {
 	defer s.mu.Unlock()
 
 	s.cache[usr.ID.String()] = usr
-	//s.cache[usr.Email.Address] = usr
+	s.cache[usr.Phone] = usr
 }
 
 // deleteCache performs a safe removal from the cache for the specified user.
@@ -135,5 +134,5 @@ func (s *Store) deleteCache(usr user.UserEntity) {
 	defer s.mu.Unlock()
 
 	delete(s.cache, usr.ID.String())
-	//delete(s.cache, usr.Email.Address)
+	delete(s.cache, usr.Phone)
 }

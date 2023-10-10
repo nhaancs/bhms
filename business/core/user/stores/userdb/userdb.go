@@ -7,8 +7,6 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"net/mail"
-
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/nhaancs/bhms/business/core/user"
@@ -35,13 +33,13 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 func (s *Store) Create(ctx context.Context, usr user.UserEntity) error {
 	const q = `
 	INSERT INTO users
-		(user_id, name, email, password_hash, roles, enabled, department, date_created, date_updated)
+		(id, first_name, last_name, phone, password_hash, roles, status, created_at, updated_at)
 	VALUES
-		(:user_id, :name, :email, :password_hash, :roles, :enabled, :department, :date_created, :date_updated)`
+		(:id, :first_name, :last_name, :phone, :password_hash, :roles, :status, :created_at, :updated_at)`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toUserRow(usr)); err != nil {
 		if errors.Is(err, db.ErrDBDuplicatedEntry) {
-			return fmt.Errorf("namedexeccontext: %w", user.ErrUniqueEmail)
+			return fmt.Errorf("namedexeccontext: %w", user.ErrUniquePhone)
 		}
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
@@ -55,18 +53,19 @@ func (s *Store) Update(ctx context.Context, usr user.UserEntity) error {
 	UPDATE
 		users
 	SET 
-		"name" = :name,
-		"email" = :email,
+		"first_name" = :first_name,
+		"last_name" = :last_name,
+		"phone" = :phone,
 		"roles" = :roles,
 		"password_hash" = :password_hash,
-		"department" = :department,
+		"status" = :status,
 		"date_updated" = :date_updated
 	WHERE
-		user_id = :user_id`
+		id = :id`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toUserRow(usr)); err != nil {
 		if errors.Is(err, db.ErrDBDuplicatedEntry) {
-			return user.ErrUniqueEmail
+			return user.ErrUniquePhone
 		}
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
@@ -77,16 +76,16 @@ func (s *Store) Update(ctx context.Context, usr user.UserEntity) error {
 // Delete removes a user from the database.
 func (s *Store) Delete(ctx context.Context, usr user.UserEntity) error {
 	data := struct {
-		UserID string `db:"user_id"`
+		ID string `db:"id"`
 	}{
-		UserID: usr.ID.String(),
+		ID: usr.ID.String(),
 	}
 
 	const q = `
 	DELETE FROM
 		users
 	WHERE
-		user_id = :user_id`
+		id = :id`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, data); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
@@ -98,18 +97,18 @@ func (s *Store) Delete(ctx context.Context, usr user.UserEntity) error {
 // QueryByID gets the specified user from the database.
 func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.UserEntity, error) {
 	data := struct {
-		ID string `db:"user_id"`
+		ID string `db:"id"`
 	}{
 		ID: userID.String(),
 	}
 
 	const q = `
 	SELECT
-        user_id, name, email, password_hash, roles, enabled, department, date_created, date_updated
+        id, first_name, last_name, phone, password_hash, roles, status, created_at, updated_at
 	FROM
 		users
 	WHERE 
-		user_id = :user_id`
+		id = :id`
 
 	var dbUsr userRow
 	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &dbUsr); err != nil {
@@ -135,31 +134,31 @@ func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.Use
 	}
 
 	data := struct {
-		UserID interface {
+		ID interface {
 			driver.Valuer
 			sql.Scanner
-		} `db:"user_id"`
+		} `db:"id"`
 	}{
-		UserID: dbarray.Array(ids),
+		ID: dbarray.Array(ids),
 	}
 
 	const q = `
 	SELECT
-        user_id, name, email, password_hash, roles, enabled, department, date_created, date_updated
+        id, first_name, last_name, phone, password_hash, roles, status, created_at, updated_at
 	FROM
 		users
 	WHERE
-		user_id = ANY(:user_id)`
+		id = ANY(:id)`
 
-	var dbUsrs []userRow
-	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &dbUsrs); err != nil {
+	var rows []userRow
+	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &rows); err != nil {
 		if errors.Is(err, db.ErrDBNotFound) {
 			return nil, user.ErrNotFound
 		}
 		return nil, fmt.Errorf("namedquerystruct: %w", err)
 	}
 
-	usrs, err := toUserEntities(dbUsrs)
+	usrs, err := toUserEntities(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -167,31 +166,31 @@ func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.Use
 	return usrs, nil
 }
 
-// QueryByEmail gets the specified user from the database by email.
-func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.UserEntity, error) {
+// QueryByPhone gets the specified user from the database by email.
+func (s *Store) QueryByPhone(ctx context.Context, phone string) (user.UserEntity, error) {
 	data := struct {
-		Email string `db:"email"`
+		Phone string `db:"phone"`
 	}{
-		Email: email.Address,
+		Phone: phone,
 	}
 
 	const q = `
 	SELECT
-        user_id, name, email, password_hash, roles, enabled, department, date_created, date_updated
+        id, first_name, last_name, phone, password_hash, roles, status, created_at, updated_at
 	FROM
 		users
 	WHERE
-		email = :email`
+		phone = :phone`
 
-	var dbUsr userRow
-	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &dbUsr); err != nil {
+	var row userRow
+	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &row); err != nil {
 		if errors.Is(err, db.ErrDBNotFound) {
 			return user.UserEntity{}, fmt.Errorf("namedquerystruct: %w", user.ErrNotFound)
 		}
 		return user.UserEntity{}, fmt.Errorf("namedquerystruct: %w", err)
 	}
 
-	usr, err := toUserEntity(dbUsr)
+	usr, err := toUserEntity(row)
 	if err != nil {
 		return user.UserEntity{}, err
 	}
