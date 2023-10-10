@@ -50,9 +50,9 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 	}
 }
 
-// Register adds a new user to the system.
-func (c *Core) Register(ctx context.Context, nu RegisterEntity) (UserEntity, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(nu.Password), bcrypt.DefaultCost)
+// Register a new user to the system.
+func (c *Core) Register(ctx context.Context, e RegisterEntity) (UserEntity, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(e.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return UserEntity{}, fmt.Errorf("generatefrompassword: %w", err)
 	}
@@ -61,14 +61,14 @@ func (c *Core) Register(ctx context.Context, nu RegisterEntity) (UserEntity, err
 
 	usr := UserEntity{
 		ID:           uuid.New(),
-		Name:         nu.Name,
-		Email:        nu.Email,
+		FirstName:    e.FirstName,
+		LastName:     e.LastName,
+		Phone:        e.Phone,
 		PasswordHash: hash,
-		Roles:        nu.Roles,
-		Department:   nu.Department,
-		Enabled:      true,
-		DateCreated:  now,
-		DateUpdated:  now,
+		Roles:        []Role{RoleUser},
+		Status:       StatusActive,
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	}
 
 	if err := c.store.Create(ctx, usr); err != nil {

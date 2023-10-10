@@ -8,37 +8,29 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nhaancs/bhms/business/core/user"
-	"github.com/nhaancs/bhms/business/data/order"
-	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/foundation/logger"
 )
 
 // Store manages the set of APIs for user data and caching.
 type Store struct {
-	log    *logger.Logger
-	storer user.Storer
-	cache  map[string]user.UserEntity
-	mu     sync.RWMutex
+	log   *logger.Logger
+	store user.Storer
+	cache map[string]user.UserEntity
+	mu    sync.RWMutex
 }
 
 // NewStore constructs the api for data and caching access.
-func NewStore(log *logger.Logger, storer user.Storer) *Store {
+func NewStore(log *logger.Logger, store user.Storer) *Store {
 	return &Store{
-		log:    log,
-		storer: storer,
-		cache:  map[string]user.UserEntity{},
+		log:   log,
+		store: store,
+		cache: map[string]user.UserEntity{},
 	}
-}
-
-// ExecuteUnderTransaction constructs a new Store value replacing the sqlx DB
-// value with a sqlx DB value that is currently inside a transaction.
-func (s *Store) ExecuteUnderTransaction(tx transaction.Transaction) (user.Storer, error) {
-	return s.storer.ExecuteUnderTransaction(tx)
 }
 
 // Create inserts a new user into the database.
 func (s *Store) Create(ctx context.Context, usr user.UserEntity) error {
-	if err := s.storer.Create(ctx, usr); err != nil {
+	if err := s.store.Create(ctx, usr); err != nil {
 		return err
 	}
 
@@ -49,7 +41,7 @@ func (s *Store) Create(ctx context.Context, usr user.UserEntity) error {
 
 // Update replaces a user document in the database.
 func (s *Store) Update(ctx context.Context, usr user.UserEntity) error {
-	if err := s.storer.Update(ctx, usr); err != nil {
+	if err := s.store.Update(ctx, usr); err != nil {
 		return err
 	}
 
@@ -60,23 +52,13 @@ func (s *Store) Update(ctx context.Context, usr user.UserEntity) error {
 
 // Delete removes a user from the database.
 func (s *Store) Delete(ctx context.Context, usr user.UserEntity) error {
-	if err := s.storer.Delete(ctx, usr); err != nil {
+	if err := s.store.Delete(ctx, usr); err != nil {
 		return err
 	}
 
 	s.deleteCache(usr)
 
 	return nil
-}
-
-// Query retrieves a list of existing users from the database.
-func (s *Store) Query(ctx context.Context, filter user.QueryFilter, orderBy order.By, pageNumber int, rowsPerPage int) ([]user.UserEntity, error) {
-	return s.storer.Query(ctx, filter, orderBy, pageNumber, rowsPerPage)
-}
-
-// Count returns the total number of cards in the DB.
-func (s *Store) Count(ctx context.Context, filter user.QueryFilter) (int, error) {
-	return s.storer.Count(ctx, filter)
 }
 
 // QueryByID gets the specified user from the database.
@@ -86,7 +68,7 @@ func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.UserEntit
 		return cachedUsr, nil
 	}
 
-	usr, err := s.storer.QueryByID(ctx, userID)
+	usr, err := s.store.QueryByID(ctx, userID)
 	if err != nil {
 		return user.UserEntity{}, err
 	}
@@ -98,7 +80,7 @@ func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.UserEntit
 
 // QueryByIDs gets the specified users from the database.
 func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.UserEntity, error) {
-	usr, err := s.storer.QueryByIDs(ctx, userIDs)
+	usr, err := s.store.QueryByIDs(ctx, userIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +95,7 @@ func (s *Store) QueryByEmail(ctx context.Context, email mail.Address) (user.User
 		return cachedUsr, nil
 	}
 
-	usr, err := s.storer.QueryByEmail(ctx, email)
+	usr, err := s.store.QueryByEmail(ctx, email)
 	if err != nil {
 		return user.UserEntity{}, err
 	}
@@ -144,7 +126,7 @@ func (s *Store) writeCache(usr user.UserEntity) {
 	defer s.mu.Unlock()
 
 	s.cache[usr.ID.String()] = usr
-	s.cache[usr.Email.Address] = usr
+	//s.cache[usr.Email.Address] = usr
 }
 
 // deleteCache performs a safe removal from the cache for the specified user.
@@ -153,5 +135,5 @@ func (s *Store) deleteCache(usr user.UserEntity) {
 	defer s.mu.Unlock()
 
 	delete(s.cache, usr.ID.String())
-	delete(s.cache, usr.Email.Address)
+	//delete(s.cache, usr.Email.Address)
 }

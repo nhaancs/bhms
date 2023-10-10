@@ -41,7 +41,7 @@ func MustParseRole(value string) Role {
 }
 
 // Name returns the name of the role.
-func (r Role) Name() string {
+func (r *Role) Name() string {
 	return r.name
 }
 
@@ -57,11 +57,11 @@ func (r *Role) UnmarshalText(data []byte) error {
 }
 
 // MarshalText implement the marshal interface for JSON conversions.
-func (r Role) MarshalText() ([]byte, error) {
+func (r *Role) MarshalText() ([]byte, error) {
 	return []byte(r.name), nil
 }
 
 // Equal provides support for the go-cmp package and testing.
-func (r Role) Equal(r2 Role) bool {
+func (r *Role) Equal(r2 Role) bool {
 	return r.name == r2.name
 }

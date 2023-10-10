@@ -1,9 +1,7 @@
 package userdb
 
 import (
-	"database/sql"
 	"fmt"
-	"net/mail"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,15 +12,15 @@ import (
 // userRow represent the structure we need for moving data
 // between the app and the database.
 type userRow struct {
-	ID           uuid.UUID      `db:"user_id"`
-	Name         string         `db:"name"`
-	Email        string         `db:"email"`
-	Roles        dbarray.String `db:"roles"`
+	ID           uuid.UUID      `db:"id"`
+	FirstName    string         `db:"first_name"`
+	LastName     string         `db:"last_name"`
+	Phone        string         `db:"phone"`
 	PasswordHash []byte         `db:"password_hash"`
-	Enabled      bool           `db:"enabled"`
-	Department   sql.NullString `db:"department"`
-	DateCreated  time.Time      `db:"date_created"`
-	DateUpdated  time.Time      `db:"date_updated"`
+	Roles        dbarray.String `db:"roles"`
+	Status       string         `db:"status"`
+	CreatedAt    time.Time      `db:"created_at"`
+	UpdatedAt    time.Time      `db:"updated_at"`
 }
 
 func toUserRow(e user.UserEntity) userRow {
@@ -33,25 +31,18 @@ func toUserRow(e user.UserEntity) userRow {
 
 	return userRow{
 		ID:           e.ID,
-		Name:         e.Name,
-		Email:        e.Email.Address,
-		Roles:        roles,
+		FirstName:    e.FirstName,
+		LastName:     e.LastName,
+		Phone:        e.Phone,
 		PasswordHash: e.PasswordHash,
-		Department: sql.NullString{
-			String: e.Department,
-			Valid:  e.Department != "",
-		},
-		Enabled:     e.Enabled,
-		DateCreated: e.DateCreated.UTC(),
-		DateUpdated: e.DateUpdated.UTC(),
+		Roles:        roles,
+		Status:       e.Status.Name(),
+		CreatedAt:    e.CreatedAt.UTC(),
+		UpdatedAt:    e.UpdatedAt.UTC(),
 	}
 }
 
 func toUserEntity(r userRow) (user.UserEntity, error) {
-	addr := mail.Address{
-		Address: r.Email,
-	}
-
 	roles := make([]user.Role, len(r.Roles))
 	for i, value := range r.Roles {
 		var err error
@@ -60,17 +51,21 @@ func toUserEntity(r userRow) (user.UserEntity, error) {
 			return user.UserEntity{}, fmt.Errorf("parse role: %w", err)
 		}
 	}
+	status, err := user.ParseStatus(r.Status)
+	if err != nil {
+		return user.UserEntity{}, fmt.Errorf("parse status: %w", err)
+	}
 
 	usr := user.UserEntity{
 		ID:           r.ID,
-		Name:         r.Name,
-		Email:        addr,
+		FirstName:    r.FirstName,
+		LastName:     r.LastName,
+		Phone:        r.Phone,
 		Roles:        roles,
 		PasswordHash: r.PasswordHash,
-		Enabled:      r.Enabled,
-		Department:   r.Department.String,
-		DateCreated:  r.DateCreated.In(time.Local),
-		DateUpdated:  r.DateUpdated.In(time.Local),
+		Status:       status,
+		CreatedAt:    r.CreatedAt.In(time.Local),
+		UpdatedAt:    r.UpdatedAt.In(time.Local),
 	}
 
 	return usr, nil

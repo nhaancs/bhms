@@ -1,8 +1,6 @@
 package usergrp
 
 import (
-	"fmt"
-	"net/mail"
 	"time"
 
 	"github.com/nhaancs/bhms/business/core/user"
@@ -12,69 +10,51 @@ import (
 // UserDTO represents information about an individual user.
 type UserDTO struct {
 	ID           string   `json:"id"`
-	Name         string   `json:"name"`
-	Email        string   `json:"email"`
+	FirstName    string   `json:"first_name"`
+	LastName     string   `json:"last_name"`
+	Phone        string   `json:"phone"`
 	Roles        []string `json:"roles"`
 	PasswordHash []byte   `json:"-"`
-	Department   string   `json:"department"`
-	Enabled      bool     `json:"enabled"`
-	DateCreated  string   `json:"dateCreated"`
-	DateUpdated  string   `json:"dateUpdated"`
+	Status       string   `json:"status"`
+	CreatedAt    string   `json:"CreatedAt"`
+	UpdatedAt    string   `json:"UpdatedAt"`
 }
 
-func toUserDTO(u user.UserEntity) UserDTO {
-	roles := make([]string, len(u.Roles))
-	for i, role := range u.Roles {
+func toUserDTO(e user.UserEntity) UserDTO {
+	roles := make([]string, len(e.Roles))
+	for i, role := range e.Roles {
 		roles[i] = role.Name()
 	}
 
 	return UserDTO{
-		ID:           u.ID.String(),
-		Name:         u.Name,
-		Email:        u.Email.Address,
+		ID:           e.ID.String(),
+		FirstName:    e.FirstName,
+		LastName:     e.LastName,
+		Phone:        e.Phone,
+		PasswordHash: e.PasswordHash,
 		Roles:        roles,
-		PasswordHash: u.PasswordHash,
-		Department:   u.Department,
-		Enabled:      u.Enabled,
-		DateCreated:  u.DateCreated.Format(time.RFC3339),
-		DateUpdated:  u.DateUpdated.Format(time.RFC3339),
+		Status:       e.Status.Name(),
+		CreatedAt:    e.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:    e.UpdatedAt.Format(time.RFC3339),
 	}
 }
 
 // =============================================================================
 
-// RegisterDTO contains information needed to create a new user.
+// RegisterDTO contains information needed for a new user to register.
 type RegisterDTO struct {
-	Name            string   `json:"name" validate:"required"`
-	Email           string   `json:"email" validate:"required,email"`
-	Roles           []string `json:"roles" validate:"required"`
-	Department      string   `json:"department"`
-	Password        string   `json:"password" validate:"required"`
-	PasswordConfirm string   `json:"passwordConfirm" validate:"eqfield=Password"`
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name"`
+	Phone     string `json:"phone" validate:"required,phone"`
+	Password  string `json:"password" validate:"required"`
 }
 
-func toRegisterEntity(u RegisterDTO) (user.RegisterEntity, error) {
-	roles := make([]user.Role, len(u.Roles))
-	for i, roleStr := range u.Roles {
-		role, err := user.ParseRole(roleStr)
-		if err != nil {
-			return user.RegisterEntity{}, fmt.Errorf("parsing role: %w", err)
-		}
-		roles[i] = role
-	}
-
-	addr, err := mail.ParseAddress(u.Email)
-	if err != nil {
-		return user.RegisterEntity{}, fmt.Errorf("parsing email: %w", err)
-	}
-
+func toRegisterEntity(d RegisterDTO) (user.RegisterEntity, error) {
 	usr := user.RegisterEntity{
-		Name:            u.Name,
-		Email:           *addr,
-		Roles:           roles,
-		Department:      u.Department,
-		Password:        u.Password,
-		PasswordConfirm: u.PasswordConfirm,
+		FirstName: d.FirstName,
+		LastName:  d.LastName,
+		Phone:     d.Phone,
+		Password:  d.Password,
 	}
 
 	return usr, nil
