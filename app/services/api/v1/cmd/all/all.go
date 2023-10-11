@@ -19,9 +19,8 @@ type add struct{}
 // Add implements the RouterAdder interface.
 func (add) Add(app *web.App, cfg v1.APIMuxConfig) {
 	checkgrp.Routes(app, checkgrp.Config{
-		UsingWeaver: cfg.UsingWeaver,
-		Build:       cfg.Build,
-		DB:          cfg.DB,
+		Build: cfg.Build,
+		DB:    cfg.DB,
 	})
 
 	usergrp.Routes(app, usergrp.Config{
