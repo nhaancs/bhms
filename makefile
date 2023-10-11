@@ -59,38 +59,6 @@ SHELL = $(if $(wildcard $(SHELL_PATH)),/bin/ash,/bin/bash)
 #   You can use `make dev-status` to look at the status of your KIND cluster.
 
 # ==============================================================================
-# CLASS NOTES
-#
-# Kind
-# 	For full Kind v0.20 release notes: https://github.com/kubernetes-sigs/kind/releases/tag/v0.20.0
-#
-# RSA Keys
-# 	To generate a private/public key PEM file.
-# 	$ openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
-# 	$ openssl rsa -pubout -in private.pem -out public.pem
-# 	$ ./admin genkey
-#
-# Testing Coverage
-# 	$ go test -coverprofile p.out
-# 	$ go tool cover -html p.out
-#
-# Hashicorp Vault
-# 	READ THIS: https://developer.hashicorp.com/vault/docs/concepts/tokens
-# 	$ export VAULT_TOKEN=mytoken
-# 	$ export VAULT_ADDR='http://localhost:8200'
-# 	$ vault secrets list
-# 	$ vault kv get secret/api
-# 	$ vault kv put secret/api key="some data"
-# 	$ kubectl logs --namespace=api-system -l app=api -c init-vault-server
-# 	$ curl -H "X-Vault-Token: mytoken" -X GET http://localhost:8200/v1/secret/data/54bb2165-71e1-41a6-af3e-7da4a0e1e2c1
-# 	$ curl -H "X-Vault-Token: mytoken" -H "Content-Type: application/json" -X POST -d '{"data":{"pk":"PEM"}}' http://localhost:8200/v1/secret/data/54bb2165-71e1-41a6-af3e-7da4a0e1e2c1
-#
-# OPA Playground
-# 	https://play.openpolicyagent.org/
-# 	https://academy.styra.com/
-# 	https://www.openpolicyagent.org/docs/latest/policy-reference/
-
-# ==============================================================================
 # Define dependencies
 
 GOLANG          := golang:1.21.1
