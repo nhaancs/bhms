@@ -2,6 +2,8 @@
 package v1
 
 import (
+	"github.com/nhaancs/bhms/app/services/api/v1/handlers/checkgrp"
+	"github.com/nhaancs/bhms/app/services/api/v1/handlers/usergrp"
 	"net/http"
 	"os"
 
@@ -35,14 +37,8 @@ type APIMuxConfig struct {
 	Tracer   trace.Tracer
 }
 
-// RouteAdder defines behavior that sets the routes to bind for an instance
-// of the service.
-type RouteAdder interface {
-	Add(app *web.App, cfg APIMuxConfig)
-}
-
 // APIMux constructs a http.Handler with all application routes defined.
-func APIMux(cfg APIMuxConfig, routeAdder RouteAdder, options ...func(opts *Options)) http.Handler {
+func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	var opts Options
 	for _, option := range options {
 		option(&opts)
@@ -61,7 +57,16 @@ func APIMux(cfg APIMuxConfig, routeAdder RouteAdder, options ...func(opts *Optio
 		app.EnableCORS(mid.Cors(opts.corsOrigin))
 	}
 
-	routeAdder.Add(app, cfg)
+	checkgrp.Routes(app, checkgrp.Config{
+		Build: cfg.Build,
+		DB:    cfg.DB,
+	})
+
+	usergrp.Routes(app, usergrp.Config{
+		Log:  cfg.Log,
+		Auth: cfg.Auth,
+		DB:   cfg.DB,
+	})
 
 	return app
 }

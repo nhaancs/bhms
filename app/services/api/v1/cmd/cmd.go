@@ -31,7 +31,7 @@ import (
 )
 
 // Main is the entry point for the running instance.
-func Main(build string, routeAdder v1.RouteAdder) error {
+func Main(build string) error {
 	var log *logger.Logger
 
 	events := logger.Events{
@@ -50,7 +50,7 @@ func Main(build string, routeAdder v1.RouteAdder) error {
 
 	ctx := context.Background()
 
-	if err := run(ctx, log, build, routeAdder); err != nil {
+	if err := run(ctx, log, build); err != nil {
 		log.Error(ctx, "startup", "msg", err)
 		return err
 	}
@@ -58,7 +58,7 @@ func Main(build string, routeAdder v1.RouteAdder) error {
 	return nil
 }
 
-func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.RouteAdder) error {
+func run(ctx context.Context, log *logger.Logger, build string) error {
 
 	// -------------------------------------------------------------------------
 	// GOMAXPROCS
@@ -230,7 +230,7 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 		Tracer:   tracer,
 	}
 
-	apiMux := v1.APIMux(cfgMux, routeAdder, v1.WithCORS("*"))
+	apiMux := v1.APIMux(cfgMux, v1.WithCORS("*"))
 
 	api := http.Server{
 		Addr:         cfg.Web.APIHost,
