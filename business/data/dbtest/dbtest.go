@@ -7,13 +7,11 @@ import (
 	_ "embed"
 	"fmt"
 	"math/rand"
-	"net/mail"
 	"testing"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
-	"github.com/nhaancs/bhms/business/core/event"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/core/user/stores/userdb"
 	"github.com/nhaancs/bhms/business/data/dbmigrate"
@@ -171,13 +169,11 @@ func NewTest(t *testing.T, c *docker.Container) *Test {
 }
 
 // Token generates an authenticated token for a user.
-func (test *Test) Token(email string, pass string) string {
+func (test *Test) Token(phone string, pass string) string {
 	test.t.Log("Generating token for test ...")
 
-	addr, _ := mail.ParseAddress(email)
-
 	store := userdb.NewStore(test.Log, test.DB)
-	dbUsr, err := store.QueryByPhone(context.Background(), *addr)
+	dbUsr, err := store.QueryByPhone(context.Background(), phone)
 	if err != nil {
 		return ""
 	}
@@ -231,8 +227,7 @@ type CoreAPIs struct {
 }
 
 func newCoreAPIs(log *logger.Logger, db *sqlx.DB) CoreAPIs {
-	evnCore := event.NewCore(log)
-	usrCore := user.NewCore(log, evnCore, userdb.NewStore(log, db))
+	usrCore := user.NewCore(log, userdb.NewStore(log, db))
 
 	return CoreAPIs{
 		User: usrCore,
