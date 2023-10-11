@@ -412,24 +412,9 @@ list:
 	go list -mod=mod all
 
 # ==============================================================================
-# Admin Frontend
+# local
 
-ADMIN_FRONTEND_PREFIX := ./app/frontends/admin
-
-write-token-to-env:
-	echo "VITE_SERVICE_API=http://localhost:3000/v1" > ${ADMIN_FRONTEND_PREFIX}/.env
-	make token | grep -o '"ey.*"' | awk '{print "VITE_SERVICE_TOKEN="$$1}' >> ${ADMIN_FRONTEND_PREFIX}/.env
-
-admin-gui-install:
-	pnpm -C ${ADMIN_FRONTEND_PREFIX} install 
-
-admin-gui-dev: admin-gui-install
-	pnpm -C ${ADMIN_FRONTEND_PREFIX} run dev 
-
-admin-gui-build: admin-gui-install
-	pnpm -C ${ADMIN_FRONTEND_PREFIX} run build 
-
-admin-gui-start-build: admin-gui-build
-	pnpm -C ${ADMIN_FRONTEND_PREFIX} run preview 
-
-admin-gui-run: write-token-to-env admin-gui-start-build
+runlocal:
+	go run app/services/api/main.go
+buildlocal:
+	go build -o api app/services/api/main.go

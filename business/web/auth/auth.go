@@ -13,7 +13,6 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/nhaancs/bhms/business/core/event"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/core/user/stores/userdb"
 	"github.com/nhaancs/bhms/foundation/logger"
@@ -65,8 +64,7 @@ func New(cfg Config) (*Auth, error) {
 	// user enabled check.
 	var usrCore *user.Core
 	if cfg.DB != nil {
-		evnCore := event.NewCore(cfg.Log)
-		usrCore = user.NewCore(cfg.Log, evnCore, userdb.NewStore(cfg.Log, cfg.DB))
+		usrCore = user.NewCore(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB))
 	}
 
 	a := Auth{
