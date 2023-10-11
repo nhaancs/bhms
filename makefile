@@ -79,7 +79,6 @@ BASE_IMAGE_NAME := nhaancs/bhms
 SERVICE_NAME    := api
 VERSION         := 0.0.1
 SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
-METRICS_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME)-metrics:$(VERSION)
 
 # VERSION       := "0.0.1-$(shell git rev-parse --short HEAD)"
 
@@ -117,20 +116,12 @@ dev-docker:
 # ==============================================================================
 # Building containers
 
-all: service metrics
+all: service
 
 service:
 	docker build \
 		-f zarf/docker/dockerfile-api \
 		-t $(SERVICE_IMAGE) \
-		--build-arg BUILD_REF=$(VERSION) \
-		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-		.
-
-metrics:
-	docker build \
-		-f zarf/docker/dockerfile-metrics \
-		-t $(METRICS_IMAGE) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
@@ -162,9 +153,6 @@ dev-down:
 dev-load:
 	cd zarf/k8s/dev/api; kustomize edit set image service-image=$(SERVICE_IMAGE)
 	kind load docker-image $(SERVICE_IMAGE) --name $(KIND_CLUSTER)
-
-	cd zarf/k8s/dev/api; kustomize edit set image metrics-image=$(METRICS_IMAGE)
-	kind load docker-image $(METRICS_IMAGE) --name $(KIND_CLUSTER)
 
 dev-apply:
 	kustomize build zarf/k8s/dev/vault | kubectl apply -f -

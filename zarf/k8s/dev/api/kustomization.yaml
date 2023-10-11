@@ -8,9 +8,6 @@ patches:
 - path: ./dev-api-patch-service.yaml
 - path: ./dev-api-vault-patch.yaml
 images:
-- name: metrics-image
-  newName: nhaancs/service/api-metrics
-  newTag: 0.0.1
-- name: service-image
+- name: api-image
   newName: nhaancs/service/api
   newTag: 0.0.1

@@ -29,12 +29,12 @@ spec:
       initContainers:
 
       - name: init-vault-system
-        image: service-image
+        image: api-image
         command: ['./admin', 'vault-init']
         volumeMounts:
           - name: vault
             mountPath: /vault
 
       - name: init-vault-loadkeys
-        image: service-image
+        image: api-image
         command: ['./admin', 'vault']

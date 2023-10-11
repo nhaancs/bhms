@@ -99,10 +99,3 @@ spec:
         volumeMounts:
           - name: vault
             mountPath: /vault
-
-      - name: metrics
-        resources:
-          requests:
-            cpu: "100m"
-          limits:
-            cpu: "100m"

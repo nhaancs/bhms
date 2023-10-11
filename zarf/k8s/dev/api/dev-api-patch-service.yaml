@@ -17,9 +17,6 @@ spec:
   - name: api-debug
     port: 4000
     targetPort: api-debug
-  - name: metrics
-    port: 3001
-    targetPort: metrics
   - name: prometheus
     port: 3002
     targetPort: prometheus

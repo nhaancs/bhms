@@ -26,16 +26,16 @@ spec:
 
       initContainers:
       - name: init-migrate
-        image: service-image
+        image: api-image
         command: ['./admin', 'migrate']
 
       - name: init-seed
-        image: service-image
+        image: api-image
         command: ['./admin', 'seed']
 
       containers:
       - name: api
-        image: service-image
+        image: api-image
 
         ports:
         - name: api
@@ -92,21 +92,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-
-      - name: metrics
-        image: metrics-image
-
-        ports:
-        - name: metrics
-          containerPort: 3001
-        - name: prometheus
-          containerPort: 3002
-
-        env:
-          - name: GOMAXPROCS
-            valueFrom:
-              resourceFieldRef:
-                resource: limits.cpu
 
 ---
 
