@@ -1,8 +1,5 @@
 # bhms
-Hệ thống quản lý nhà trọ được phát triển với Go, Flutter, Angular, Postgres, và Kubernetes.
-
-todo:
-- Setup with docker-compose first
+Hệ thống quản lý nhà trọ được phát triển với Go, Flutter, Postgres, và Kubernetes.
 
 ## Bản thử nghiệm (MVP)
 
@@ -10,8 +7,6 @@ todo:
 - [x] ~~Xác định các tính năng cho bản thử nghiệm và thiết kế cơ sở dữ liệu~~
 - [ ] **Thiết kế và phát triển API cho ứng dụng di động &larr;**
 - [ ] Thiết kế và phát triển ứng dụng Android, iOS
-- [ ] Thiết kế và phát triển API cho backoffice
-- [ ] Thiết kế và phát triển backoffice cho đội ngũ vận hành
 
 ### Tính năng dành cho chủ trọ
 - Tạo khu trọ và quản lý danh sách phòng
