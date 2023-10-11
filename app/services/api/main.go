@@ -10,7 +10,7 @@ import (
 var build = "develop"
 
 func main() {
-	if err := cmd.Main(build, all.Routes(), nil, nil, false); err != nil {
+	if err := cmd.Main(build, all.Routes()); err != nil {
 		os.Exit(1)
 	}
 }

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"expvar"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -32,7 +31,7 @@ import (
 )
 
 // Main is the entry point for the running instance.
-func Main(build string, routeAdder v1.RouteAdder, debug net.Listener, app net.Listener, usingWeaver bool) error {
+func Main(build string, routeAdder v1.RouteAdder) error {
 	var log *logger.Logger
 
 	events := logger.Events{
@@ -51,7 +50,7 @@ func Main(build string, routeAdder v1.RouteAdder, debug net.Listener, app net.Li
 
 	ctx := context.Background()
 
-	if err := run(ctx, log, build, routeAdder, debug, app, usingWeaver); err != nil {
+	if err := run(ctx, log, build, routeAdder); err != nil {
 		log.Error(ctx, "startup", "msg", err)
 		return err
 	}
@@ -59,7 +58,7 @@ func Main(build string, routeAdder v1.RouteAdder, debug net.Listener, app net.Li
 	return nil
 }
 
-func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.RouteAdder, debugLis net.Listener, appLis net.Listener, usingWeaver bool) error {
+func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.RouteAdder) error {
 
 	// -------------------------------------------------------------------------
 	// GOMAXPROCS
@@ -209,16 +208,8 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 
 	go func() {
 		log.Info(ctx, "startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
-
-		switch debugLis {
-		case nil:
-			if err := http.ListenAndServe(cfg.Web.DebugHost, debug.Mux()); err != nil {
-				log.Error(ctx, "shutdown", "status", "debug v1 router closed", "host", cfg.Web.DebugHost, "msg", err)
-			}
-		default:
-			if err := http.Serve(debugLis, debug.Mux()); err != nil {
-				log.Error(ctx, "shutdown", "status", "debug v1 router closed", "host", debugLis, "msg", err)
-			}
+		if err := http.ListenAndServe(cfg.Web.DebugHost, debug.Mux()); err != nil {
+			log.Error(ctx, "shutdown", "status", "debug v1 router closed", "host", cfg.Web.DebugHost, "msg", err)
 		}
 	}()
 
@@ -231,13 +222,12 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	cfgMux := v1.APIMuxConfig{
-		UsingWeaver: usingWeaver,
-		Build:       build,
-		Shutdown:    shutdown,
-		Log:         log,
-		Auth:        auth,
-		DB:          db,
-		Tracer:      tracer,
+		Build:    build,
+		Shutdown: shutdown,
+		Log:      log,
+		Auth:     auth,
+		DB:       db,
+		Tracer:   tracer,
 	}
 
 	apiMux := v1.APIMux(cfgMux, routeAdder, v1.WithCORS("*"))
@@ -255,13 +245,7 @@ func run(ctx context.Context, log *logger.Logger, build string, routeAdder v1.Ro
 
 	go func() {
 		log.Info(ctx, "startup", "status", "api router started", "host", api.Addr)
-
-		switch appLis {
-		case nil:
-			serverErrors <- api.ListenAndServe()
-		default:
-			serverErrors <- api.Serve(appLis)
-		}
+		serverErrors <- api.ListenAndServe()
 	}()
 
 	// -------------------------------------------------------------------------
