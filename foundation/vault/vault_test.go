@@ -63,7 +63,7 @@ func Test_Vault(t *testing.T) {
 	}
 
 	if err := vault.AddPrivateKey(context.Background(), key, expPEM.Bytes()); err != nil {
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 		if err := vault.AddPrivateKey(context.Background(), key, expPEM.Bytes()); err != nil {
 			t.Fatalf("Should be able to put the PEM into Vault : %s", err)
 		}
