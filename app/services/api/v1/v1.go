@@ -35,6 +35,7 @@ type APIMuxConfig struct {
 	Auth     *auth.Auth
 	DB       *sqlx.DB
 	Tracer   trace.Tracer
+	KeyID    string
 }
 
 // APIMux constructs a http.Handler with all application routes defined.
@@ -63,9 +64,10 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	})
 
 	usergrp.Routes(app, usergrp.Config{
-		Log:  cfg.Log,
-		Auth: cfg.Auth,
-		DB:   cfg.DB,
+		Log:   cfg.Log,
+		Auth:  cfg.Auth,
+		DB:    cfg.DB,
+		KeyID: cfg.KeyID,
 	})
 
 	return app

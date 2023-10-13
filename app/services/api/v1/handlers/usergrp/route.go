@@ -14,9 +14,10 @@ import (
 
 // Config contains all the mandatory systems required by handlers.
 type Config struct {
-	Log  *logger.Logger
-	Auth *auth.Auth
-	DB   *sqlx.DB
+	Log   *logger.Logger
+	Auth  *auth.Auth
+	DB    *sqlx.DB
+	KeyID string
 }
 
 // Routes adds specific routes for this group.
@@ -24,7 +25,7 @@ func Routes(app *web.App, cfg Config) {
 	const version = "v1"
 
 	usrCore := user.NewCore(cfg.Log, usercache.NewStore(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB)))
-	hdl := New(usrCore, cfg.Auth)
+	hdl := New(usrCore, cfg.Auth, cfg.KeyID)
 	app.Handle(http.MethodPost, version, "/users/register", hdl.Register)
-	app.Handle(http.MethodGet, version, "/users/token/:kid", hdl.Token)
+	app.Handle(http.MethodGet, version, "/users/token", hdl.Token)
 }

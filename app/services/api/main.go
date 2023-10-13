@@ -77,8 +77,8 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 		}
 		Auth struct {
 			// KeysFolder string `conf:"default:zarf/keys/"`
-			// ActiveKID  string `conf:"default:54bb2165-71e1-41a6-af3e-7da4a0e1e2c1"`
-			Issuer string `conf:"default:service project"`
+			ActiveKID string `conf:"default:54bb2165-71e1-41a6-af3e-7da4a0e1e2c1"`
+			Issuer    string `conf:"default:service project"`
 		}
 		Vault struct {
 			Address   string `conf:"default:http://vault-service.api-system.svc.cluster.local:8200"`
@@ -225,6 +225,7 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 		Auth:     auth,
 		DB:       db,
 		Tracer:   tracer,
+		KeyID:    cfg.Auth.ActiveKID,
 	}
 
 	apiMux := v1.APIMux(cfgMux, v1.WithCORS("*"))

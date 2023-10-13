@@ -12,21 +12,22 @@ import (
 	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/web/auth"
-	"github.com/nhaancs/bhms/foundation/validate"
 	"github.com/nhaancs/bhms/foundation/web"
 )
 
 // Handlers manages the set of user endpoints.
 type Handlers struct {
-	user *user.Core
-	auth *auth.Auth
+	user  *user.Core
+	auth  *auth.Auth
+	keyID string
 }
 
 // New constructs a handlers for route access.
-func New(user *user.Core, auth *auth.Auth) *Handlers {
+func New(user *user.Core, auth *auth.Auth, keyID string) *Handlers {
 	return &Handlers{
-		user: user,
-		auth: auth,
+		user:  user,
+		auth:  auth,
+		keyID: keyID,
 	}
 }
 
@@ -55,10 +56,10 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 
 // Token provides an API token for the authenticated user.
 func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	kid := web.Param(r, "kid")
-	if kid == "" {
-		return validate.NewFieldsError("kid", errors.New("missing kid"))
-	}
+	//kid := web.Param(r, "kid")
+	//if kid == "" {
+	//	return validate.NewFieldsError("kid", errors.New("missing kid"))
+	//}
 
 	phone, pass, ok := r.BasicAuth()
 	if !ok {
@@ -83,13 +84,13 @@ func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Req
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   usr.ID.String(),
 			Issuer:    "bhms",
-			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(30 * 24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		},
 		Roles: usr.Roles,
 	}
 
-	token, err := h.auth.GenerateToken(kid, claims)
+	token, err := h.auth.GenerateToken(h.keyID, claims)
 	if err != nil {
 		return fmt.Errorf("generatetoken: %w", err)
 	}
