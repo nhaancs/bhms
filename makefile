@@ -78,7 +78,7 @@ APP             := api
 BASE_IMAGE_NAME := nhaancs/bhms
 SERVICE_NAME    := api
 VERSION         := 0.0.1
-SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
+API_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 
 # VERSION       := "0.0.1-$(shell git rev-parse --short HEAD)"
 
@@ -116,12 +116,12 @@ dev-docker:
 # ==============================================================================
 # Building containers
 
-all: service
+all: api
 
-service:
+api:
 	docker build \
 		-f zarf/docker/dockerfile-api \
-		-t $(SERVICE_IMAGE) \
+		-t $(API_IMAGE) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
@@ -151,8 +151,8 @@ dev-down:
 # ------------------------------------------------------------------------------
 
 dev-load:
-	cd zarf/k8s/dev/api; kustomize edit set image service-image=$(SERVICE_IMAGE)
-	kind load docker-image $(SERVICE_IMAGE) --name $(KIND_CLUSTER)
+	cd zarf/k8s/dev/api; kustomize edit set image api-image=$(API_IMAGE)
+	kind load docker-image $(API_IMAGE) --name $(KIND_CLUSTER)
 
 dev-apply:
 	kustomize build zarf/k8s/dev/vault | kubectl apply -f -
@@ -328,7 +328,7 @@ docs-debug:
 # Hitting endpoints
 
 token:
-	curl -il --user "admin@example.com:gophers" http://localhost:3000/v1/users/token/54bb2165-71e1-41a6-af3e-7da4a0e1e2c1
+	curl -il --user "0984250065:gophers" http://localhost:3000/v1/users/token
 
 # export TOKEN="COPY TOKEN STRING FROM LAST CALL"
 

@@ -9,5 +9,5 @@ patches:
 - path: ./dev-api-vault-patch.yaml
 images:
 - name: api-image
-  newName: nhaancs/service/api
+  newName: nhaancs/bhms/api
   newTag: 0.0.1

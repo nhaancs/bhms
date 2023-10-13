@@ -11,6 +11,6 @@ CREATE TABLE users (
     created_at      TIMESTAMP   NOT NULL,
 	updated_at      TIMESTAMP   NOT NULL,
 
-	PRIMARY KEY (user_id)
+	PRIMARY KEY (id)
 );
 
