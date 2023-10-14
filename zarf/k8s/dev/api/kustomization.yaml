@@ -11,3 +11,6 @@ images:
 - name: api-image
   newName: nhaancs/bhms/api
   newTag: 0.0.1
+- name: metrics-image
+  newName: nhaancs/bhms/api-metrics
+  newTag: 0.0.1

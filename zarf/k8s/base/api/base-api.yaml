@@ -93,6 +93,21 @@ spec:
             fieldRef:
               fieldPath: spec.nodeName
 
+      - name: metrics
+        image: metrics-image
+
+        ports:
+          - name: metrics
+            containerPort: 3001
+          - name: prometheus
+            containerPort: 3002
+
+        env:
+          - name: GOMAXPROCS
+            valueFrom:
+              resourceFieldRef:
+                resource: limits.cpu
+
 ---
 
 apiVersion: v1
