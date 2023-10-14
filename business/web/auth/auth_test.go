@@ -48,7 +48,7 @@ func Test_Auth(t *testing.T) {
 	}
 	userID := uuid.MustParse(claims.Subject)
 
-	token, err := a.GenerateToken(kid, claims)
+	token, err := a.GenerateToken(context.Background(), kid, claims)
 	if err != nil {
 		t.Fatalf("Should be able to generate a JWT : %s", err)
 	}
@@ -86,7 +86,7 @@ func Test_Auth(t *testing.T) {
 	}
 	userID = uuid.MustParse(claims.Subject)
 
-	token, err = a.GenerateToken(kid, claims)
+	token, err = a.GenerateToken(context.Background(), kid, claims)
 	if err != nil {
 		t.Fatalf("Should be able to generate a JWT : %v", err)
 	}
@@ -129,7 +129,7 @@ func Test_Auth(t *testing.T) {
 	}
 	userID = uuid.MustParse("9e979baa-61c9-4b50-81f2-f216d53f5c15")
 
-	token, err = a.GenerateToken(kid, claims)
+	token, err = a.GenerateToken(context.Background(), kid, claims)
 	if err != nil {
 		t.Fatalf("Should be able to generate a JWT : %s", err)
 	}
@@ -157,7 +157,7 @@ func Test_Auth(t *testing.T) {
 	}
 	userID = uuid.MustParse("9e979baa-61c9-4b50-81f2-f216d53f5c15")
 
-	token, err = a.GenerateToken(kid, claims)
+	token, err = a.GenerateToken(context.Background(), kid, claims)
 	if err != nil {
 		t.Fatalf("Should be able to generate a JWT : %s", err)
 	}
@@ -185,7 +185,7 @@ func Test_Auth(t *testing.T) {
 	}
 	userID = uuid.MustParse("9e979baa-61c9-4b50-81f2-f216d53f5c15")
 
-	token, err = a.GenerateToken(kid, claims)
+	token, err = a.GenerateToken(context.Background(), kid, claims)
 	if err != nil {
 		t.Fatalf("Should be able to generate a JWT : %s", err)
 	}
@@ -213,7 +213,7 @@ func Test_Auth(t *testing.T) {
 	}
 	userID = uuid.MustParse("9e979baa-61c9-4b50-81f2-f216d53f5c15")
 
-	token, err = a.GenerateToken(kid, claims)
+	token, err = a.GenerateToken(context.Background(), kid, claims)
 	if err != nil {
 		t.Fatalf("Should be able to generate a JWT : %s", err)
 	}

@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/nhaancs/bhms/foundation/web"
 	"time"
 
 	"github.com/google/uuid"
@@ -103,12 +104,17 @@ func (c *Core) QueryByPhone(ctx context.Context, phone string) (UserEntity, erro
 // success it returns a Claims UserEntity representing this user. The claims can be
 // used to generate a token for future authentication.
 func (c *Core) Authenticate(ctx context.Context, phone, password string) (UserEntity, error) {
-	usr, err := c.QueryByPhone(ctx, phone)
+	ctx1, span1 := web.AddSpan(ctx, "c.QueryByPhone")
+	usr, err := c.QueryByPhone(ctx1, phone)
+	span1.End()
 	if err != nil {
 		return UserEntity{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
 	}
 
-	if err := bcrypt.CompareHashAndPassword(usr.PasswordHash, []byte(password)); err != nil {
+	_, span2 := web.AddSpan(ctx, "bcrypt.CompareHashAndPassword")
+	err = bcrypt.CompareHashAndPassword(usr.PasswordHash, []byte(password))
+	span2.End()
+	if err != nil {
 		return UserEntity{}, fmt.Errorf("comparehashandpassword: %w", ErrAuthenticationFailure)
 	}
 

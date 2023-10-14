@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/nhaancs/bhms/foundation/web"
 	"strings"
 	"sync"
 
@@ -81,21 +82,27 @@ func New(cfg Config) (*Auth, error) {
 }
 
 // GenerateToken generates a signed JWT token string representing the user Claims.
-func (a *Auth) GenerateToken(kid string, claims Claims) (string, error) {
+func (a *Auth) GenerateToken(ctx context.Context, kid string, claims Claims) (string, error) {
 	token := jwt.NewWithClaims(a.method, claims)
 	token.Header["kid"] = kid
 
+	_, span1 := web.AddSpan(ctx, "keyLookup.PrivateKey")
 	privateKeyPEM, err := a.keyLookup.PrivateKey(kid)
+	span1.End()
 	if err != nil {
 		return "", fmt.Errorf("private key: %w", err)
 	}
 
+	_, span2 := web.AddSpan(ctx, "jwt.ParseRSAPrivateKeyFromPEM")
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKeyPEM))
+	span2.End()
 	if err != nil {
 		return "", fmt.Errorf("parsing private pem: %w", err)
 	}
 
+	_, span3 := web.AddSpan(ctx, "token.SignedString")
 	str, err := token.SignedString(privateKey)
+	span3.End()
 	if err != nil {
 		return "", fmt.Errorf("signing token: %w", err)
 	}

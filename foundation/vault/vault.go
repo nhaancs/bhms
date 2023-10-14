@@ -11,6 +11,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"strings"
@@ -466,7 +467,10 @@ func (v *Vault) retrieveKID(ctx context.Context, kid string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("do: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("status code: %s", resp.Status)

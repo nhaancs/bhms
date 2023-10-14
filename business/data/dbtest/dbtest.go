@@ -172,8 +172,9 @@ func NewTest(t *testing.T, c *docker.Container) *Test {
 func (test *Test) Token(phone string, pass string) string {
 	test.t.Log("Generating token for test ...")
 
+	ctx := context.Background()
 	store := userdb.NewStore(test.Log, test.DB)
-	dbUsr, err := store.QueryByPhone(context.Background(), phone)
+	dbUsr, err := store.QueryByPhone(ctx, phone)
 	if err != nil {
 		return ""
 	}
@@ -188,7 +189,7 @@ func (test *Test) Token(phone string, pass string) string {
 		Roles: dbUsr.Roles,
 	}
 
-	token, err := test.Auth.GenerateToken(kid, claims)
+	token, err := test.Auth.GenerateToken(ctx, kid, claims)
 	if err != nil {
 		test.t.Fatal(err)
 	}

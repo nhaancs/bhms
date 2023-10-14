@@ -3,6 +3,7 @@ package usercache
 
 import (
 	"context"
+	"github.com/nhaancs/bhms/foundation/web"
 	"sync"
 
 	"github.com/google/uuid"
@@ -98,8 +99,9 @@ func (s *Store) QueryByPhone(ctx context.Context, phone string) (user.UserEntity
 	if err != nil {
 		return user.UserEntity{}, err
 	}
-
+	_, span3 := web.AddSpan(ctx, "QueryByPhone.writeCache")
 	s.writeCache(usr)
+	span3.End()
 
 	return usr, nil
 }
