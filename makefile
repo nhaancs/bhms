@@ -222,10 +222,6 @@ dev-describe-deployment:
 
 dev-describe-api:
 	kubectl describe pod --namespace=$(NAMESPACE) -l app=$(APP)
-
-dev-describe-telepresence:
-	kubectl describe pod --namespace=ambassador -l app=traffic-manager
-
 # ------------------------------------------------------------------------------
 
 dev-logs-vault:
