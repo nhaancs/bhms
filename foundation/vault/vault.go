@@ -12,7 +12,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -22,20 +21,7 @@ import (
 // This provides a default client configuration, but it's recommended
 // this is replaced by the user with application specific settings using
 // the WithClient function at the time a GraphQL is constructed.
-var defaultClient = http.Client{
-	Transport: &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
-		ForceAttemptHTTP2:     true,
-		MaxIdleConns:          1,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-	},
-}
+var defaultClient = http.Client{}
 
 // Config represents the mandatory settings needed to work with Vault.
 type Config struct {
