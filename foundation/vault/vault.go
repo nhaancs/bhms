@@ -18,11 +18,6 @@ import (
 	"time"
 )
 
-// This provides a default client configuration, but it's recommended
-// this is replaced by the user with application specific settings using
-// the WithClient function at the time a GraphQL is constructed.
-var defaultClient = http.Client{}
-
 // Config represents the mandatory settings needed to work with Vault.
 type Config struct {
 	Address   string
@@ -44,7 +39,10 @@ type Vault struct {
 // New constructs a vault for use.
 func New(cfg Config) (*Vault, error) {
 	if cfg.Client == nil {
-		cfg.Client = &defaultClient
+		// This provides a default client configuration, but it's recommended
+		// this is replaced by the user with application specific settings using
+		// the WithClient function at the time a GraphQL is constructed.
+		cfg.Client = &http.Client{}
 	}
 
 	return &Vault{

@@ -11,7 +11,6 @@ import (
 	"net/http"
 )
 
-// todo: create http client wrapper support automatic tracing and logging
 const (
 	codeSuccess = "100"
 )
@@ -69,6 +68,9 @@ type (
 
 func New(cfg Config) *sms {
 	if cfg.Client == nil {
+		// This provides a default client configuration, but it's recommended
+		// this is replaced by the user with application specific settings using
+		// the WithClient function at the time a GraphQL is constructed.
 		cfg.Client = &http.Client{}
 	}
 	return &sms{

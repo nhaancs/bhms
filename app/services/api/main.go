@@ -10,6 +10,7 @@ import (
 	"github.com/nhaancs/bhms/app/services/api/v1/debug"
 	db "github.com/nhaancs/bhms/business/data/dbsql/pq"
 	"github.com/nhaancs/bhms/business/web/auth"
+	"github.com/nhaancs/bhms/business/web/httpclient"
 	"github.com/nhaancs/bhms/foundation/logger"
 	"github.com/nhaancs/bhms/foundation/vault"
 	"github.com/nhaancs/bhms/foundation/web"
@@ -131,6 +132,10 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 	expvar.NewString("build").Set(build)
 
 	// -------------------------------------------------------------------------
+	// HTTP Client
+	httpClient := httpclient.New(log)
+
+	//-------------------------------------------------------------------------
 	// Database Support
 
 	log.Info(ctx, "startup", "status", "initializing database support", "host", cfg.DB.Host)
@@ -167,6 +172,7 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 		Address:   cfg.Vault.Address,
 		Token:     cfg.Vault.Token,
 		MountPath: cfg.Vault.MountPath,
+		Client:    httpClient,
 	})
 	if err != nil {
 		return fmt.Errorf("constructing vault: %w", err)
