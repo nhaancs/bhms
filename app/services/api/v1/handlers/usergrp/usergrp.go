@@ -35,22 +35,26 @@ func New(user *user.Core, auth *auth.Auth, keyID string) *Handlers {
 
 // Register adds a new user to the system.
 func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var app RegisterDTO
-	if err := web.Decode(r, &app); err != nil {
+	var dto RegisterDTO
+	if err := web.Decode(r, &dto); err != nil {
 		return request.NewError(err, http.StatusBadRequest)
 	}
 
-	nc, err := toRegisterEntity(app)
+	e, err := toRegisterEntity(dto)
 	if err != nil {
 		return request.NewError(err, http.StatusBadRequest)
 	}
 
-	usr, err := h.user.Register(ctx, nc)
+	usr, err := h.user.Register(ctx, e)
 	if err != nil {
 		if errors.Is(err, user.ErrUniquePhone) {
 			return request.NewError(err, http.StatusConflict)
 		}
-		return fmt.Errorf("create: usr[%+v]: %w", usr, err)
+		return fmt.Errorf("register: usr[%+v]: %+v", usr, err)
+	}
+
+	if _, err = h.sms.SendOTP(ctx, sms.OTPInfo{Phone: usr.Phone}); err != nil {
+		return fmt.Errorf("senotp: usr[%+v]: %+v", usr, err)
 	}
 
 	return web.Respond(ctx, w, toUserDTO(usr), http.StatusCreated)
