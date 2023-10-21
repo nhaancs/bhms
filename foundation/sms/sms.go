@@ -11,6 +11,12 @@ import (
 	"net/http"
 )
 
+/*
+TODO:
+- How to send message to multiple numbers
+- Clarify Send & check code APIs
+*/
+
 const (
 	codeSuccess = "100"
 )
