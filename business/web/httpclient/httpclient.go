@@ -1,3 +1,4 @@
+// Package httpclient implements a wrapper of http client supports logging, tracing, metrics, and proxy
 package httpclient
 
 import (
