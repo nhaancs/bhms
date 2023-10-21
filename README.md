@@ -146,7 +146,7 @@ Bảng `services` lưu thông tin các dịch vụ của khu trọ.
 
 
 #### Bảng `session_services`
-Bảng `session_services` lưu thông tin các dịch vụ của từng session.
+Bảng `session_services` lưu thông tin các dịch vụ đăng ký cho từng session.
 
 | Tên cột      | Kiểu dữ liệu | Bắt buộc | Mô tả                   |
 |--------------|--------------|:--------:|-------------------------|
