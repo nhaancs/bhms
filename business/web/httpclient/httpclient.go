@@ -12,21 +12,31 @@ import (
 )
 
 type options struct {
+	logger  *logger.Logger
 	logBody bool
+	tracing bool
+	metrics bool
 	proxy   func(request *http.Request) (*url.URL, error)
 }
 
 type Option func(o *options)
 
-type roundTripperFn func(req *http.Request) (*http.Response, error)
-
-func (f roundTripperFn) RoundTrip(req *http.Request) (*http.Response, error) {
-	return f(req)
+func WithLogger(l *logger.Logger, body bool) Option {
+	return func(o *options) {
+		o.logger = l
+		o.logBody = body
+	}
 }
 
-func WithLogBody() Option {
+func WithTracing() Option {
 	return func(o *options) {
-		o.logBody = true
+		o.tracing = true
+	}
+}
+
+func WithMetrics() Option {
+	return func(o *options) {
+		o.metrics = true
 	}
 }
 
@@ -38,7 +48,13 @@ func WithProxy(proxy *url.URL) Option {
 	}
 }
 
-var transport = &http.Transport{
+type roundTripperFn func(req *http.Request) (*http.Response, error)
+
+func (f roundTripperFn) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
+var roundTripper http.RoundTripper = &http.Transport{
 	DialContext: (&net.Dialer{
 		Timeout:   30 * time.Second,
 		KeepAlive: 30 * time.Second,
@@ -52,50 +68,61 @@ var transport = &http.Transport{
 }
 
 // New returns a HTTP client with logging, tracing, metric, and proxy support
-// To log request, response body use WithLogBody
-// To add proxy use WithProxy
-func New(log *logger.Logger, opts ...Option) *http.Client {
-	o := options{
-		logBody: false,
-		proxy:   nil,
-	}
+func New(opts ...Option) *http.Client {
+	o := new(options)
 	for _, opt := range opts {
-		opt(&o)
+		opt(o)
 	}
 
-	t := transport
-	if o.proxy != nil {
+	rt := roundTripper
+	if t, ok := rt.(*http.Transport); ok && o.proxy != nil {
 		t = t.Clone()
 		t.Proxy = o.proxy
+		rt = t
+	}
+
+	if o.tracing {
+		rt = otelhttp.NewTransport(rt)
+	}
+
+	if o.logger != nil {
+		rt = logRoundTripper(rt, o.logger, o.logBody)
+	}
+
+	if o.metrics {
+		rt = metricsRoundTripper(rt)
 	}
 
 	return &http.Client{
 		Timeout:   30 * time.Second,
-		Transport: metricsRoundTripper(logRoundTripper(otelhttp.NewTransport(t), log, o.logBody)),
+		Transport: rt,
 	}
 }
 
-func logRoundTripper(rt http.RoundTripper, log *logger.Logger, body bool) http.RoundTripper {
+func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.RoundTripper {
 	return roundTripperFn(func(req *http.Request) (*http.Response, error) {
-		//start := time.Now()
+		ctx := req.Context()
+		start := time.Now()
 
-		//l := log.WithFields(map[string]interface{}{
-		//	"http.client.host": req.URL.Host,
-		//	"http.client.path": req.URL.Path,
-		//})
+		args := []any{
+			"http.client.host",
+			req.URL.Host,
+			"http.client.path",
+			req.URL.Path,
+		}
 
 		if body {
-			//l.WithField("http.client.request", fmt.Sprintf("%+v", req.Body)).Info("http.client: sending request")
-		} else {
-			//l.Info("http.client: sending request")
+			args = append(args, "http.client.request", fmt.Sprintf("%+v", req.Body))
 		}
+		l.Info(ctx, "http.client: sending request", args...)
 
 		var err error
 		defer func() {
+			args = append(args, "http.client.latency", time.Since(start).String())
 			if err != nil {
-				//l = l.WithField("error", err)
+				args = append(args, "error", fmt.Sprintf("%+v", err))
 			}
-			//l.WithField("http.client.latency", time.Since(start).String()).Info("http.client: received response")
+			l.Info(ctx, "http.client: received response", args)
 		}()
 
 		resp, err := rt.RoundTrip(req)
@@ -103,18 +130,15 @@ func logRoundTripper(rt http.RoundTripper, log *logger.Logger, body bool) http.R
 			return nil, err
 		}
 
-		//l = l.WithField("http.client.status", resp.StatusCode)
-		if !body {
-			return resp, nil
+		args = append(args, "http.client.status", resp.StatusCode)
+		if body {
+			b, err := httputil.DumpResponse(resp, true)
+			if err != nil {
+				return resp, fmt.Errorf("dump http response: %+v", err)
+			}
+			args = append(args, "http.client.response", string(b))
 		}
-		_, err = httputil.DumpResponse(resp, true)
-		if err != nil {
-			return resp, fmt.Errorf("dump http response: %+v", err)
-		}
-
-		//l = l.WithField("http.client.response", string(b))
-
-		return resp, err
+		return resp, nil
 	})
 }
 

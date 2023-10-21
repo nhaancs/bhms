@@ -133,7 +133,11 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 
 	// -------------------------------------------------------------------------
 	// HTTP Client
-	httpClient := httpclient.New(log)
+	httpClient := httpclient.New(
+		httpclient.WithTracing(),
+		httpclient.WithLogger(log, true),
+		httpclient.WithMetrics(),
+	)
 
 	//-------------------------------------------------------------------------
 	// Database Support
