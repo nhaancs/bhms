@@ -9,7 +9,7 @@ import (
 /*
 TODO:
 - How to send message to multiple numbers
-- Clarify Send & check code APIs
+- Clarify Send & check code APIs (how about the price)
 */
 
 const (

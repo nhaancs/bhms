@@ -39,7 +39,16 @@ func New(
 	}
 }
 
+// CheckOTP verify user OTP.
+// todo: do rate limit for this api
+func (h *Handlers) CheckOTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	// verify user's OTP
+	// updated user status to Active
+	return nil
+}
+
 // Register adds a new user to the system.
+// todo: do rate limit for this api to prevent sending to many sms
 func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var dto RegisterDTO
 	if err := web.Decode(r, &dto); err != nil {
