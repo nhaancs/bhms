@@ -4,6 +4,7 @@ package v1
 import (
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/checkgrp"
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/usergrp"
+	"github.com/nhaancs/bhms/foundation/sms"
 	"net/http"
 	"os"
 
@@ -36,6 +37,7 @@ type APIMuxConfig struct {
 	DB       *sqlx.DB
 	Tracer   trace.Tracer
 	KeyID    string
+	SMS      *sms.SMS
 }
 
 // APIMux constructs a http.Handler with all application routes defined.
@@ -68,6 +70,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 		Auth:  cfg.Auth,
 		DB:    cfg.DB,
 		KeyID: cfg.KeyID,
+		SMS:   cfg.SMS,
 	})
 
 	return app

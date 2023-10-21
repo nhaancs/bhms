@@ -1,6 +1,7 @@
 package usergrp
 
 import (
+	"github.com/nhaancs/bhms/foundation/sms"
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
@@ -18,6 +19,7 @@ type Config struct {
 	Auth  *auth.Auth
 	DB    *sqlx.DB
 	KeyID string
+	SMS   *sms.SMS
 }
 
 // Routes adds specific routes for this group.
@@ -25,7 +27,7 @@ func Routes(app *web.App, cfg Config) {
 	const version = "v1"
 
 	usrCore := user.NewCore(cfg.Log, usercache.NewStore(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB)))
-	hdl := New(usrCore, cfg.Auth, cfg.KeyID)
+	hdl := New(usrCore, cfg.Auth, cfg.KeyID, cfg.SMS)
 	app.Handle(http.MethodPost, version, "/users/register", hdl.Register)
 	app.Handle(http.MethodGet, version, "/users/token", hdl.Token)
 }

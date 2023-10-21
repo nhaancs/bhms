@@ -12,6 +12,7 @@ import (
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/business/web/httpclient"
 	"github.com/nhaancs/bhms/foundation/logger"
+	"github.com/nhaancs/bhms/foundation/sms"
 	"github.com/nhaancs/bhms/foundation/vault"
 	"github.com/nhaancs/bhms/foundation/web"
 	"go.opentelemetry.io/otel"
@@ -100,6 +101,12 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 			ServiceName string  `conf:"default:api"`
 			Probability float64 `conf:"default:1"` // Shouldn't use a high value in non-developer systems. 0.05 should be enough for most systems. Some might want to have this even lower
 		}
+		SMS struct {
+			Address   string `conf:"default:http://rest.esms.vn"`
+			APIKey    string `conf:"mask"`
+			SecretKey string `conf:"mask"`
+			BrandName string `conf:"default:Baotrixemay"`
+		}
 	}{
 		Version: conf.Version{
 			Build: build,
@@ -138,6 +145,16 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 		httpclient.WithLogger(log, true),
 		httpclient.WithMetrics(),
 	)
+
+	// -------------------------------------------------------------------------
+	// HTTP Client
+	sms := sms.New(sms.Config{
+		Client:    httpClient,
+		Address:   cfg.SMS.Address,
+		APIKey:    cfg.SMS.APIKey,
+		SecretKey: cfg.SMS.SecretKey,
+		BrandName: cfg.SMS.BrandName,
+	})
 
 	//-------------------------------------------------------------------------
 	// Database Support
@@ -236,6 +253,7 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 		DB:       db,
 		Tracer:   tracer,
 		KeyID:    cfg.Auth.ActiveKID,
+		SMS:      sms,
 	}
 
 	apiMux := v1.APIMux(cfgMux, v1.WithCORS("*"))

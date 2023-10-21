@@ -25,11 +25,17 @@ type Handlers struct {
 }
 
 // New constructs a handlers for route access.
-func New(user *user.Core, auth *auth.Auth, keyID string) *Handlers {
+func New(
+	user *user.Core,
+	auth *auth.Auth,
+	keyID string,
+	sms *sms.SMS,
+) *Handlers {
 	return &Handlers{
 		user:  user,
 		auth:  auth,
 		keyID: keyID,
+		sms:   sms,
 	}
 }
 
