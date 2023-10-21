@@ -57,7 +57,7 @@ type (
 		SMSID           string `json:"SMSID"` // ID của tin nhắn mới được tạo ra trên hệ thống eSMS. Dùng ID này để query lấy trạng thái tin nhắn.
 	}
 
-	sms struct {
+	SMS struct {
 		address   string
 		apiKey    string
 		secretKey string
@@ -66,14 +66,14 @@ type (
 	}
 )
 
-func New(cfg Config) *sms {
+func New(cfg Config) *SMS {
 	if cfg.Client == nil {
 		// This provides a default client configuration, but it's recommended
 		// this is replaced by the user with application specific settings using
 		// the WithClient function at the time a GraphQL is constructed.
 		cfg.Client = &http.Client{}
 	}
-	return &sms{
+	return &SMS{
 		address:   cfg.Address,
 		apiKey:    cfg.APIKey,
 		secretKey: cfg.SecretKey,
@@ -82,7 +82,7 @@ func New(cfg Config) *sms {
 	}
 }
 
-func (s *sms) Send(ctx context.Context, msg Message) (smsID string, err error) {
+func (s *SMS) Send(ctx context.Context, msg Message) (smsID string, err error) {
 	var sandbox int32
 	if msg.DryRun {
 		sandbox = 1
@@ -114,7 +114,7 @@ func (s *sms) Send(ctx context.Context, msg Message) (smsID string, err error) {
 	return resp.SMSID, nil
 }
 
-func (s *sms) send(ctx context.Context, body reqData) (respData, error) {
+func (s *SMS) send(ctx context.Context, body reqData) (respData, error) {
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(body); err != nil {
 		return respData{}, fmt.Errorf("encode data: %w", err)

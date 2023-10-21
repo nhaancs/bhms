@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/nhaancs/bhms/foundation/sms"
 	"net/http"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 type Handlers struct {
 	user  *user.Core
 	auth  *auth.Auth
+	sms   *sms.SMS
 	keyID string
 }
 

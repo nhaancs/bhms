@@ -66,7 +66,7 @@ func (c *Core) Register(ctx context.Context, e RegisterEntity) (UserEntity, erro
 		Phone:        e.Phone,
 		PasswordHash: hash,
 		Roles:        []Role{RoleUser},
-		Status:       StatusActive,
+		Status:       StatusCreated,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
