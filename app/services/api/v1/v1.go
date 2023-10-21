@@ -4,6 +4,9 @@ package v1
 import (
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/checkgrp"
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/usergrp"
+	"github.com/nhaancs/bhms/business/core/user"
+	"github.com/nhaancs/bhms/business/core/user/stores/usercache"
+	"github.com/nhaancs/bhms/business/core/user/stores/userdb"
 	"github.com/nhaancs/bhms/foundation/sms"
 	"net/http"
 	"os"
@@ -42,6 +45,7 @@ type APIMuxConfig struct {
 
 // APIMux constructs a http.Handler with all application routes defined.
 func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
+	const version = "v1"
 	var opts Options
 	for _, option := range options {
 		option(&opts)
@@ -60,18 +64,18 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 		app.EnableCORS(mid.Cors(opts.corsOrigin))
 	}
 
-	checkgrp.Routes(app, checkgrp.Config{
-		Build: cfg.Build,
-		DB:    cfg.DB,
-	})
+	// -------------------------------------------------------------------------
+	// Check routes
+	checkHdl := checkgrp.New(cfg.Build, cfg.DB)
+	app.HandleNoMiddleware(http.MethodGet, version, "/readiness", checkHdl.Readiness)
+	app.HandleNoMiddleware(http.MethodGet, version, "/liveness", checkHdl.Liveness)
 
-	usergrp.Routes(app, usergrp.Config{
-		Log:   cfg.Log,
-		Auth:  cfg.Auth,
-		DB:    cfg.DB,
-		KeyID: cfg.KeyID,
-		SMS:   cfg.SMS,
-	})
+	// -------------------------------------------------------------------------
+	// User routes
+	usrCore := user.NewCore(cfg.Log, usercache.NewStore(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB)))
+	usrHdl := usergrp.New(usrCore, cfg.Auth, cfg.KeyID, cfg.SMS)
+	app.Handle(http.MethodPost, version, "/users/register", usrHdl.Register)
+	app.Handle(http.MethodGet, version, "/users/token", usrHdl.Token)
 
 	return app
 }
