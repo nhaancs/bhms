@@ -35,7 +35,7 @@ func Test_Vault(t *testing.T) {
 	t.Logf("Host:        %s\n", c.Host)
 
 	// Give Vault time to initialize.
-	time.Sleep(3 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	// -------------------------------------------------------------------------
 
@@ -63,13 +63,13 @@ func Test_Vault(t *testing.T) {
 	}
 
 	if err := vault.AddPrivateKey(context.Background(), key, expPEM.Bytes()); err != nil {
-		time.Sleep(2000 * time.Millisecond)
+		time.Sleep(5000 * time.Millisecond)
 		if err := vault.AddPrivateKey(context.Background(), key, expPEM.Bytes()); err != nil {
 			t.Fatalf("Should be able to put the PEM into Vault : %s", err)
 		}
 	}
 
-	gotPEM, err := vault.PrivateKey(key)
+	gotPEM, err := vault.PrivateKey(context.Background(), key)
 	if err != nil {
 		t.Fatalf("Should be able to pull the private key from Vault : %s", err)
 	}
