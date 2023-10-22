@@ -2,10 +2,12 @@
 package httpclient
 
 import (
+	"context"
 	"fmt"
 	"github.com/nhaancs/bhms/foundation/logger"
 	"github.com/nhaancs/bhms/foundation/web"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
 	"net"
 	"net/http"
@@ -85,11 +87,11 @@ func New(opts ...Option) *http.Client {
 		rt = t
 	}
 
-	//if o.tracing {
-	//	rt = otelhttp.NewTransport(rt, otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
-	//		return otelhttptrace.NewClientTrace(ctx)
-	//	}))
-	//}
+	if o.tracing {
+		rt = otelhttp.NewTransport(rt, otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+			return otelhttptrace.NewClientTrace(ctx)
+		}))
+	}
 
 	if o.logger != nil {
 		rt = logRoundTripper(rt, o.logger, o.logBody)

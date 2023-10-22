@@ -4,6 +4,7 @@ package keystore
 
 import (
 	"bytes"
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -100,7 +101,7 @@ func NewFS(fsys fs.FS) (*KeyStore, error) {
 }
 
 // PrivateKey searches the key store for a given kid and returns the private key.
-func (ks *KeyStore) PrivateKey(kid string) (string, error) {
+func (ks *KeyStore) PrivateKey(ctx context.Context, kid string) (string, error) {
 	privateKey, found := ks.store[kid]
 	if !found {
 		return "", errors.New("kid lookup failed")
@@ -110,7 +111,7 @@ func (ks *KeyStore) PrivateKey(kid string) (string, error) {
 }
 
 // PublicKey searches the key store for a given kid and returns the public key.
-func (ks *KeyStore) PublicKey(kid string) (string, error) {
+func (ks *KeyStore) PublicKey(ctx context.Context, kid string) (string, error) {
 	privateKey, found := ks.store[kid]
 	if !found {
 		return "", errors.New("kid lookup failed")

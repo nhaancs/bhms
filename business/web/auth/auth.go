@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nhaancs/bhms/foundation/web"
 	"strings"
 	"sync"
 
@@ -33,8 +32,8 @@ type Claims struct {
 // private and public keys for JWT use. The return could be a
 // PEM encoded string or a JWS based key.
 type KeyLookup interface {
-	PrivateKey(kid string) (key string, err error)
-	PublicKey(kid string) (key string, err error)
+	PrivateKey(ctx context.Context, kid string) (key string, err error)
+	PublicKey(ctx context.Context, kid string) (key string, err error)
 }
 
 // Config represents information required to initialize auth.
@@ -86,12 +85,10 @@ func (a *Auth) GenerateToken(ctx context.Context, kid string, claims Claims) (st
 	token := jwt.NewWithClaims(a.method, claims)
 	token.Header["kid"] = kid
 
-	_, span := web.AddSpan(ctx, "a.keyLookup.PrivateKey")
-	privateKeyPEM, err := a.keyLookup.PrivateKey(kid)
+	privateKeyPEM, err := a.keyLookup.PrivateKey(ctx, kid)
 	if err != nil {
 		return "", fmt.Errorf("private key: %w", err)
 	}
-	span.End()
 
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKeyPEM))
 	if err != nil {
@@ -131,7 +128,7 @@ func (a *Auth) Authenticate(ctx context.Context, bearerToken string) (Claims, er
 		return Claims{}, fmt.Errorf("kid malformed: %w", err)
 	}
 
-	pem, err := a.publicKeyLookup(kid)
+	pem, err := a.publicKeyLookup(ctx, kid)
 	if err != nil {
 		return Claims{}, fmt.Errorf("failed to fetch public key: %w", err)
 	}
@@ -175,7 +172,7 @@ func (a *Auth) Authorize(ctx context.Context, claims Claims, userID uuid.UUID, r
 // =============================================================================
 
 // publicKeyLookup performs a lookup for the public pem for the specified kid.
-func (a *Auth) publicKeyLookup(kid string) (string, error) {
+func (a *Auth) publicKeyLookup(ctx context.Context, kid string) (string, error) {
 	pem, err := func() (string, error) {
 		a.mu.RLock()
 		defer a.mu.RUnlock()
@@ -190,7 +187,7 @@ func (a *Auth) publicKeyLookup(kid string) (string, error) {
 		return pem, nil
 	}
 
-	pem, err = a.keyLookup.PublicKey(kid)
+	pem, err = a.keyLookup.PublicKey(ctx, kid)
 	if err != nil {
 		return "", fmt.Errorf("fetching public key: %w", err)
 	}
