@@ -86,23 +86,19 @@ func (a *Auth) GenerateToken(ctx context.Context, kid string, claims Claims) (st
 	token := jwt.NewWithClaims(a.method, claims)
 	token.Header["kid"] = kid
 
-	_, span1 := web.AddSpan(ctx, "keyLookup.PrivateKey")
+	_, span := web.AddSpan(ctx, "a.keyLookup.PrivateKey")
 	privateKeyPEM, err := a.keyLookup.PrivateKey(kid)
-	span1.End()
 	if err != nil {
 		return "", fmt.Errorf("private key: %w", err)
 	}
+	span.End()
 
-	_, span2 := web.AddSpan(ctx, "jwt.ParseRSAPrivateKeyFromPEM")
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKeyPEM))
-	span2.End()
 	if err != nil {
 		return "", fmt.Errorf("parsing private pem: %w", err)
 	}
 
-	_, span3 := web.AddSpan(ctx, "token.SignedString")
 	str, err := token.SignedString(privateKey)
-	span3.End()
 	if err != nil {
 		return "", fmt.Errorf("signing token: %w", err)
 	}

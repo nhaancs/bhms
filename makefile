@@ -78,10 +78,10 @@ APP             := api
 BASE_IMAGE_NAME := nhaancs/bhms
 SERVICE_NAME    := api
 VERSION         := 0.0.1
-API_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
+API_IMAGE    	:= $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 METRICS_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME)-metrics:$(VERSION)
 
-# VERSION       := "0.0.1-$(shell git rev-parse --short HEAD)"
+#VERSION       := "0.0.1-$(shell git rev-parse --short HEAD)"
 
 # ==============================================================================
 # Install dependencies
@@ -117,17 +117,17 @@ dev-docker:
 # ==============================================================================
 # Building containers
 
-all: api metrics
+all: build-api #build-metrics
 
-api:
+build-api:
 	docker build \
 		-f zarf/docker/dockerfile-api \
-		-t $(API_IMAGE) \
-		--build-arg BUILD_REF=$(VERSION) \
+		-t nhaancs/bhms/api:0.0.1 \
+		--build-arg BUILD_REF=0.0.1 \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
 
-metrics:
+build-metrics:
 	docker build \
 		-f zarf/docker/dockerfile-metrics \
 		-t $(METRICS_IMAGE) \
@@ -163,8 +163,8 @@ dev-load:
 	cd zarf/k8s/dev/api; kustomize edit set image api-image=$(API_IMAGE)
 	kind load docker-image $(API_IMAGE) --name $(KIND_CLUSTER)
 
-	cd zarf/k8s/dev/api; kustomize edit set image metrics-image=$(METRICS_IMAGE)
-	kind load docker-image $(METRICS_IMAGE) --name $(KIND_CLUSTER)
+#	cd zarf/k8s/dev/api; kustomize edit set image metrics-image=$(METRICS_IMAGE)
+#	kind load docker-image $(METRICS_IMAGE) --name $(KIND_CLUSTER)
 
 dev-apply:
 	kustomize build zarf/k8s/dev/vault | kubectl apply -f -
@@ -344,7 +344,7 @@ users:
 	curl -il -H "Authorization: Bearer ${TOKEN}" http://localhost:3000/v1/users?page=1&rows=2
 
 load:
-	hey -m GET -c 100 -n 1000 -H "Authorization: Basic MDk4NDI1MDA2NTpnb3BoZXJz" http://localhost:3000/v1/users/token
+	hey -m GET -c 50 -n 500 -H "Authorization: Basic MDk4NDI1MDA2NTpnb3BoZXJz" http://localhost:3000/v1/users/token
 
 otel-test:
 	curl -il -H "Traceparent: 00-918dd5ecf264712262b68cf2ef8b5239-896d90f23f69f006-01" --user "admin@example.com:gophers" http://localhost:3000/v1/users/token/54bb2165-71e1-41a6-af3e-7da4a0e1e2c1

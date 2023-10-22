@@ -87,9 +87,7 @@ func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return auth.NewAuthError("must provide email and password in Basic auth")
 	}
 
-	ctx1, span1 := web.AddSpan(ctx, "h.user.Authenticate")
-	usr, err := h.user.Authenticate(ctx1, phone, pass)
-	span1.End()
+	usr, err := h.user.Authenticate(ctx, phone, pass)
 	if err != nil {
 		switch {
 		case errors.Is(err, user.ErrNotFound):
@@ -101,7 +99,6 @@ func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Req
 		}
 	}
 
-	ctx2, span2 := web.AddSpan(ctx, "h.auth.GenerateToken")
 	claims := auth.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   usr.ID.String(),
@@ -112,8 +109,7 @@ func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Req
 		Roles: usr.Roles,
 	}
 
-	token, err := h.auth.GenerateToken(ctx2, h.keyID, claims)
-	span2.End()
+	token, err := h.auth.GenerateToken(ctx, h.keyID, claims)
 	if err != nil {
 		return fmt.Errorf("generatetoken: %w", err)
 	}

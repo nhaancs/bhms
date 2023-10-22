@@ -304,7 +304,8 @@ data:
               "limit": 20,
               "queryType": "nativeSearch",
               "refId": "A",
-              "serviceName": "api"
+              "serviceName": "api",
+              "minDuration": "1s"
             }
           ],
           "title": "API - Traces",
@@ -357,7 +358,7 @@ data:
         "list": []
       },
       "time": {
-        "from": "now-15m",
+        "from": "now-5m",
         "to": "now"
       },
       "timepicker": {},

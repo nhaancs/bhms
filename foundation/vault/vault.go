@@ -11,8 +11,10 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io"
+	"github.com/nhaancs/bhms/foundation/web"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"net/http"
+	"net/http/httptrace"
 	"strings"
 	"sync"
 	"time"
@@ -437,6 +439,10 @@ func (v *Vault) keyLookup(kid string) (string, error) {
 func (v *Vault) retrieveKID(ctx context.Context, kid string) (string, error) {
 	url := fmt.Sprintf("%s/v1/%s/data/%s", v.address, v.mountPath, kid)
 
+	ctx, span := web.AddSpan(ctx, url)
+	defer span.End()
+	ctx = httptrace.WithClientTrace(ctx, otelhttptrace.NewClientTrace(ctx))
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return "", fmt.Errorf("create request: %w", err)
@@ -451,10 +457,7 @@ func (v *Vault) retrieveKID(ctx context.Context, kid string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("do: %w", err)
 	}
-	defer func() {
-		io.Copy(io.Discard, resp.Body)
-		resp.Body.Close()
-	}()
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("status code: %s", resp.Status)

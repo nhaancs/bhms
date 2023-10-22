@@ -103,8 +103,8 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 		}
 		SMS struct {
 			Address   string `conf:"default:http://rest.esms.vn"`
-			APIKey    string `conf:"mask"`
-			SecretKey string `conf:"mask"`
+			APIKey    string `conf:"default:xxx,mask"`
+			SecretKey string `conf:"default:xxx,mask"`
 			BrandName string `conf:"default:Baotrixemay"`
 		}
 	}{
@@ -140,6 +140,7 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 
 	// -------------------------------------------------------------------------
 	// HTTP Client
+	log.Info(ctx, "startup", "status", "initializing http client")
 	httpClient := httpclient.New(
 		httpclient.WithTracing(),
 		httpclient.WithLogger(log, true),
@@ -148,6 +149,7 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 
 	// -------------------------------------------------------------------------
 	// HTTP Client
+	log.Info(ctx, "startup", "status", "initializing sms client")
 	sms := sms.New(sms.Config{
 		Client:    httpClient,
 		Address:   cfg.SMS.Address,
