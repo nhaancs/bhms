@@ -375,10 +375,5 @@ deps-cleancache:
 list:
 	go list -mod=mod all
 
-# ==============================================================================
-# local
 
-runlocal:
-	go run app/services/api/main.go
-buildlocal:
-	go build -o api app/services/api/main.go
+

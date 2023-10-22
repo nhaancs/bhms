@@ -7,6 +7,7 @@ import (
 	"github.com/nhaancs/bhms/foundation/logger"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httptrace"
@@ -111,24 +112,26 @@ func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.Rou
 		start := time.Now()
 
 		args := []any{
-			"http.client.host",
-			req.URL.Host,
-			"http.client.path",
-			req.URL.Path,
+			slog.String("http.client.host", req.URL.Host),
+			slog.String("http.client.path", req.URL.Path),
 		}
 
 		if body {
-			args = append(args, "http.client.request", fmt.Sprintf("%+v", req.Body))
+			b, err := httputil.DumpRequest(req, true)
+			if err != nil {
+				return nil, fmt.Errorf("dump http request: %+v", err)
+			}
+			args = append(args, slog.Any("http.client.request", string(b)))
 		}
 		l.Info(ctx, "http.client: sending request", args...)
 
 		var err error
 		defer func() {
-			args = append(args, "http.client.latency", time.Since(start).String())
+			args = append(args, slog.String("http.client.latency", time.Since(start).String()))
 			if err != nil {
-				args = append(args, "error", fmt.Sprintf("%+v", err))
+				args = append(args, slog.Any("error", err))
 			}
-			l.Info(ctx, "http.client: received response", args)
+			l.Info(ctx, "http.client: received response", args...)
 		}()
 
 		resp, err := rt.RoundTrip(req)
@@ -136,13 +139,13 @@ func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.Rou
 			return nil, err
 		}
 
-		args = append(args, "http.client.status", resp.StatusCode)
+		args = append(args, slog.Int("http.client.status", resp.StatusCode))
 		if body {
 			b, err := httputil.DumpResponse(resp, true)
 			if err != nil {
 				return resp, fmt.Errorf("dump http response: %+v", err)
 			}
-			args = append(args, "http.client.response", string(b))
+			args = append(args, slog.String("http.client.response", string(b)))
 		}
 		return resp, nil
 	})

@@ -27,7 +27,7 @@ func Logger(log *logger.Logger) web.Middleware {
 			err := handler(ctx, w, r)
 
 			log.Info(ctx, "request completed", "method", r.Method, "path", path,
-				"remoteaddr", r.RemoteAddr, "statuscode", v.StatusCode, "since", time.Since(v.Now))
+				"remoteaddr", r.RemoteAddr, "statuscode", v.StatusCode, "since", time.Since(v.Now).String())
 
 			return err
 		}
