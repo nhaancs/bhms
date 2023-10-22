@@ -5,10 +5,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/nhaancs/bhms/foundation/logger"
-	"github.com/nhaancs/bhms/foundation/web"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"go.opentelemetry.io/otel/attribute"
 	"net"
 	"net/http"
 	"net/http/httptrace"
@@ -153,20 +151,6 @@ func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.Rou
 // todo: implement metricsRoundTripper
 func metricsRoundTripper(rt http.RoundTripper) http.RoundTripper {
 	return roundTripperFn(func(req *http.Request) (*http.Response, error) {
-		return rt.RoundTrip(req)
-	})
-}
-
-func tracingRoundTripper(rt http.RoundTripper, l *logger.Logger) http.RoundTripper {
-	return roundTripperFn(func(req *http.Request) (*http.Response, error) {
-		ctx, span := web.AddSpan(req.Context(), req.URL.String())
-		defer span.End()
-		span.SetAttributes(attribute.Key("url").String(req.URL.String()))
-
-		l.Info(ctx, "tracingRoundTripper")
-		clientTrace := otelhttptrace.NewClientTrace(ctx)
-		ctx = httptrace.WithClientTrace(ctx, clientTrace)
-		otelhttptrace.Inject(ctx, req)
 		return rt.RoundTrip(req)
 	})
 }
