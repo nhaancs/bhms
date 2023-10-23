@@ -20,8 +20,8 @@ type RegisterDTO struct {
 	Password  string `json:"password" validate:"required"`
 }
 
-func toRegisterEntity(d RegisterDTO) (user.RegisterEntity, error) {
-	usr := user.RegisterEntity{
+func toNewUserEntity(d RegisterDTO) (user.NewUserEntity, error) {
+	usr := user.NewUserEntity{
 		FirstName: d.FirstName,
 		LastName:  d.LastName,
 		Phone:     d.Phone,
@@ -48,12 +48,12 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 		return request.NewError(err, http.StatusBadRequest)
 	}
 
-	e, err := toRegisterEntity(dto)
+	e, err := toNewUserEntity(dto)
 	if err != nil {
 		return request.NewError(err, http.StatusBadRequest)
 	}
 
-	usr, err := h.user.Register(ctx, e)
+	usr, err := h.user.Create(ctx, e)
 	if err != nil {
 		if errors.Is(err, user.ErrUniquePhone) {
 			return request.NewError(err, http.StatusConflict)

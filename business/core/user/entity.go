@@ -19,8 +19,8 @@ type UserEntity struct {
 	UpdatedAt    time.Time
 }
 
-// RegisterEntity contains information needed to create a new user.
-type RegisterEntity struct {
+// NewUserEntity contains information needed to create a new user.
+type NewUserEntity struct {
 	FirstName string
 	LastName  string
 	Phone     string

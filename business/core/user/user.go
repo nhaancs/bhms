@@ -49,8 +49,8 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 	}
 }
 
-// Register a new user to the system.
-func (c *Core) Register(ctx context.Context, e RegisterEntity) (UserEntity, error) {
+// Create a new user to the system.
+func (c *Core) Create(ctx context.Context, e NewUserEntity) (UserEntity, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(e.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return UserEntity{}, fmt.Errorf("generatefrompassword: %w", err)
