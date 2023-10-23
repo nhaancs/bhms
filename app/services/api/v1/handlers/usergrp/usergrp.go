@@ -2,18 +2,10 @@
 package usergrp
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"github.com/nhaancs/bhms/foundation/sms"
-	"net/http"
-	"time"
-
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/web/auth"
-	"github.com/nhaancs/bhms/foundation/web"
+	"github.com/nhaancs/bhms/foundation/sms"
+	"time"
 )
 
 // Handlers manages the set of user endpoints.
@@ -39,74 +31,34 @@ func New(
 	}
 }
 
-// VerifyOTP verify user OTP.
-func (h *Handlers) VerifyOTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	// verify user's OTP
-	// updated user status to Active
-	return nil
+// UserDTO represents information about an individual user.
+type UserDTO struct {
+	ID           string   `json:"id"`
+	FirstName    string   `json:"first_name"`
+	LastName     string   `json:"last_name"`
+	Phone        string   `json:"phone"`
+	Roles        []string `json:"roles"`
+	PasswordHash []byte   `json:"-"`
+	Status       string   `json:"status"`
+	CreatedAt    string   `json:"CreatedAt"`
+	UpdatedAt    string   `json:"UpdatedAt"`
 }
 
-// Register adds a new user to the system.
-// todo: do rate limit for this api to prevent sending to many sms
-func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var dto RegisterDTO
-	if err := web.Decode(r, &dto); err != nil {
-		return request.NewError(err, http.StatusBadRequest)
+func toUserDTO(e user.UserEntity) UserDTO {
+	roles := make([]string, len(e.Roles))
+	for i, role := range e.Roles {
+		roles[i] = role.Name()
 	}
 
-	e, err := toRegisterEntity(dto)
-	if err != nil {
-		return request.NewError(err, http.StatusBadRequest)
+	return UserDTO{
+		ID:           e.ID.String(),
+		FirstName:    e.FirstName,
+		LastName:     e.LastName,
+		Phone:        e.Phone,
+		PasswordHash: e.PasswordHash,
+		Roles:        roles,
+		Status:       e.Status.Name(),
+		CreatedAt:    e.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:    e.UpdatedAt.Format(time.RFC3339),
 	}
-
-	usr, err := h.user.Register(ctx, e)
-	if err != nil {
-		if errors.Is(err, user.ErrUniquePhone) {
-			return request.NewError(err, http.StatusConflict)
-		}
-		return fmt.Errorf("register: usr[%+v]: %+v", usr, err)
-	}
-
-	if _, err = h.sms.SendOTP(ctx, sms.OTPInfo{Phone: usr.Phone}); err != nil {
-		return fmt.Errorf("senotp: usr[%+v]: %+v", usr, err)
-	}
-
-	return web.Respond(ctx, w, toUserDTO(usr), http.StatusCreated)
-}
-
-// Token provides an API token for the authenticated user.
-func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	phone, pass, ok := r.BasicAuth()
-	if !ok {
-		return auth.NewAuthError("must provide email and password in Basic auth")
-	}
-
-	usr, err := h.user.Authenticate(ctx, phone, pass)
-	if err != nil {
-		switch {
-		case errors.Is(err, user.ErrNotFound):
-			return request.NewError(err, http.StatusNotFound)
-		case errors.Is(err, user.ErrAuthenticationFailure):
-			return auth.NewAuthError(err.Error())
-		default:
-			return fmt.Errorf("authenticate: %w", err)
-		}
-	}
-
-	claims := auth.Claims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   usr.ID.String(),
-			Issuer:    "bhms",
-			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(30 * 24 * time.Hour)),
-			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
-		},
-		Roles: usr.Roles,
-	}
-
-	token, err := h.auth.GenerateToken(ctx, h.keyID, claims)
-	if err != nil {
-		return fmt.Errorf("generatetoken: %w", err)
-	}
-
-	return web.Respond(ctx, w, toToken(token), http.StatusOK)
 }
