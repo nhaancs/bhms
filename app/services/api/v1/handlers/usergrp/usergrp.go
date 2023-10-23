@@ -40,7 +40,6 @@ func New(
 }
 
 // CheckOTP verify user OTP.
-// todo: do rate limit for this api
 func (h *Handlers) CheckOTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// verify user's OTP
 	// updated user status to Active
@@ -77,11 +76,6 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 
 // Token provides an API token for the authenticated user.
 func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	//kid := web.Param(r, "kid")
-	//if kid == "" {
-	//	return validate.NewFieldsError("kid", errors.New("missing kid"))
-	//}
-
 	phone, pass, ok := r.BasicAuth()
 	if !ok {
 		return auth.NewAuthError("must provide email and password in Basic auth")
