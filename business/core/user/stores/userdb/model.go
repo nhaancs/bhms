@@ -9,9 +9,9 @@ import (
 	"github.com/nhaancs/bhms/business/data/dbsql/pgx/dbarray"
 )
 
-// userRow represent the structure we need for moving data
+// dbUser represent the structure we need for moving data
 // between the app and the database.
-type userRow struct {
+type dbUser struct {
 	ID           uuid.UUID      `db:"id"`
 	FirstName    string         `db:"first_name"`
 	LastName     string         `db:"last_name"`
@@ -23,13 +23,13 @@ type userRow struct {
 	UpdatedAt    time.Time      `db:"updated_at"`
 }
 
-func toUserRow(e user.UserEntity) userRow {
+func toDBUser(e user.User) dbUser {
 	roles := make([]string, len(e.Roles))
 	for i, role := range e.Roles {
 		roles[i] = role.Name()
 	}
 
-	return userRow{
+	return dbUser{
 		ID:           e.ID,
 		FirstName:    e.FirstName,
 		LastName:     e.LastName,
@@ -42,40 +42,40 @@ func toUserRow(e user.UserEntity) userRow {
 	}
 }
 
-func toUserEntity(r userRow) (user.UserEntity, error) {
-	roles := make([]user.Role, len(r.Roles))
-	for i, value := range r.Roles {
+func toCoreUser(dbUsr dbUser) (user.User, error) {
+	roles := make([]user.Role, len(dbUsr.Roles))
+	for i, value := range dbUsr.Roles {
 		var err error
 		roles[i], err = user.ParseRole(value)
 		if err != nil {
-			return user.UserEntity{}, fmt.Errorf("parse role: %w", err)
+			return user.User{}, fmt.Errorf("parse role: %w", err)
 		}
 	}
-	status, err := user.ParseStatus(r.Status)
+	status, err := user.ParseStatus(dbUsr.Status)
 	if err != nil {
-		return user.UserEntity{}, fmt.Errorf("parse status: %w", err)
+		return user.User{}, fmt.Errorf("parse status: %w", err)
 	}
 
-	usr := user.UserEntity{
-		ID:           r.ID,
-		FirstName:    r.FirstName,
-		LastName:     r.LastName,
-		Phone:        r.Phone,
+	usr := user.User{
+		ID:           dbUsr.ID,
+		FirstName:    dbUsr.FirstName,
+		LastName:     dbUsr.LastName,
+		Phone:        dbUsr.Phone,
 		Roles:        roles,
-		PasswordHash: r.PasswordHash,
+		PasswordHash: dbUsr.PasswordHash,
 		Status:       status,
-		CreatedAt:    r.CreatedAt.In(time.Local),
-		UpdatedAt:    r.UpdatedAt.In(time.Local),
+		CreatedAt:    dbUsr.CreatedAt.In(time.Local),
+		UpdatedAt:    dbUsr.UpdatedAt.In(time.Local),
 	}
 
 	return usr, nil
 }
 
-func toUserEntities(rows []userRow) ([]user.UserEntity, error) {
-	usrs := make([]user.UserEntity, len(rows))
+func toCoreUsers(rows []dbUser) ([]user.User, error) {
+	usrs := make([]user.User, len(rows))
 	for i, dbUsr := range rows {
 		var err error
-		usrs[i], err = toUserEntity(dbUsr)
+		usrs[i], err = toCoreUser(dbUsr)
 		if err != nil {
 			return nil, err
 		}

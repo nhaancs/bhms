@@ -39,8 +39,8 @@ func New(
 	}
 }
 
-// UserDTO represents information about an individual user.
-type UserDTO struct {
+// AppUser represents information about an individual user.
+type AppUser struct {
 	ID           string   `json:"id"`
 	FirstName    string   `json:"first_name"`
 	LastName     string   `json:"last_name"`
@@ -52,13 +52,13 @@ type UserDTO struct {
 	UpdatedAt    string   `json:"UpdatedAt"`
 }
 
-func toUserDTO(e user.UserEntity) UserDTO {
+func toAppUser(e user.User) AppUser {
 	roles := make([]string, len(e.Roles))
 	for i, role := range e.Roles {
 		roles[i] = role.Name()
 	}
 
-	return UserDTO{
+	return AppUser{
 		ID:           e.ID.String(),
 		FirstName:    e.FirstName,
 		LastName:     e.LastName,

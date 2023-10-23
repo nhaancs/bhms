@@ -12,28 +12,28 @@ import (
 	"net/http"
 )
 
-// RegisterDTO contains information needed for a new user to register.
-type RegisterDTO struct {
+// AppRegister contains information needed for a new user to register.
+type AppRegister struct {
 	FirstName string `json:"first_name" validate:"required"`
 	LastName  string `json:"last_name"`
 	Phone     string `json:"phone" validate:"required,phone"`
 	Password  string `json:"password" validate:"required"`
 }
 
-func toNewUserEntity(d RegisterDTO) (user.NewUserEntity, error) {
-	usr := user.NewUserEntity{
-		FirstName: d.FirstName,
-		LastName:  d.LastName,
-		Phone:     d.Phone,
-		Password:  d.Password,
+func toCoreNewUser(a AppRegister) (user.NewUser, error) {
+	usr := user.NewUser{
+		FirstName: a.FirstName,
+		LastName:  a.LastName,
+		Phone:     a.Phone,
+		Password:  a.Password,
 	}
 
 	return usr, nil
 }
 
 // Validate checks the data in the model is considered clean.
-func (dto RegisterDTO) Validate() error {
-	if err := validate.Check(dto); err != nil {
+func (r AppRegister) Validate() error {
+	if err := validate.Check(r); err != nil {
 		return err
 	}
 
@@ -43,12 +43,12 @@ func (dto RegisterDTO) Validate() error {
 // Register adds a new user to the system.
 // todo: do rate limit for this api to prevent sending to many sms
 func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var dto RegisterDTO
-	if err := web.Decode(r, &dto); err != nil {
+	var app AppRegister
+	if err := web.Decode(r, &app); err != nil {
 		return request.NewError(err, http.StatusBadRequest)
 	}
 
-	e, err := toNewUserEntity(dto)
+	e, err := toCoreNewUser(app)
 	if err != nil {
 		return request.NewError(err, http.StatusBadRequest)
 	}
@@ -65,5 +65,5 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 		return fmt.Errorf("senotp: usr[%+v]: %+v", usr, err)
 	}
 
-	return web.Respond(ctx, w, toUserDTO(usr), http.StatusCreated)
+	return web.Respond(ctx, w, toAppUser(usr), http.StatusCreated)
 }

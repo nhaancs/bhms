@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserEntity represents information about an individual user.
-type UserEntity struct {
+// User represents information about an individual user.
+type User struct {
 	ID           uuid.UUID
 	FirstName    string
 	LastName     string
@@ -19,16 +19,16 @@ type UserEntity struct {
 	UpdatedAt    time.Time
 }
 
-// NewUserEntity contains information needed to create a new user.
-type NewUserEntity struct {
+// NewUser contains information needed to create a new user.
+type NewUser struct {
 	FirstName string
 	LastName  string
 	Phone     string
 	Password  string
 }
 
-// UpdateUserEntity contains information needed to update a user.
-type UpdateUserEntity struct {
+// UpdateUser contains information needed to update a user.
+type UpdateUser struct {
 	FirstName *string
 	LastName  *string
 	Phone     *string

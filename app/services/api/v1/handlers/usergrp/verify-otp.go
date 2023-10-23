@@ -13,14 +13,14 @@ import (
 	"net/http"
 )
 
-type VerifyOTPDTO struct {
+type AppVerifyOTP struct {
 	UserID string `json:"phone" validate:"required"`
 	OTP    string `json:"otp" validate:"required"`
 }
 
 // Validate checks the data in the model is considered clean.
-func (dto VerifyOTPDTO) Validate() error {
-	if err := validate.Check(dto); err != nil {
+func (r AppVerifyOTP) Validate() error {
+	if err := validate.Check(r); err != nil {
 		return err
 	}
 
@@ -29,12 +29,12 @@ func (dto VerifyOTPDTO) Validate() error {
 
 // VerifyOTP verify user OTP.
 func (h *Handlers) VerifyOTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var dto VerifyOTPDTO
-	if err := web.Decode(r, &dto); err != nil {
+	var app AppVerifyOTP
+	if err := web.Decode(r, &app); err != nil {
 		return request.NewError(err, http.StatusBadRequest)
 	}
 
-	userID, err := uuid.Parse(dto.UserID)
+	userID, err := uuid.Parse(app.UserID)
 	if err != nil {
 		return request.NewError(ErrInvalidID, http.StatusBadRequest)
 	}
@@ -54,14 +54,17 @@ func (h *Handlers) VerifyOTP(ctx context.Context, w http.ResponseWriter, r *http
 
 	err = h.sms.CheckOTP(ctx, sms.VerifyOTPInfo{
 		Phone: usr.Phone,
-		Code:  dto.OTP,
+		Code:  app.OTP,
 	})
 	if err != nil {
 		return request.NewError(ErrInvalidOTP, http.StatusBadRequest)
 	}
 
 	status := user.StatusCreated
-	usr, err = h.user.Update(ctx, usr, user.UpdateUserEntity{Status: &status})
+	usr, err = h.user.Update(ctx, usr, user.UpdateUser{Status: &status})
+	if err != nil {
+		return fmt.Errorf("update: userID[%s] app[%+v]: %w", userID, app, err)
+	}
 
-	return web.Respond(ctx, w, toUserDTO(usr), http.StatusOK)
+	return web.Respond(ctx, w, toAppUser(usr), http.StatusOK)
 }

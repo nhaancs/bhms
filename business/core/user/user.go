@@ -25,12 +25,12 @@ var (
 
 // Storer interface declares the behavior this package needs to perists and retrieve data.
 type Storer interface {
-	Create(ctx context.Context, usr UserEntity) error
-	Update(ctx context.Context, usr UserEntity) error
-	Delete(ctx context.Context, usr UserEntity) error
-	QueryByID(ctx context.Context, userID uuid.UUID) (UserEntity, error)
-	QueryByIDs(ctx context.Context, userID []uuid.UUID) ([]UserEntity, error)
-	QueryByPhone(ctx context.Context, phone string) (UserEntity, error)
+	Create(ctx context.Context, usr User) error
+	Update(ctx context.Context, usr User) error
+	Delete(ctx context.Context, usr User) error
+	QueryByID(ctx context.Context, userID uuid.UUID) (User, error)
+	QueryByIDs(ctx context.Context, userID []uuid.UUID) ([]User, error)
+	QueryByPhone(ctx context.Context, phone string) (User, error)
 }
 
 // =============================================================================
@@ -50,15 +50,15 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 }
 
 // Create a new user to the system.
-func (c *Core) Create(ctx context.Context, e NewUserEntity) (UserEntity, error) {
+func (c *Core) Create(ctx context.Context, e NewUser) (User, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(e.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return UserEntity{}, fmt.Errorf("generatefrompassword: %w", err)
+		return User{}, fmt.Errorf("generatefrompassword: %w", err)
 	}
 
 	now := time.Now()
 
-	usr := UserEntity{
+	usr := User{
 		ID:           uuid.New(),
 		FirstName:    e.FirstName,
 		LastName:     e.LastName,
@@ -71,14 +71,14 @@ func (c *Core) Create(ctx context.Context, e NewUserEntity) (UserEntity, error) 
 	}
 
 	if err := c.store.Create(ctx, usr); err != nil {
-		return UserEntity{}, fmt.Errorf("create: %w", err)
+		return User{}, fmt.Errorf("create: %w", err)
 	}
 
 	return usr, nil
 }
 
 // Update modifies information about a user.
-func (c *Core) Update(ctx context.Context, usr UserEntity, uu UpdateUserEntity) (UserEntity, error) {
+func (c *Core) Update(ctx context.Context, usr User, uu UpdateUser) (User, error) {
 	if uu.FirstName != nil {
 		usr.FirstName = *uu.FirstName
 	}
@@ -98,7 +98,7 @@ func (c *Core) Update(ctx context.Context, usr UserEntity, uu UpdateUserEntity) 
 	if uu.Password != nil {
 		pw, err := bcrypt.GenerateFromPassword([]byte(*uu.Password), bcrypt.DefaultCost)
 		if err != nil {
-			return UserEntity{}, fmt.Errorf("generatefrompassword: %w", err)
+			return User{}, fmt.Errorf("generatefrompassword: %w", err)
 		}
 		usr.PasswordHash = pw
 	}
@@ -110,27 +110,27 @@ func (c *Core) Update(ctx context.Context, usr UserEntity, uu UpdateUserEntity) 
 	usr.UpdatedAt = time.Now()
 
 	if err := c.store.Update(ctx, usr); err != nil {
-		return UserEntity{}, fmt.Errorf("update: %w", err)
+		return User{}, fmt.Errorf("update: %w", err)
 	}
 
 	return usr, nil
 }
 
 // QueryByID finds the user by the specified ID.
-func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (UserEntity, error) {
+func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (User, error) {
 	user, err := c.store.QueryByID(ctx, userID)
 	if err != nil {
-		return UserEntity{}, fmt.Errorf("query: userID[%s]: %w", userID, err)
+		return User{}, fmt.Errorf("query: userID[%s]: %w", userID, err)
 	}
 
 	return user, nil
 }
 
 // QueryByPhone finds the user by a specified user phone.
-func (c *Core) QueryByPhone(ctx context.Context, phone string) (UserEntity, error) {
+func (c *Core) QueryByPhone(ctx context.Context, phone string) (User, error) {
 	user, err := c.store.QueryByPhone(ctx, phone)
 	if err != nil {
-		return UserEntity{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
+		return User{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
 	}
 
 	return user, nil
@@ -139,17 +139,17 @@ func (c *Core) QueryByPhone(ctx context.Context, phone string) (UserEntity, erro
 // =============================================================================
 
 // Authenticate finds a user by their phone and verifies their password. On
-// success it returns a Claims UserEntity representing this user. The claims can be
+// success it returns a Claims User representing this user. The claims can be
 // used to generate a token for future authentication.
-func (c *Core) Authenticate(ctx context.Context, phone, password string) (UserEntity, error) {
+func (c *Core) Authenticate(ctx context.Context, phone, password string) (User, error) {
 	usr, err := c.QueryByPhone(ctx, phone)
 	if err != nil {
-		return UserEntity{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
+		return User{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
 	}
 
 	err = bcrypt.CompareHashAndPassword(usr.PasswordHash, []byte(password))
 	if err != nil {
-		return UserEntity{}, fmt.Errorf("comparehashandpassword: %w", ErrAuthenticationFailure)
+		return User{}, fmt.Errorf("comparehashandpassword: %w", ErrAuthenticationFailure)
 	}
 
 	return usr, nil
