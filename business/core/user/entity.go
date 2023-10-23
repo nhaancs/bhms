@@ -26,3 +26,13 @@ type NewUserEntity struct {
 	Phone     string
 	Password  string
 }
+
+// UpdateUserEntity contains information needed to update a user.
+type UpdateUserEntity struct {
+	FirstName *string
+	LastName  *string
+	Phone     *string
+	Roles     []Role
+	Password  *string
+	Status    *Status
+}

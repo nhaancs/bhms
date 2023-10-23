@@ -2,10 +2,18 @@
 package usergrp
 
 import (
+	"errors"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/foundation/sms"
 	"time"
+)
+
+// Set of error variables for handling product group errors.
+var (
+	ErrInvalidID     = errors.New("id is not in its proper form")
+	ErrInvalidStatus = errors.New("status is not allowed for this action")
+	ErrInvalidOTP    = errors.New("otp is invalid")
 )
 
 // Handlers manages the set of user endpoints.

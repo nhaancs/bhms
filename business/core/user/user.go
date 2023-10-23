@@ -77,6 +77,45 @@ func (c *Core) Create(ctx context.Context, e NewUserEntity) (UserEntity, error) 
 	return usr, nil
 }
 
+// Update modifies information about a user.
+func (c *Core) Update(ctx context.Context, usr UserEntity, uu UpdateUserEntity) (UserEntity, error) {
+	if uu.FirstName != nil {
+		usr.FirstName = *uu.FirstName
+	}
+
+	if uu.LastName != nil {
+		usr.LastName = *uu.LastName
+	}
+
+	if uu.Phone != nil {
+		usr.Phone = *uu.Phone
+	}
+
+	if uu.Roles != nil {
+		usr.Roles = uu.Roles
+	}
+
+	if uu.Password != nil {
+		pw, err := bcrypt.GenerateFromPassword([]byte(*uu.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return UserEntity{}, fmt.Errorf("generatefrompassword: %w", err)
+		}
+		usr.PasswordHash = pw
+	}
+
+	if uu.Status != nil {
+		usr.Status = *uu.Status
+	}
+
+	usr.UpdatedAt = time.Now()
+
+	if err := c.store.Update(ctx, usr); err != nil {
+		return UserEntity{}, fmt.Errorf("update: %w", err)
+	}
+
+	return usr, nil
+}
+
 // QueryByID finds the user by the specified ID.
 func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (UserEntity, error) {
 	user, err := c.store.QueryByID(ctx, userID)
