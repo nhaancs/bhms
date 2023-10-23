@@ -75,6 +75,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	usrCore := user.NewCore(cfg.Log, usercache.NewStore(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB)))
 	usrHdl := usergrp.New(usrCore, cfg.Auth, cfg.KeyID, cfg.SMS)
 	app.Handle(http.MethodPost, version, "/users/register", usrHdl.Register)
+	app.Handle(http.MethodPost, version, "/users/verify-otp", usrHdl.VerifyOTP)
 	app.Handle(http.MethodGet, version, "/users/token", usrHdl.Token)
 
 	return app

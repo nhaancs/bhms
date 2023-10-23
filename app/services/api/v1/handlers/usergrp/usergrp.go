@@ -39,8 +39,8 @@ func New(
 	}
 }
 
-// CheckOTP verify user OTP.
-func (h *Handlers) CheckOTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+// VerifyOTP verify user OTP.
+func (h *Handlers) VerifyOTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// verify user's OTP
 	// updated user status to Active
 	return nil
