@@ -44,7 +44,7 @@ func (r AppRegister) Validate() error {
 
 // Register adds a new user to the system.
 // TODO:
-// - verify phone number by sending otp
+// - Verify phone number by sending otp
 // - Rate limit for this api to prevent sending to many sms
 func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var app AppRegister
