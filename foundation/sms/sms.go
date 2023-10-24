@@ -6,12 +6,6 @@ import (
 	"net/http"
 )
 
-/*
-TODO:
-- How to send message to multiple numbers
-- Clarify Send & check code APIs (how about the price)
-*/
-
 const (
 	codeSuccess = "100"
 )
