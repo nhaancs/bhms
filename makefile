@@ -117,7 +117,7 @@ dev-docker:
 # ==============================================================================
 # Building containers
 
-all: build-api #build-metrics
+all: build-api build-metrics
 
 build-api:
 	docker build \
@@ -163,8 +163,8 @@ dev-load:
 	cd zarf/k8s/dev/api; kustomize edit set image api-image=$(API_IMAGE)
 	kind load docker-image $(API_IMAGE) --name $(KIND_CLUSTER)
 
-#	cd zarf/k8s/dev/api; kustomize edit set image metrics-image=$(METRICS_IMAGE)
-#	kind load docker-image $(METRICS_IMAGE) --name $(KIND_CLUSTER)
+	cd zarf/k8s/dev/api; kustomize edit set image metrics-image=$(METRICS_IMAGE)
+	kind load docker-image $(METRICS_IMAGE) --name $(KIND_CLUSTER)
 
 dev-apply:
 	kustomize build zarf/k8s/dev/vault | kubectl apply -f -

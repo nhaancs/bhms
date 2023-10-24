@@ -13,10 +13,13 @@ import (
 )
 
 // AppRegister contains information needed for a new user to register.
+// todo:
+// - verify phone in all handler
+// - handle other esms errors
 type AppRegister struct {
 	FirstName string `json:"first_name" validate:"required"`
 	LastName  string `json:"last_name"`
-	Phone     string `json:"phone" validate:"required,phone"`
+	Phone     string `json:"phone" validate:"required"`
 	Password  string `json:"password" validate:"required"`
 }
 
