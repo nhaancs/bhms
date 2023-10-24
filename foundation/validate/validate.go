@@ -39,7 +39,7 @@ func init() {
 	})
 }
 
-// Check validates the provided model against it's declared tags.
+// Check validates the provided model against it's declared tags
 func Check(val any) error {
 	if err := validate.Struct(val); err != nil {
 
