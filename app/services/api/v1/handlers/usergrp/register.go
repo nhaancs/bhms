@@ -14,6 +14,7 @@ import (
 // AppRegister contains information needed for a new user to register.
 // TODO:
 // - Verify phones in all handler
+// - Handle errors with codes and messages
 type AppRegister struct {
 	FirstName string `json:"first_name" validate:"required"`
 	LastName  string `json:"last_name"`
