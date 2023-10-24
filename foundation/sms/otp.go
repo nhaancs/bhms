@@ -54,7 +54,7 @@ type (
 
 // SendOTP sent an OTP message to a phone number
 func (s *SMS) SendOTP(ctx context.Context, otp OTPInfo) (smsID string, err error) {
-	msg := fmt.Sprintf("{OTP} la ma xac nhan %s cua ban", s.brandName)
+	msg := fmt.Sprintf(`{OTP} la ma xac minh dang ky %s cua ban`, s.brandName)
 	resp, err := s.sendOTP(ctx, otpReqData{
 		Phone:         otp.Phone,
 		APIKey:        s.apiKey,

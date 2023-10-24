@@ -59,7 +59,7 @@ func (s *Store) Update(ctx context.Context, usr user.User) error {
 		"roles" = :roles,
 		"password_hash" = :password_hash,
 		"status" = :status,
-		"date_updated" = :date_updated
+		"created_at" = :created_at
 	WHERE
 		id = :id`
 

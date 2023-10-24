@@ -14,7 +14,7 @@ import (
 )
 
 type AppVerifyOTP struct {
-	UserID string `json:"phone" validate:"required"`
+	UserID string `json:"user_id" validate:"required"`
 	OTP    string `json:"otp" validate:"required"`
 }
 

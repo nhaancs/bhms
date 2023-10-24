@@ -6,16 +6,14 @@ import (
 	"fmt"
 	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/core/user"
-	"github.com/nhaancs/bhms/foundation/sms"
 	"github.com/nhaancs/bhms/foundation/validate"
 	"github.com/nhaancs/bhms/foundation/web"
 	"net/http"
 )
 
 // AppRegister contains information needed for a new user to register.
-// todo:
-// - verify phone in all handler
-// - handle other esms errors
+// TODO:
+// - Verify phones in all handler
 type AppRegister struct {
 	FirstName string `json:"first_name" validate:"required"`
 	LastName  string `json:"last_name"`
@@ -44,7 +42,9 @@ func (r AppRegister) Validate() error {
 }
 
 // Register adds a new user to the system.
-// todo: do rate limit for this api to prevent sending to many sms
+// TODO:
+// - verify phone number by sending otp
+// - Rate limit for this api to prevent sending to many sms
 func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var app AppRegister
 	if err := web.Decode(r, &app); err != nil {
@@ -64,9 +64,9 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 		return fmt.Errorf("register: usr[%+v]: %+v", usr, err)
 	}
 
-	if _, err = h.sms.SendOTP(ctx, sms.OTPInfo{Phone: usr.Phone}); err != nil {
-		return fmt.Errorf("senotp: usr[%+v]: %+v", usr, err)
-	}
+	//if _, err = h.sms.SendOTP(ctx, sms.OTPInfo{Phone: usr.Phone}); err != nil {
+	//	return fmt.Errorf("senotp: usr[%+v]: %+v", usr, err)
+	//}
 
 	return web.Respond(ctx, w, toAppUser(usr), http.StatusCreated)
 }

@@ -151,7 +151,7 @@ func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.Rou
 	})
 }
 
-// todo: implement metricsRoundTripper
+// TODO: implement metricsRoundTripper
 func metricsRoundTripper(rt http.RoundTripper) http.RoundTripper {
 	return roundTripperFn(func(req *http.Request) (*http.Response, error) {
 		return rt.RoundTrip(req)
