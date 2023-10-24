@@ -18,8 +18,8 @@ import (
 type AppRegister struct {
 	FirstName string `json:"first_name" validate:"required"`
 	LastName  string `json:"last_name"`
-	Phone     string `json:"phone" validate:"required"`
-	Password  string `json:"password" validate:"required"`
+	Phone     string `json:"phone" validate:"required,e164,startswith=+84,len=12"`
+	Password  string `json:"password" validate:"required,min=6"`
 }
 
 func toCoreNewUser(a AppRegister) (user.NewUser, error) {
