@@ -14,8 +14,8 @@ import (
 )
 
 type AppVerifyOTP struct {
-	UserID string `json:"user_id" validate:"required"`
-	OTP    string `json:"otp" validate:"required"`
+	UserID string `json:"user_id" validate:"required,uuid"`
+	OTP    string `json:"otp" validate:"required,len=6"`
 }
 
 // Validate checks the data in the model is considered clean.
