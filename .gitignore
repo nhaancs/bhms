@@ -43,3 +43,5 @@ _testmain.go
 //*.test
 .vscode/tasks.json
 /api
+
+main
