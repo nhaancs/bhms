@@ -64,11 +64,11 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 		if errors.Is(err, user.ErrUniquePhone) {
 			return request.NewError(err, http.StatusConflict)
 		}
-		return fmt.Errorf("register: usr[%+v]: %+v", app, err)
+		return fmt.Errorf("register: usr[%+v]: %w", app, err)
 	}
 
 	//if _, err = h.sms.SendOTP(ctx, sms.OTPInfo{Phone: usr.Phone}); err != nil {
-	//	return fmt.Errorf("senotp: usr[%+v]: %+v", usr, err)
+	//	return fmt.Errorf("senotp: usr[%+v]: %w", usr, err)
 	//}
 
 	return web.Respond(ctx, w, toAppUser(usr), http.StatusCreated)

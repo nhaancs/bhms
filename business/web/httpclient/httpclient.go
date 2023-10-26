@@ -119,7 +119,7 @@ func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.Rou
 		if body {
 			b, err := httputil.DumpRequest(req, true)
 			if err != nil {
-				return nil, fmt.Errorf("dump http request: %+v", err)
+				return nil, fmt.Errorf("dump http request: %w", err)
 			}
 			args = append(args, slog.Any("http.client.request", string(b)))
 		}
@@ -143,7 +143,7 @@ func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.Rou
 		if body {
 			b, err := httputil.DumpResponse(resp, true)
 			if err != nil {
-				return resp, fmt.Errorf("dump http response: %+v", err)
+				return resp, fmt.Errorf("dump http response: %w", err)
 			}
 			args = append(args, slog.String("http.client.response", string(b)))
 		}

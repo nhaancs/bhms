@@ -60,7 +60,7 @@ func (s *SMS) Send(ctx context.Context, msg Message) (smsID string, err error) {
 		IsUnicode: 1,
 	})
 	if err != nil {
-		return "", fmt.Errorf("sms.Send error=%+v", err)
+		return "", fmt.Errorf("sms.Send error=%w", err)
 	}
 
 	if resp.CodeResult != codeSuccess {
@@ -82,20 +82,20 @@ func (s *SMS) send(ctx context.Context, body msgReqData) (msgRespData, error) {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.address+"/MainService.svc/json/SendMultipleMessage_V4_post_json", &b)
 	if err != nil {
-		return msgRespData{}, fmt.Errorf("create request error=%+v", err)
+		return msgRespData{}, fmt.Errorf("create request error=%w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return msgRespData{}, fmt.Errorf("do error=%+v", err)
+		return msgRespData{}, fmt.Errorf("do error=%w", err)
 	}
 	defer resp.Body.Close()
 
 	var response msgRespData
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return msgRespData{}, fmt.Errorf("json decode error=%+v", err)
+		return msgRespData{}, fmt.Errorf("json decode error=%w", err)
 	}
 	return response, nil
 }

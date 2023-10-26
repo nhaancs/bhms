@@ -67,7 +67,7 @@ func (s *SMS) SendOTP(ctx context.Context, otp OTPInfo) (smsID string, err error
 		IsNumber:      1,
 	})
 	if err != nil {
-		return "", fmt.Errorf("sms.SendOTP error=%+v", err)
+		return "", fmt.Errorf("sms.SendOTP error=%w", err)
 	}
 
 	if resp.CodeResult != codeSuccess {
@@ -90,7 +90,7 @@ func (s *SMS) CheckOTP(ctx context.Context, otp VerifyOTPInfo) error {
 		SecretKey: s.secretKey,
 	})
 	if err != nil {
-		return fmt.Errorf("sms.CheckOTP error=%+v", err)
+		return fmt.Errorf("sms.CheckOTP error=%w", err)
 	}
 
 	if resp.CodeResult != codeSuccess {
@@ -109,20 +109,20 @@ func (s *SMS) sendOTP(ctx context.Context, body otpReqData) (otpRespData, error)
 	url := fmt.Sprintf("%s/MainService.svc/json/SendMessageAutoGenCode_V4_get?%s", s.address, v.Encode())
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return otpRespData{}, fmt.Errorf("create request error=%+v", err)
+		return otpRespData{}, fmt.Errorf("create request error=%w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return otpRespData{}, fmt.Errorf("do error=%+v", err)
+		return otpRespData{}, fmt.Errorf("do error=%w", err)
 	}
 	defer resp.Body.Close()
 
 	var response otpRespData
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return otpRespData{}, fmt.Errorf("json decode error=%+v", err)
+		return otpRespData{}, fmt.Errorf("json decode error=%w", err)
 	}
 	return response, nil
 }
@@ -136,20 +136,20 @@ func (s *SMS) checkOTP(ctx context.Context, body checkOTPReqData) (checkOTPRespD
 	url := fmt.Sprintf("%s/MainService.svc/json/CheckCodeGen_V4_get?%s", s.address, v.Encode())
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return checkOTPRespData{}, fmt.Errorf("create request error=%+v", err)
+		return checkOTPRespData{}, fmt.Errorf("create request error=%w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return checkOTPRespData{}, fmt.Errorf("do error=%+v", err)
+		return checkOTPRespData{}, fmt.Errorf("do error=%w", err)
 	}
 	defer resp.Body.Close()
 
 	var response checkOTPRespData
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return checkOTPRespData{}, fmt.Errorf("json decode error=%+v", err)
+		return checkOTPRespData{}, fmt.Errorf("json decode error=%w", err)
 	}
 	return response, nil
 }

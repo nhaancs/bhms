@@ -45,7 +45,7 @@ func (h *Handlers) VerifyOTP(ctx context.Context, w http.ResponseWriter, r *http
 		case errors.Is(err, user.ErrNotFound):
 			return request.NewError(err, http.StatusNotFound)
 		default:
-			return fmt.Errorf("querybyid: userID[%s]: %+v", userID, err)
+			return fmt.Errorf("querybyid: userID[%s]: %w", userID, err)
 		}
 	}
 	if usr.Status != user.StatusCreated {
