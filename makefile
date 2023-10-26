@@ -347,7 +347,7 @@ load:
 	hey -m GET -c 50 -n 500 -H "Authorization: Basic MDk4NDI1MDA2NTpnb3BoZXJz" http://localhost:3000/v1/users/token
 
 otel-test:
-	curl -il -H "Traceparent: 00-918dd5ecf264712262b68cf2ef8b5239-896d90f23f69f006-01" --user "admin@example.com:gophers" http://localhost:3000/v1/users/token/54bb2165-71e1-41a6-af3e-7da4a0e1e2c1
+	curl -il -H "Traceparent: 00-918dd5ecf264712262b68cf2ef8b5239-896d90f23f69f006-01" --user "0984250065:gophers" http://localhost:3000/v1/users/token
 
 # ==============================================================================
 # Modules support
