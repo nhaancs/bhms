@@ -8,7 +8,7 @@ import (
 	"github.com/ardanlabs/conf/v3"
 	v1 "github.com/nhaancs/bhms/app/services/api/v1"
 	"github.com/nhaancs/bhms/app/services/api/v1/debug"
-	db "github.com/nhaancs/bhms/business/data/dbsql/pq"
+	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/business/web/httpclient"
 	"github.com/nhaancs/bhms/foundation/logger"
