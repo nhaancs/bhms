@@ -19,6 +19,7 @@ var (
 	ErrNotFound              = errors.New("user not found")
 	ErrUniquePhone           = errors.New("phone is not unique")
 	ErrAuthenticationFailure = errors.New("authentication failed")
+	ErrInvalidUserStatus     = errors.New("invalid user status")
 )
 
 // =============================================================================
@@ -64,8 +65,8 @@ func (c *Core) Create(ctx context.Context, e NewUser) (User, error) {
 		LastName:     e.LastName,
 		Phone:        e.Phone,
 		PasswordHash: hash,
-		Roles:        []Role{RoleUser},
-		Status:       StatusCreated,
+		Roles:        e.Roles,
+		Status:       e.Status,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
@@ -145,6 +146,10 @@ func (c *Core) Authenticate(ctx context.Context, phone, password string) (User, 
 	usr, err := c.QueryByPhone(ctx, phone)
 	if err != nil {
 		return User{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
+	}
+
+	if usr.Status != StatusCreated {
+		return User{}, ErrInvalidUserStatus
 	}
 
 	err = bcrypt.CompareHashAndPassword(usr.PasswordHash, []byte(password))

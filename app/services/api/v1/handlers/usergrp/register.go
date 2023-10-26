@@ -28,6 +28,8 @@ func toCoreNewUser(a AppRegister) (user.NewUser, error) {
 		LastName:  a.LastName,
 		Phone:     a.Phone,
 		Password:  a.Password,
+		Status:    user.StatusCreated,
+		Roles:     []user.Role{user.RoleUser},
 	}
 
 	return usr, nil

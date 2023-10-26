@@ -25,6 +25,8 @@ type NewUser struct {
 	LastName  string
 	Phone     string
 	Password  string
+	Status    Status
+	Roles     []Role
 }
 
 // UpdateUser contains information needed to update a user.

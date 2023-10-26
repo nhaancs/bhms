@@ -35,7 +35,7 @@ func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Req
 		switch {
 		case errors.Is(err, user.ErrNotFound):
 			return request.NewError(err, http.StatusNotFound)
-		case errors.Is(err, user.ErrAuthenticationFailure):
+		case errors.Is(err, user.ErrAuthenticationFailure) || errors.Is(err, user.ErrInvalidUserStatus):
 			return auth.NewAuthError(err.Error())
 		default:
 			return fmt.Errorf("authenticate: %w", err)
