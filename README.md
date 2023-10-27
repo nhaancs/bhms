@@ -37,15 +37,14 @@ Bảng `users` lưu các thông tin cần thiết của người dùng.
 #### Bảng `divisions`
 Bảng `divisions` lưu thông tin các đơn vị hành chính của Việt Nam.
 
-| Tên cột      | Kiểu dữ liệu | Bắt buộc | Mô tả                                                                     |
-|--------------|--------------|:--------:|---------------------------------------------------------------------------|
-| `id`         | serial       | &check;  | Khóa chính, tự tăng                                                       |
-| `name`       | text         | &check;  | Tên đơn vị hành chính                                                     |
-| `code`       | integer      | &check;  | Mã đơn vị hành chính                                                      |
-| `level`      | smallint     | &check;  | Cấp đơn vị hành chính - 1: Tỉnh, thành phố, 2: quận, huyện, 3: xã, phường |
-| `parent_id`  | uuid         | &cross;  | ID của cấp cao hơn                                                        |
-| `created_at` | timestamp    | &check;  | Thời gian khởi tạo                                                        |
-| `updated_at` | timestamp    | &cross;  | Thời gian cập nhật                                                        |
+| Tên cột       | Kiểu dữ liệu | Bắt buộc | Mô tả                                                                     |
+|---------------|--------------|:--------:|---------------------------------------------------------------------------|
+| `code`        | serial       | &check;  | Mã đơn vị hành chính, khóa chính, tự tăng                                 |
+| `name`        | text         | &check;  | Tên đơn vị hành chính                                                     |
+| `level`       | smallint     | &check;  | Cấp đơn vị hành chính - 1: Tỉnh, thành phố, 2: quận, huyện, 3: xã, phường |
+| `parent_code` | serial       | &cross;  | Code của cấp cao hơn                                                      |
+| `created_at`  | timestamp    | &check;  | Thời gian khởi tạo                                                        |
+| `updated_at`  | timestamp    | &cross;  | Thời gian cập nhật                                                        |
 
 #### Bảng `properties`
 Bảng `properties` lưu các thông tin cần thiết của khu trọ.
