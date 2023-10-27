@@ -144,7 +144,6 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 	httpClient := httpclient.New(
 		httpclient.WithTracing(),
 		httpclient.WithLogger(log, true),
-		httpclient.WithMetrics(),
 	)
 
 	// -------------------------------------------------------------------------

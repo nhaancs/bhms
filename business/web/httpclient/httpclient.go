@@ -1,4 +1,4 @@
-// Package httpclient implements a wrapper of http client supports logging, tracing, metrics, and proxy
+// Package httpclient implements a wrapper of http client supports logging, tracing, and proxy
 package httpclient
 
 import (
@@ -16,11 +16,12 @@ import (
 	"time"
 )
 
+// TODO: support metrics
+
 type options struct {
 	logger  *logger.Logger
 	logBody bool
 	tracing bool
-	metrics bool
 	proxy   func(request *http.Request) (*url.URL, error)
 }
 
@@ -36,12 +37,6 @@ func WithLogger(l *logger.Logger, body bool) Option {
 func WithTracing() Option {
 	return func(o *options) {
 		o.tracing = true
-	}
-}
-
-func WithMetrics() Option {
-	return func(o *options) {
-		o.metrics = true
 	}
 }
 
@@ -72,7 +67,7 @@ var roundTripper http.RoundTripper = &http.Transport{
 	ExpectContinueTimeout: 1 * time.Second,
 }
 
-// New returns a HTTP client with logging, tracing, metric, and proxy support
+// New returns a HTTP client with logging, tracing, and proxy support
 func New(opts ...Option) *http.Client {
 	o := new(options)
 	for _, opt := range opts {
@@ -96,10 +91,6 @@ func New(opts ...Option) *http.Client {
 		rt = logRoundTripper(rt, o.logger, o.logBody)
 	}
 
-	if o.metrics {
-		rt = metricsRoundTripper(rt)
-	}
-
 	return &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: rt,
@@ -107,7 +98,7 @@ func New(opts ...Option) *http.Client {
 }
 
 func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.RoundTripper {
-	return roundTripperFn(func(req *http.Request) (*http.Response, error) {
+	return roundTripperFn(func(req *http.Request) (resp *http.Response, err error) {
 		ctx := req.Context()
 		start := time.Now()
 
@@ -121,11 +112,12 @@ func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.Rou
 			if err != nil {
 				return nil, fmt.Errorf("dump http request: %w", err)
 			}
-			args = append(args, slog.Any("http.client.request", string(b)))
+			argsWithBody := append(args, slog.Any("http.client.request", string(b)))
+			l.Info(ctx, "http.client: sending request", argsWithBody...)
+		} else {
+			l.Info(ctx, "http.client: sending request", args...)
 		}
-		l.Info(ctx, "http.client: sending request", args...)
 
-		var err error
 		defer func() {
 			args = append(args, slog.String("http.client.latency", time.Since(start).String()))
 			if err != nil {
@@ -134,7 +126,7 @@ func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.Rou
 			l.Info(ctx, "http.client: received response", args...)
 		}()
 
-		resp, err := rt.RoundTrip(req)
+		resp, err = rt.RoundTrip(req)
 		if err != nil {
 			return nil, err
 		}
@@ -148,12 +140,5 @@ func logRoundTripper(rt http.RoundTripper, l *logger.Logger, body bool) http.Rou
 			args = append(args, slog.String("http.client.response", string(b)))
 		}
 		return resp, nil
-	})
-}
-
-// TODO: implement metricsRoundTripper
-func metricsRoundTripper(rt http.RoundTripper) http.RoundTripper {
-	return roundTripperFn(func(req *http.Request) (*http.Response, error) {
-		return rt.RoundTrip(req)
 	})
 }
