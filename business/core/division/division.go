@@ -104,7 +104,7 @@ func NewCore(log *logger.Logger) (*Core, error) {
 
 func initStore() (*store, error) {
 	var (
-		id        int
+		id        int // autoincrement id
 		provinces []province
 		s         = store{
 			Level2: make(map[int][]div),
@@ -112,6 +112,7 @@ func initStore() (*store, error) {
 		}
 	)
 
+	// get from file
 	if err := json.Unmarshal([]byte(divJSON), &provinces); err != nil {
 		return nil, fmt.Errorf("provinces:unmarshal:%w", err)
 	}
@@ -119,7 +120,9 @@ func initStore() (*store, error) {
 		return nil, fmt.Errorf("empty provinces")
 	}
 
+	// map to store
 	for i := range provinces {
+		// level 1
 		if err := provinces[i].validate(); err != nil {
 			return nil, err
 		}
@@ -134,6 +137,7 @@ func initStore() (*store, error) {
 			ParentID: 0,
 		})
 
+		// level 2
 		for j := range provinces[i].Districts {
 			if err := provinces[i].Districts[j].validate(); err != nil {
 				return nil, err
@@ -149,6 +153,7 @@ func initStore() (*store, error) {
 				ParentID: lv1ID,
 			})
 
+			// level 3
 			for k := range provinces[i].Districts[j].Wards {
 				if err := provinces[i].Districts[j].Wards[k].validate(); err != nil {
 					return nil, err
