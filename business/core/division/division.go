@@ -12,17 +12,57 @@ var (
 	divJSON string
 )
 
-type divFromJSON struct {
-	Code      uint32 `json:"code"`
-	Name      string `json:"name"`
-	Districts []struct {
-		Code  uint32 `json:"code"`
-		Name  string `json:"name"`
-		Wards []struct {
-			Code uint32 `json:"code"`
-			Name string `json:"name"`
-		} `json:"wards"`
-	} `json:"districts"`
+type province struct {
+	Code      int        `json:"code"`
+	Name      string     `json:"name"`
+	Districts []district `json:"districts"`
+}
+
+func (p province) validate() error {
+	if p.Code <= 0 {
+		return fmt.Errorf("invalid province code %d", p.Code)
+	}
+	if len(p.Name) == 0 {
+		return fmt.Errorf("province name is empty")
+	}
+	if len(p.Districts) == 0 {
+		return fmt.Errorf("province districts is empty")
+	}
+	return nil
+}
+
+type district struct {
+	Code  int    `json:"code"`
+	Name  string `json:"name"`
+	Wards []ward `json:"wards"`
+}
+
+func (d district) validate() error {
+	if d.Code <= 0 {
+		return fmt.Errorf("invalid district code %d", d.Code)
+	}
+	if len(d.Name) == 0 {
+		return fmt.Errorf("district name is empty")
+	}
+	if len(d.Wards) == 0 {
+		return fmt.Errorf("district wards is empty")
+	}
+	return nil
+}
+
+type ward struct {
+	Code int    `json:"code"`
+	Name string `json:"name"`
+}
+
+func (w ward) validate() error {
+	if w.Code <= 0 {
+		return fmt.Errorf("invalid ward code %d", w.Code)
+	}
+	if len(w.Name) == 0 {
+		return fmt.Errorf("ward name is empty")
+	}
+	return nil
 }
 
 // =============================================================================
@@ -31,15 +71,15 @@ type Storer interface {
 }
 
 type store struct {
-	Level1 map[uint32]div
-	Level2 map[uint32]div
-	Level3 map[uint32]div
+	Level1 []div
+	Level2 map[int][]div
+	Level3 map[int][]div
 }
 
 type div struct {
-	ID       uint32
-	ParentID uint32
-	Code     uint32
+	ID       int
+	ParentID int
+	Code     int
 	Level    uint8
 	Name     string
 }
@@ -51,22 +91,80 @@ type Core struct {
 }
 
 func NewCore(log *logger.Logger) (*Core, error) {
-	var s = store{
-		Level1: make(map[uint32]div),
-		Level2: make(map[uint32]div),
-		Level3: make(map[uint32]div),
-	}
-
-	var divData []divFromJSON
-	if err := json.Unmarshal([]byte(divJSON), &divData); err != nil {
-		return nil, fmt.Errorf("division:init:unmarshal:%w", err)
-	}
-	if len(divData) == 0 {
-		return nil, fmt.Errorf("division:init:empty data")
+	s, err := initStore()
+	if err != nil {
+		return nil, err
 	}
 
 	return &Core{
 		store: s,
 		log:   log,
 	}, nil
+}
+
+func initStore() (*store, error) {
+	var (
+		id        int
+		provinces []province
+		s         = store{
+			Level2: make(map[int][]div),
+			Level3: make(map[int][]div),
+		}
+	)
+
+	if err := json.Unmarshal([]byte(divJSON), &provinces); err != nil {
+		return nil, fmt.Errorf("provinces:unmarshal:%w", err)
+	}
+	if len(provinces) == 0 {
+		return nil, fmt.Errorf("empty provinces")
+	}
+
+	for i := range provinces {
+		if err := provinces[i].validate(); err != nil {
+			return nil, err
+		}
+
+		id++
+		lv1ID := id
+		s.Level1 = append(s.Level1, div{
+			ID:       lv1ID,
+			Name:     provinces[i].Name,
+			Level:    1,
+			Code:     provinces[i].Code,
+			ParentID: 0,
+		})
+
+		for j := range provinces[i].Districts {
+			if err := provinces[i].Districts[j].validate(); err != nil {
+				return nil, err
+			}
+
+			id++
+			lv2ID := id
+			s.Level2[lv1ID] = append(s.Level2[lv1ID], div{
+				ID:       lv2ID,
+				Name:     provinces[i].Districts[j].Name,
+				Level:    2,
+				Code:     provinces[i].Districts[j].Code,
+				ParentID: lv1ID,
+			})
+
+			for k := range provinces[i].Districts[j].Wards {
+				if err := provinces[i].Districts[j].Wards[k].validate(); err != nil {
+					return nil, err
+				}
+
+				id++
+				lv3ID := id
+				s.Level3[lv2ID] = append(s.Level3[lv2ID], div{
+					ID:       lv3ID,
+					Name:     provinces[i].Districts[j].Wards[k].Name,
+					Level:    3,
+					Code:     provinces[i].Districts[j].Wards[k].Code,
+					ParentID: lv2ID,
+				})
+			}
+		}
+	}
+	return &s, nil
 }
