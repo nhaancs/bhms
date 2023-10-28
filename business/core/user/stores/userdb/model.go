@@ -73,8 +73,8 @@ func toCoreUser(dbUsr dbUser) (user.User, error) {
 
 func toCoreUsers(rows []dbUser) ([]user.User, error) {
 	usrs := make([]user.User, len(rows))
+	var err error
 	for i, dbUsr := range rows {
-		var err error
 		usrs[i], err = toCoreUser(dbUsr)
 		if err != nil {
 			return nil, err
