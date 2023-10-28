@@ -74,6 +74,7 @@ type store struct {
 	Level1 []div
 	Level2 map[int][]div
 	Level3 map[int][]div
+	Map    map[int]div
 }
 
 type div struct {
@@ -109,6 +110,7 @@ func initStore() (*store, error) {
 		s         = store{
 			Level2: make(map[int][]div),
 			Level3: make(map[int][]div),
+			Map:    make(map[int]div),
 		}
 	)
 
@@ -129,13 +131,15 @@ func initStore() (*store, error) {
 
 		id++
 		lv1ID := id
-		s.Level1 = append(s.Level1, div{
+		d := div{
 			ID:       lv1ID,
 			Name:     provinces[i].Name,
 			Level:    1,
 			Code:     provinces[i].Code,
 			ParentID: 0,
-		})
+		}
+		s.Level1 = append(s.Level1, d)
+		s.Map[lv1ID] = d
 
 		// level 2
 		for j := range provinces[i].Districts {
@@ -145,13 +149,15 @@ func initStore() (*store, error) {
 
 			id++
 			lv2ID := id
-			s.Level2[lv1ID] = append(s.Level2[lv1ID], div{
+			di := div{
 				ID:       lv2ID,
 				Name:     provinces[i].Districts[j].Name,
 				Level:    2,
 				Code:     provinces[i].Districts[j].Code,
 				ParentID: lv1ID,
-			})
+			}
+			s.Level2[lv1ID] = append(s.Level2[lv1ID], di)
+			s.Map[lv2ID] = di
 
 			// level 3
 			for k := range provinces[i].Districts[j].Wards {
@@ -161,13 +167,15 @@ func initStore() (*store, error) {
 
 				id++
 				lv3ID := id
-				s.Level3[lv2ID] = append(s.Level3[lv2ID], div{
+				war := div{
 					ID:       lv3ID,
 					Name:     provinces[i].Districts[j].Wards[k].Name,
 					Level:    3,
 					Code:     provinces[i].Districts[j].Wards[k].Code,
 					ParentID: lv2ID,
-				})
+				}
+				s.Level3[lv2ID] = append(s.Level3[lv2ID], war)
+				s.Map[lv3ID] = war
 			}
 		}
 	}
