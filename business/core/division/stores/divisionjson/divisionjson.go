@@ -45,7 +45,8 @@ func NewStore(log *logger.Logger) (*Store, error) {
 		return nil, fmt.Errorf("empty provinces")
 	}
 
-	// map to store
+	// convert json data to store
+	s.level1 = make([]divisionJSON, len(provinces))
 	for i := range provinces {
 		// level 1
 		if err := provinces[i].validate(); err != nil {
@@ -61,10 +62,11 @@ func NewStore(log *logger.Logger) (*Store, error) {
 			Code:     provinces[i].Code,
 			ParentID: 0,
 		}
-		s.level1 = append(s.level1, d)
+		s.level1[i] = d
 		s.allMap[lv1ID] = d
 
 		// level 2
+		s.level2[lv1ID] = make([]divisionJSON, len(provinces[i].Districts))
 		for j := range provinces[i].Districts {
 			if err := provinces[i].Districts[j].validate(); err != nil {
 				return nil, err
@@ -79,10 +81,11 @@ func NewStore(log *logger.Logger) (*Store, error) {
 				Code:     provinces[i].Districts[j].Code,
 				ParentID: lv1ID,
 			}
-			s.level2[lv1ID] = append(s.level2[lv1ID], di)
+			s.level2[lv1ID][j] = di
 			s.allMap[lv2ID] = di
 
 			// level 3
+			s.level3[lv2ID] = make([]divisionJSON, len(provinces[i].Districts[j].Wards))
 			for k := range provinces[i].Districts[j].Wards {
 				if err := provinces[i].Districts[j].Wards[k].validate(); err != nil {
 					return nil, err
@@ -97,7 +100,7 @@ func NewStore(log *logger.Logger) (*Store, error) {
 					Code:     provinces[i].Districts[j].Wards[k].Code,
 					ParentID: lv2ID,
 				}
-				s.level3[lv2ID] = append(s.level3[lv2ID], war)
+				s.level3[lv2ID][k] = war
 				s.allMap[lv3ID] = war
 			}
 		}
