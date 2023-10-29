@@ -2,10 +2,18 @@ package divisiongrp
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/core/division"
 	"github.com/nhaancs/bhms/foundation/web"
 	"net/http"
+	"strconv"
+)
+
+// Set of error variables for handling group errors.
+var (
+	ErrInvalidID = errors.New("invalid id")
 )
 
 // Handlers manages the set of user endpoints.
@@ -52,5 +60,19 @@ func (h *Handlers) GetProvinces(ctx context.Context, w http.ResponseWriter, r *h
 		return fmt.Errorf("get province: %w", err)
 	}
 
-	return web.Respond(ctx, w, toAppDivisions(provinces), http.StatusCreated)
+	return web.Respond(ctx, w, toAppDivisions(provinces), http.StatusOK)
+}
+
+func (h *Handlers) GetByParentID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	parentID, err := strconv.ParseInt(web.Param(r, "parent_id"), 10, 32)
+	if err != nil {
+		return request.NewError(ErrInvalidID, http.StatusBadRequest)
+	}
+
+	divs, err := h.div.QueryByParentID(ctx, int(parentID))
+	if err != nil {
+		return fmt.Errorf("get by parrent id: %w", err)
+	}
+
+	return web.Respond(ctx, w, toAppDivisions(divs), http.StatusOK)
 }
