@@ -40,3 +40,12 @@ func (c *Core) QueryByID(ctx context.Context, divisionID int) (Divison, error) {
 
 	return div, err
 }
+
+func (c *Core) QueryByParentID(ctx context.Context, parentID int) ([]Divison, error) {
+	divs, err := c.store.QueryByParentID(ctx, parentID)
+	if err != nil {
+		return nil, fmt.Errorf("query: parentID[%d]: err: %w", parentID, err)
+	}
+
+	return divs, err
+}
