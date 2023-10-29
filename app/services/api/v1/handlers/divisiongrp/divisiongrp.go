@@ -54,8 +54,8 @@ func toAppDivisions(divs []division.Divison) []AppDivision {
 	return result
 }
 
-func (h *Handlers) GetProvinces(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	provinces, err := h.div.GetProvinces(ctx)
+func (h *Handlers) QueryProvinces(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	provinces, err := h.div.QueryProvinces(ctx)
 	if err != nil {
 		return fmt.Errorf("get province: %w", err)
 	}
@@ -63,7 +63,7 @@ func (h *Handlers) GetProvinces(ctx context.Context, w http.ResponseWriter, r *h
 	return web.Respond(ctx, w, toAppDivisions(provinces), http.StatusOK)
 }
 
-func (h *Handlers) GetByParentID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *Handlers) QueryByParentID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	parentID, err := strconv.ParseInt(web.Param(r, "parent_id"), 10, 32)
 	if err != nil {
 		return request.NewError(ErrInvalidID, http.StatusBadRequest)
