@@ -7,12 +7,12 @@ import (
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/core/user/stores/usercache"
 	"github.com/nhaancs/bhms/business/core/user/stores/userdb"
+	mid2 "github.com/nhaancs/bhms/business/web/mid"
 	"github.com/nhaancs/bhms/foundation/sms"
 	"net/http"
 	"os"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/nhaancs/bhms/app/services/api/v1/mid"
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/foundation/logger"
 	"github.com/nhaancs/bhms/foundation/web"
@@ -54,14 +54,14 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	app := web.NewApp(
 		cfg.Shutdown,
 		cfg.Tracer,
-		mid.Logger(cfg.Log),
-		mid.Errors(cfg.Log),
-		mid.Metrics(),
-		mid.Panics(),
+		mid2.Logger(cfg.Log),
+		mid2.Errors(cfg.Log),
+		mid2.Metrics(),
+		mid2.Panics(),
 	)
 
 	if opts.corsOrigin != "" {
-		app.EnableCORS(mid.Cors(opts.corsOrigin))
+		app.EnableCORS(mid2.Cors(opts.corsOrigin))
 	}
 
 	// -------------------------------------------------------------------------

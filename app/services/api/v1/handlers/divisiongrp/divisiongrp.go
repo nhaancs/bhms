@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/core/division"
+	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/web"
 	"net/http"
 	"strconv"
@@ -66,7 +66,7 @@ func (h *Handlers) QueryProvinces(ctx context.Context, w http.ResponseWriter, r 
 func (h *Handlers) QueryByParentID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	parentID, err := strconv.ParseInt(web.Param(r, "parent_id"), 10, 32)
 	if err != nil {
-		return request.NewError(ErrInvalidID, http.StatusBadRequest)
+		return response.NewError(ErrInvalidID, http.StatusBadRequest)
 	}
 
 	divs, err := h.div.QueryByParentID(ctx, int(parentID))

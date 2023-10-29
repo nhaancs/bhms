@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/core/user"
+	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/validate"
 	"github.com/nhaancs/bhms/foundation/web"
 	"net/http"
@@ -48,18 +48,18 @@ func (r AppRegister) Validate() error {
 func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var app AppRegister
 	if err := web.Decode(r, &app); err != nil {
-		return request.NewError(err, http.StatusBadRequest)
+		return response.NewError(err, http.StatusBadRequest)
 	}
 
 	e, err := toCoreNewUser(app)
 	if err != nil {
-		return request.NewError(err, http.StatusBadRequest)
+		return response.NewError(err, http.StatusBadRequest)
 	}
 
 	usr, err := h.user.Create(ctx, e)
 	if err != nil {
 		if errors.Is(err, user.ErrUniquePhone) {
-			return request.NewError(err, http.StatusConflict)
+			return response.NewError(err, http.StatusConflict)
 		}
 		return fmt.Errorf("register: usr[%+v]: %w", app, err)
 	}

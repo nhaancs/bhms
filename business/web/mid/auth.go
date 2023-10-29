@@ -3,10 +3,10 @@ package mid
 import (
 	"context"
 	"errors"
+	"github.com/nhaancs/bhms/business/web/response"
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/foundation/web"
 )
@@ -53,7 +53,7 @@ func Authorize(a *auth.Auth, rule string) web.Middleware {
 				var err error
 				userID, err = uuid.Parse(id)
 				if err != nil {
-					return request.NewError(ErrInvalidID, http.StatusBadRequest)
+					return response.NewError(ErrInvalidID, http.StatusBadRequest)
 				}
 				ctx = auth.SetUserID(ctx, userID)
 			}

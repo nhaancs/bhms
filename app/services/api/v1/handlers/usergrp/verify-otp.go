@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/core/user"
+	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/sms"
 	"github.com/nhaancs/bhms/foundation/validate"
 	"github.com/nhaancs/bhms/foundation/web"
@@ -31,25 +31,25 @@ func (r AppVerifyOTP) Validate() error {
 func (h *Handlers) VerifyOTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var app AppVerifyOTP
 	if err := web.Decode(r, &app); err != nil {
-		return request.NewError(err, http.StatusBadRequest)
+		return response.NewError(err, http.StatusBadRequest)
 	}
 
 	userID, err := uuid.Parse(app.UserID)
 	if err != nil {
-		return request.NewError(ErrInvalidID, http.StatusBadRequest)
+		return response.NewError(ErrInvalidID, http.StatusBadRequest)
 	}
 
 	usr, err := h.user.QueryByID(ctx, userID)
 	if err != nil {
 		switch {
 		case errors.Is(err, user.ErrNotFound):
-			return request.NewError(err, http.StatusNotFound)
+			return response.NewError(err, http.StatusNotFound)
 		default:
 			return fmt.Errorf("querybyid: userID[%s]: %w", userID, err)
 		}
 	}
 	if usr.Status != user.StatusCreated {
-		return request.NewError(ErrInvalidStatus, http.StatusBadRequest)
+		return response.NewError(ErrInvalidStatus, http.StatusBadRequest)
 	}
 
 	err = h.sms.CheckOTP(ctx, sms.VerifyOTPInfo{
@@ -57,7 +57,7 @@ func (h *Handlers) VerifyOTP(ctx context.Context, w http.ResponseWriter, r *http
 		Code:  app.OTP,
 	})
 	if err != nil {
-		return request.NewError(ErrInvalidOTP, http.StatusBadRequest)
+		return response.NewError(ErrInvalidOTP, http.StatusBadRequest)
 	}
 
 	status := user.StatusCreated

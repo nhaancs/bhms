@@ -2,9 +2,9 @@ package mid
 
 import (
 	"context"
+	"github.com/nhaancs/bhms/business/web/response"
 	"net/http"
 
-	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/foundation/logger"
 	"github.com/nhaancs/bhms/foundation/validate"
@@ -24,16 +24,16 @@ func Errors(log *logger.Logger) web.Middleware {
 				span.RecordError(err)
 				span.End()
 
-				var er request.ErrorResponse
+				var er response.ErrorDocument
 				var status int
 
 				switch {
-				case request.IsError(err):
-					reqErr := request.GetError(err)
+				case response.IsError(err):
+					reqErr := response.GetError(err)
 
 					if validate.IsFieldErrors(reqErr.Err) {
 						fieldErrors := validate.GetFieldErrors(reqErr.Err)
-						er = request.ErrorResponse{
+						er = response.ErrorDocument{
 							Error:  "data validation error",
 							Fields: fieldErrors.Fields(),
 						}
@@ -41,19 +41,19 @@ func Errors(log *logger.Logger) web.Middleware {
 						break
 					}
 
-					er = request.ErrorResponse{
+					er = response.ErrorDocument{
 						Error: reqErr.Error(),
 					}
 					status = reqErr.Status
 
 				case auth.IsAuthError(err):
-					er = request.ErrorResponse{
+					er = response.ErrorDocument{
 						Error: http.StatusText(http.StatusUnauthorized),
 					}
 					status = http.StatusUnauthorized
 
 				default:
-					er = request.ErrorResponse{
+					er = response.ErrorDocument{
 						Error: http.StatusText(http.StatusInternalServerError),
 					}
 					status = http.StatusInternalServerError

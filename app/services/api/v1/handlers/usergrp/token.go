@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/nhaancs/bhms/app/services/api/v1/request"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/web/auth"
+	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/web"
 	"net/http"
 	"time"
@@ -34,7 +34,7 @@ func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Req
 	if err != nil {
 		switch {
 		case errors.Is(err, user.ErrNotFound):
-			return request.NewError(err, http.StatusNotFound)
+			return response.NewError(err, http.StatusNotFound)
 		case errors.Is(err, user.ErrAuthenticationFailure) || errors.Is(err, user.ErrInvalidUserStatus):
 			return auth.NewAuthError(err.Error())
 		default:
