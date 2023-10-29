@@ -3,6 +3,7 @@ package division
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/nhaancs/bhms/foundation/logger"
 )
 
@@ -29,4 +30,13 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 		store: store,
 		log:   log,
 	}
+}
+
+func (c *Core) QueryByID(ctx context.Context, divisionID int) (Divison, error) {
+	div, err := c.store.QueryByID(ctx, divisionID)
+	if err != nil {
+		return Divison{}, fmt.Errorf("query: divisionID[%d]: err: %w", divisionID, err)
+	}
+
+	return div, err
 }
