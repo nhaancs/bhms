@@ -1,3 +1,4 @@
+// Package division ...
 package division
 
 import (
@@ -15,9 +16,9 @@ var (
 // =============================================================================
 
 type Storer interface {
-	QueryByID(ctx context.Context, divisionID int) (Divison, error)
-	QueryByParentID(ctx context.Context, parentID int) ([]Divison, error)
-	QueryLevel1s(ctx context.Context) ([]Divison, error)
+	QueryByID(ctx context.Context, divisionID int) (Division, error)
+	QueryByParentID(ctx context.Context, parentID int) ([]Division, error)
+	QueryLevel1s(ctx context.Context) ([]Division, error)
 }
 
 type Core struct {
@@ -32,16 +33,16 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 	}
 }
 
-func (c *Core) QueryByID(ctx context.Context, divisionID int) (Divison, error) {
+func (c *Core) QueryByID(ctx context.Context, divisionID int) (Division, error) {
 	div, err := c.store.QueryByID(ctx, divisionID)
 	if err != nil {
-		return Divison{}, fmt.Errorf("query: divisionID[%d]: err: %w", divisionID, err)
+		return Division{}, fmt.Errorf("query: divisionID[%d]: err: %w", divisionID, err)
 	}
 
 	return div, err
 }
 
-func (c *Core) QueryByParentID(ctx context.Context, parentID int) ([]Divison, error) {
+func (c *Core) QueryByParentID(ctx context.Context, parentID int) ([]Division, error) {
 	divs, err := c.store.QueryByParentID(ctx, parentID)
 	if err != nil {
 		return nil, fmt.Errorf("query: parentID[%d]: err: %w", parentID, err)
@@ -50,7 +51,7 @@ func (c *Core) QueryByParentID(ctx context.Context, parentID int) ([]Divison, er
 	return divs, err
 }
 
-func (c *Core) QueryProvinces(ctx context.Context) ([]Divison, error) {
+func (c *Core) QueryProvinces(ctx context.Context) ([]Division, error) {
 	provinces, err := c.store.QueryLevel1s(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get provinces: err: %w", err)

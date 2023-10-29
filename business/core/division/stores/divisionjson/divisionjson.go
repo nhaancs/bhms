@@ -1,3 +1,4 @@
+// Package divisionjson ...
 package divisionjson
 
 import (
@@ -108,15 +109,15 @@ func NewStore(log *logger.Logger) (*Store, error) {
 	return &s, nil
 }
 
-func (s *Store) QueryByID(ctx context.Context, divisionID int) (division.Divison, error) {
+func (s *Store) QueryByID(ctx context.Context, divisionID int) (division.Division, error) {
 	div, exist := s.allMap[divisionID]
 	if !exist {
-		return division.Divison{}, fmt.Errorf("querybyid: %w", division.ErrNotFound)
+		return division.Division{}, fmt.Errorf("querybyid: %w", division.ErrNotFound)
 	}
 	return toCoreDivision(div)
 }
 
-func (s *Store) QueryByParentID(ctx context.Context, parentID int) ([]division.Divison, error) {
+func (s *Store) QueryByParentID(ctx context.Context, parentID int) ([]division.Division, error) {
 	parent, err := s.QueryByID(ctx, parentID)
 	if err != nil {
 		return nil, fmt.Errorf("querybyparentid parent: %w", division.ErrNotFound)
@@ -139,6 +140,6 @@ func (s *Store) QueryByParentID(ctx context.Context, parentID int) ([]division.D
 	}
 }
 
-func (s *Store) QueryLevel1s(ctx context.Context) ([]division.Divison, error) {
+func (s *Store) QueryLevel1s(ctx context.Context) ([]division.Division, error) {
 	return toCoreDivisions(s.level1)
 }

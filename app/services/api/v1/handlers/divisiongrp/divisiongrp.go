@@ -1,3 +1,4 @@
+// Package divisiongrp ...
 package divisiongrp
 
 import (
@@ -35,7 +36,7 @@ type AppDivision struct {
 	Name     string `json:"name"`
 }
 
-func toAppDivision(d division.Divison) AppDivision {
+func toAppDivision(d division.Division) AppDivision {
 	return AppDivision{
 		ID:       d.ID,
 		ParentID: d.ParentID,
@@ -44,7 +45,7 @@ func toAppDivision(d division.Divison) AppDivision {
 	}
 }
 
-func toAppDivisions(divs []division.Divison) []AppDivision {
+func toAppDivisions(divs []division.Division) []AppDivision {
 	result := make([]AppDivision, len(divs))
 
 	for i := range divs {
