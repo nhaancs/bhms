@@ -71,7 +71,7 @@ func (h *Handlers) QueryByParentID(ctx context.Context, w http.ResponseWriter, r
 
 	divs, err := h.div.QueryByParentID(ctx, int(parentID))
 	if err != nil {
-		return fmt.Errorf("get by parrent id: %w", err)
+		return fmt.Errorf("query by parrent id: %w", err)
 	}
 
 	return web.Respond(ctx, w, toAppDivisions(divs), http.StatusOK)
