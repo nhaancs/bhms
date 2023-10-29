@@ -49,3 +49,12 @@ func (c *Core) QueryByParentID(ctx context.Context, parentID int) ([]Divison, er
 
 	return divs, err
 }
+
+func (c *Core) GetProvinces(ctx context.Context) ([]Divison, error) {
+	provinces, err := c.store.QueryLevel1s(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get provinces: err: %w", err)
+	}
+
+	return provinces, err
+}
