@@ -47,7 +47,7 @@ func main() {
 			traceID = fmt.Sprintf("%v", v)
 		}
 
-		// {"time":"2023-06-01T17:21:11.13704718Z","level":"INFO","msg":"startup","service":"SALES-API","GOMAXPROCS":1}
+		// {"time":"2023-06-01T17:21:11.13704718Z","level":"INFO","msg":"startup","service":"API","GOMAXPROCS":1}
 
 		// Build out the know portions of the log in the order
 		// I want them in.

@@ -9,6 +9,12 @@ nodes:
   # Debug port of our service
   - containerPort: 4000
     hostPort: 4000
+  # Metrics
+  - containerPort: 3001
+    hostPort: 3001
+  # Metrics debug
+  - containerPort: 4001
+    hostPort: 4001
   # Grafana
   - containerPort: 3100
     hostPort: 3100

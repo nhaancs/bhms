@@ -85,7 +85,7 @@ func (h *Handlers) Liveness(ctx context.Context, w http.ResponseWriter, r *http.
 		GOMAXPROCS: os.Getenv("GOMAXPROCS"),
 	}
 
-	// THIS IS A FREE TIMER. WE COULD UPDATE THE METRIC GOROUTINE COUNT HERE.
+	// This handler provides a free timer loop.
 
 	return web.Respond(ctx, w, data, http.StatusOK)
 }

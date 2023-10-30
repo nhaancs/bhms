@@ -56,7 +56,7 @@ func run(log *logger.Logger) error {
 		},
 	}
 
-	const prefix = "SALES"
+	const prefix = "API"
 	help, err := conf.Parse(prefix, &cfg)
 	if err != nil {
 		if errors.Is(err, conf.ErrHelpWanted) {

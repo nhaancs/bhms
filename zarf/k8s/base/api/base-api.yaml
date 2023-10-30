@@ -115,3 +115,7 @@ kind: Service
 metadata:
   name: api
   namespace: api-system
+
+spec:
+  selector:
+    app: sales

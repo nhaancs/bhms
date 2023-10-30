@@ -5,20 +5,12 @@ metadata:
   namespace: api-system
 
 spec:
-  selector:
-    matchLabels:
-      app: api
-
   replicas: 1
 
   strategy:
     type: Recreate
 
   template:
-    metadata:
-      labels:
-        app: api
-
     spec:
       dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true

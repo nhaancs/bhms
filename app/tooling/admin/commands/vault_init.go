@@ -101,19 +101,19 @@ func VaultInit(vaultConfig vault.Config) error {
 
 	// -------------------------------------------------------------------------
 
-	log.Println("Creating sales-api policy")
+	log.Println("Creating api policy")
 
-	err = vaultSrv.CreatePolicy(ctx, "sales-api", "secret/data/*", []string{"read", "create", "update"})
+	err = vaultSrv.CreatePolicy(ctx, "api", "secret/data/*", []string{"read", "create", "update"})
 	if err != nil {
 		return fmt.Errorf("unable to create policy: %w", err)
 	}
 
 	// -------------------------------------------------------------------------
 
-	log.Printf("Generating sales-api token: %s", vaultConfig.Token)
+	log.Printf("Generating api token: %s", vaultConfig.Token)
 
 	// We don't currently save the token because we're always going to specify it.
-	err = vaultSrv.CreateToken(ctx, vaultConfig.Token, []string{"sales-api"}, "Sales API")
+	err = vaultSrv.CreateToken(ctx, vaultConfig.Token, []string{"api"}, "API")
 	if err != nil {
 		return fmt.Errorf("unable to create token: %w", err)
 	}
