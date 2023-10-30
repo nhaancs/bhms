@@ -3,11 +3,14 @@ package v1
 
 import (
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/checkgrp"
+	"github.com/nhaancs/bhms/app/services/api/v1/handlers/divisiongrp"
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/usergrp"
+	"github.com/nhaancs/bhms/business/core/division"
+	"github.com/nhaancs/bhms/business/core/division/stores/divisionjson"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/core/user/stores/usercache"
 	"github.com/nhaancs/bhms/business/core/user/stores/userdb"
-	mid2 "github.com/nhaancs/bhms/business/web/mid"
+	"github.com/nhaancs/bhms/business/web/mid"
 	"github.com/nhaancs/bhms/foundation/sms"
 	"net/http"
 	"os"
@@ -44,7 +47,7 @@ type APIMuxConfig struct {
 }
 
 // APIMux constructs a http.Handler with all application routes defined.
-func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
+func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, error) {
 	const version = "v1"
 	var opts Options
 	for _, option := range options {
@@ -54,14 +57,14 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	app := web.NewApp(
 		cfg.Shutdown,
 		cfg.Tracer,
-		mid2.Logger(cfg.Log),
-		mid2.Errors(cfg.Log),
-		mid2.Metrics(),
-		mid2.Panics(),
+		mid.Logger(cfg.Log),
+		mid.Errors(cfg.Log),
+		mid.Metrics(),
+		mid.Panics(),
 	)
 
 	if opts.corsOrigin != "" {
-		app.EnableCORS(mid2.Cors(opts.corsOrigin))
+		app.EnableCORS(mid.Cors(opts.corsOrigin))
 	}
 
 	// -------------------------------------------------------------------------
@@ -78,5 +81,16 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
 	app.Handle(http.MethodPost, version, "/users/verify-otp", usrHdl.VerifyOTP)
 	app.Handle(http.MethodGet, version, "/users/token", usrHdl.Token)
 
-	return app
+	// -------------------------------------------------------------------------
+	// Division routes
+	divStore, err := divisionjson.NewStore(cfg.Log)
+	if err != nil {
+		return nil, err
+	}
+	divCore := division.NewCore(cfg.Log, divStore)
+	divHdl := divisiongrp.New(divCore)
+	app.Handle(http.MethodPost, version, "/divisions/provinces", divHdl.QueryProvinces, mid.Authenticate(cfg.Auth))
+	app.Handle(http.MethodPost, version, "/divisions/children/:parent_id", divHdl.QueryByParentID, mid.Authenticate(cfg.Auth))
+
+	return app, nil
 }

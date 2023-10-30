@@ -257,7 +257,10 @@ func run(ctx context.Context, log *logger.Logger, build string) error {
 		SMS:      sms,
 	}
 
-	apiMux := v1.APIMux(cfgMux, v1.WithCORS("*"))
+	apiMux, err := v1.APIMux(cfgMux, v1.WithCORS("*"))
+	if err != nil {
+		return fmt.Errorf("starting api mux: %w", err)
+	}
 
 	api := http.Server{
 		Addr:         cfg.Web.APIHost,
