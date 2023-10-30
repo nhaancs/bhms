@@ -37,9 +37,6 @@ func (d district) validate() error {
 	if len(d.Name) == 0 {
 		return fmt.Errorf("district name is empty")
 	}
-	if len(d.Wards) == 0 {
-		return fmt.Errorf("district wards is empty")
-	}
 	return nil
 }
 
