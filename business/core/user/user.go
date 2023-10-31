@@ -148,7 +148,7 @@ func (c *Core) Authenticate(ctx context.Context, phone, password string) (User, 
 		return User{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
 	}
 
-	if usr.Status != StatusCreated {
+	if !usr.Status.Equal(StatusCreated) {
 		c.log.Error(ctx, "invalid user status", "got user", usr)
 		return User{}, ErrInvalidUserStatus
 	}

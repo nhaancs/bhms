@@ -59,9 +59,7 @@ type Auth struct {
 
 // New creates an Auth to support authentication/authorization.
 func New(cfg Config) (*Auth, error) {
-
-	// If a database connection is not provided, we won't perform the
-	// user enabled check.
+	// If a database connection is not provided, we won't perform the user enabled check.
 	var usrCore *user.Core
 	if cfg.DB != nil {
 		usrCore = user.NewCore(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB))
@@ -241,8 +239,13 @@ func (a *Auth) isUserEnabled(ctx context.Context, claims Claims) error {
 		return fmt.Errorf("parse user: %w", err)
 	}
 
-	if _, err := a.userCore.QueryByID(ctx, userID); err != nil {
+	usr, err := a.userCore.QueryByID(ctx, userID)
+	if err != nil {
 		return fmt.Errorf("query user: %w", err)
+	}
+
+	if !usr.Status.Equal(user.StatusCreated) {
+		return fmt.Errorf("invalid user status: %+v", usr)
 	}
 
 	return nil

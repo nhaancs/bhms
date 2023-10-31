@@ -118,4 +118,4 @@ metadata:
 
 spec:
   selector:
-    app: sales
+    app: api

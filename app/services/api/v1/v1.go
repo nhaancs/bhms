@@ -89,8 +89,8 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	}
 	divCore := division.NewCore(cfg.Log, divStore)
 	divHdl := divisiongrp.New(divCore)
-	app.Handle(http.MethodPost, version, "/divisions/provinces", divHdl.QueryProvinces, mid.Authenticate(cfg.Auth))
-	app.Handle(http.MethodPost, version, "/divisions/children/:parent_id", divHdl.QueryByParentID, mid.Authenticate(cfg.Auth))
+	app.Handle(http.MethodGet, version, "/divisions/provinces", divHdl.QueryProvinces, mid.Authenticate(cfg.Auth))
+	app.Handle(http.MethodGet, version, "/divisions/children/:parent_id", divHdl.QueryByParentID, mid.Authenticate(cfg.Auth))
 
 	return app, nil
 }

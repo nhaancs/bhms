@@ -340,11 +340,14 @@ token:
 
 # export TOKEN="COPY TOKEN STRING FROM LAST CALL"
 
-users:
-	curl -il -H "Authorization: Bearer ${TOKEN}" http://localhost:3000/v1/users?page=1&rows=2
+provinces:
+	curl -il -H "Authorization: Bearer ${TOKEN}" http://localhost:3000/v1/divisions/provinces
 
-load:
+load-token:
 	hey -m GET -c 50 -n 500 -H "Authorization: Basic MDk4NDI1MDA2NTpnb3BoZXJz" http://localhost:3000/v1/users/token
+
+load-provinces:
+	hey -m GET -c 100 -n 10000 -H "Authorization: Bearer ${TOKEN}" http://localhost:3000/v1/divisions/provinces
 
 otel-test:
 	curl -il -H "Traceparent: 00-918dd5ecf264712262b68cf2ef8b5239-896d90f23f69f006-01" --user "0984250065:gophers" http://localhost:3000/v1/users/token

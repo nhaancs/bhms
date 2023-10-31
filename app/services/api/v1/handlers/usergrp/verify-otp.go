@@ -48,7 +48,7 @@ func (h *Handlers) VerifyOTP(ctx context.Context, w http.ResponseWriter, r *http
 			return fmt.Errorf("querybyid: userID[%s]: %w", userID, err)
 		}
 	}
-	if usr.Status != user.StatusCreated {
+	if !usr.Status.Equal(user.StatusCreated) {
 		return response.NewError(ErrInvalidStatus, http.StatusBadRequest)
 	}
 
