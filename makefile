@@ -337,7 +337,7 @@ provinces:
 	curl -il -H "Authorization: Bearer ${TOKEN}" http://localhost:3000/v1/divisions/provinces
 
 load-token:
-	hey -m GET -c 50 -n 500 -H "Authorization: Basic MDk4NDI1MDA2NTpnb3BoZXJz" http://localhost:3000/v1/users/token
+	hey -m GET -c 100 -n 1000 -H "Authorization: Basic MDk4NDI1MDA2NTpnb3BoZXJz" http://localhost:3000/v1/users/token
 
 load-provinces:
 	hey -m GET -c 100 -n 10000 -H "Authorization: Bearer ${TOKEN}" http://localhost:3000/v1/divisions/provinces
