@@ -96,12 +96,10 @@ func processCommands(args conf.Args, log *logger.Logger, cfg config) error {
 	}
 
 	switch args.Num(0) {
-	case "migrate":
+	case "migrate-seed":
 		if err := commands.Migrate(dbConfig); err != nil {
 			return fmt.Errorf("migrating database: %w", err)
 		}
-
-	case "seed":
 		if err := commands.Seed(dbConfig); err != nil {
 			return fmt.Errorf("seeding database: %w", err)
 		}

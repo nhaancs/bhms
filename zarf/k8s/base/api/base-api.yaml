@@ -25,13 +25,9 @@ spec:
       terminationGracePeriodSeconds: 60
 
       initContainers:
-      - name: init-migrate
+      - name: init-migrate-seed
         image: api-image
-        command: ['./admin', 'migrate']
-
-      - name: init-seed
-        image: api-image
-        command: ['./admin', 'seed']
+        command: ['./admin', 'migrate-seed']
 
       containers:
       - name: api
@@ -64,11 +60,23 @@ spec:
           failureThreshold: 2
 
         env:
+        - name: API_DB_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: db_password
+              optional: true
         - name: API_DB_HOST
           valueFrom:
             configMapKeyRef:
               name: app-config
               key: db_host
+              optional: true
+        - name: API_DB_DISABLE_TLS
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: db_disabletls
               optional: true
 
         - name: GOMAXPROCS

@@ -32,7 +32,7 @@ SHELL = $(if $(wildcard $(SHELL_PATH)),/bin/ash,/bin/bash)
 # Install Tooling and Dependencies
 #
 #   This project uses Docker and it is expected to be installed. Please provide
-#   Docker at least 3 CPUs.
+#   Docker at least 4 CPUs.
 #
 #	Run these commands to install everything needed.
 #	$ make dev-brew
@@ -167,25 +167,20 @@ dev-load:
 	kind load docker-image $(METRICS_IMAGE) --name $(KIND_CLUSTER)
 
 dev-apply:
+	kustomize build zarf/k8s/dev/grafana | kubectl apply -f -
+
+	kustomize build zarf/k8s/dev/prometheus | kubectl apply -f -
+
+	kustomize build zarf/k8s/dev/tempo | kubectl apply -f -
+
+	kustomize build zarf/k8s/dev/loki | kubectl apply -f -
+
+	kustomize build zarf/k8s/dev/promtail | kubectl apply -f -
+
 	kustomize build zarf/k8s/dev/vault | kubectl apply -f -
 
 	kustomize build zarf/k8s/dev/database | kubectl apply -f -
 	kubectl rollout status --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
-
-	kustomize build zarf/k8s/dev/grafana | kubectl apply -f -
-	kubectl wait pods --namespace=$(NAMESPACE) --selector app=grafana --timeout=120s --for=condition=Ready
-
-	kustomize build zarf/k8s/dev/prometheus | kubectl apply -f -
-	kubectl wait pods --namespace=$(NAMESPACE) --selector app=prometheus --timeout=120s --for=condition=Ready
-
-	kustomize build zarf/k8s/dev/tempo | kubectl apply -f -
-	kubectl wait pods --namespace=$(NAMESPACE) --selector app=tempo --timeout=120s --for=condition=Ready
-
-	kustomize build zarf/k8s/dev/loki | kubectl apply -f -
-	kubectl wait pods --namespace=$(NAMESPACE) --selector app=loki --timeout=120s --for=condition=Ready
-
-	kustomize build zarf/k8s/dev/promtail | kubectl apply -f -
-	kubectl wait pods --namespace=$(NAMESPACE) --selector app=promtail --timeout=120s --for=condition=Ready
 
 	kustomize build zarf/k8s/dev/api | kubectl apply -f -
 	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(APP) --timeout=120s --for=condition=Ready
@@ -205,23 +200,27 @@ dev-logs:
 dev-logs-init:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-vault-system
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-vault-loadkeys
-	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-migrate
-	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-seed
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-migrate-seed
 
 dev-status:
 	kubectl get nodes -o wide
 	kubectl get svc -o wide
 	kubectl get pods -o wide --watch --all-namespaces
 
-dev-describe:
+dev-describe-node:
 	kubectl describe nodes
-	kubectl describe svc
 
 dev-describe-deployment:
 	kubectl describe deployment --namespace=$(NAMESPACE) $(APP)
 
 dev-describe-api:
 	kubectl describe pod --namespace=$(NAMESPACE) -l app=$(APP)
+
+dev-describe-database:
+	kubectl describe pod --namespace=$(NAMESPACE) -l app=database
+
+dev-describe-grafana:
+	kubectl describe pod --namespace=$(NAMESPACE) -l app=grafana
 # ------------------------------------------------------------------------------
 
 dev-logs-vault:

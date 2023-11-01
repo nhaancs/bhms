@@ -51,13 +51,13 @@ spec:
           emptyDir: {}
       containers:
         - name: vault          
-          image: hashicorp/vault:1.14
+          image: hashicorp/vault:1.15
           imagePullPolicy: IfNotPresent
           resources:
             requests:
-              cpu: "250m"
+              cpu: "150m"
             limits:
-              cpu: "250m"
+              cpu: "150m"
           command:
           - "/bin/sh"
           - "-ec"
