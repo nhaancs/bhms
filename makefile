@@ -65,12 +65,12 @@ GOLANG          := golang:1.21.3
 ALPINE          := alpine:3.18
 KIND            := kindest/node:v1.27.3
 POSTGRES        := postgres:15.4
-VAULT           := hashicorp/vault:1.14
 GRAFANA         := grafana/grafana:10.1.0
 PROMETHEUS      := prom/prometheus:v2.47.0
 TEMPO           := grafana/tempo:2.2.0
 LOKI            := grafana/loki:2.9.0
 PROMTAIL        := grafana/promtail:2.9.0
+#VAULT           := hashicorp/vault:1.14
 
 KIND_CLUSTER    := bhms-cluster
 NAMESPACE       := api-system
@@ -100,19 +100,19 @@ dev-brew:
 	brew list kubectl || brew install kubectl
 	brew list kustomize || brew install kustomize
 	brew list pgcli || brew install pgcli
-	brew list vault || brew install vault
+	#brew list vault || brew install vault
 
 dev-docker:
 	docker pull $(GOLANG)
 	docker pull $(ALPINE)
 	docker pull $(KIND)
 	docker pull $(POSTGRES)
-	docker pull $(VAULT)
 	docker pull $(GRAFANA)
 	docker pull $(PROMETHEUS)
 	docker pull $(TEMPO)
 	docker pull $(LOKI)
 	docker pull $(PROMTAIL)
+	#docker pull $(VAULT)
 
 # ==============================================================================
 # Building containers
@@ -147,12 +147,12 @@ dev-up:
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
 
 	kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER)
-	kind load docker-image $(VAULT) --name $(KIND_CLUSTER)
 	kind load docker-image $(GRAFANA) --name $(KIND_CLUSTER)
 	kind load docker-image $(PROMETHEUS) --name $(KIND_CLUSTER)
 	kind load docker-image $(TEMPO) --name $(KIND_CLUSTER)
 	kind load docker-image $(LOKI) --name $(KIND_CLUSTER)
 	kind load docker-image $(PROMTAIL) --name $(KIND_CLUSTER)
+	#kind load docker-image $(VAULT) --name $(KIND_CLUSTER)
 
 dev-down:
 	kind delete cluster --name $(KIND_CLUSTER)
@@ -168,16 +168,11 @@ dev-load:
 
 dev-apply:
 	kustomize build zarf/k8s/dev/grafana | kubectl apply -f -
-
 	kustomize build zarf/k8s/dev/prometheus | kubectl apply -f -
-
 	kustomize build zarf/k8s/dev/tempo | kubectl apply -f -
-
 	kustomize build zarf/k8s/dev/loki | kubectl apply -f -
-
 	kustomize build zarf/k8s/dev/promtail | kubectl apply -f -
-
-	kustomize build zarf/k8s/dev/vault | kubectl apply -f -
+	#kustomize build zarf/k8s/dev/vault | kubectl apply -f -
 
 	kustomize build zarf/k8s/dev/database | kubectl apply -f -
 	kubectl rollout status --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
@@ -198,8 +193,8 @@ dev-logs:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) --all-containers=true -f --tail=100 --max-log-requests=6 | go run app/tooling/logfmt/main.go -service=$(SERVICE_NAME)
 
 dev-logs-init:
-	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-vault-system
-	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-vault-loadkeys
+	#kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-vault-system
+	#kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-vault-loadkeys
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-migrate-seed
 
 dev-status:

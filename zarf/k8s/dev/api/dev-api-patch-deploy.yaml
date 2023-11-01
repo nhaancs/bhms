@@ -88,9 +88,9 @@ spec:
           limits:
             cpu: "500m"
 
-        volumeMounts:
-          - name: vault
-            mountPath: /vault
+#        volumeMounts:
+#          - name: vault
+#            mountPath: /vault
 
       - name: metrics
         resources:

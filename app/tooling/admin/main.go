@@ -12,7 +12,6 @@ import (
 	"github.com/nhaancs/bhms/app/tooling/admin/commands"
 	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
 	"github.com/nhaancs/bhms/foundation/logger"
-	"github.com/nhaancs/bhms/foundation/vault"
 )
 
 var build = "develop"
@@ -29,11 +28,16 @@ type config struct {
 		MaxOpenConns int    `conf:"default:0"`
 		DisableTLS   bool   `conf:"default:true"`
 	}
-	Vault struct {
+	//Vault struct {
+	//	KeysFolder string `conf:"default:zarf/keys/"`
+	//	Address    string `conf:"default:http://vault-service.api-system.svc.cluster.local:8200"`
+	//	Token      string `conf:"default:mytoken,mask"`
+	//	MountPath  string `conf:"default:secret"`
+	//}
+	Auth struct {
 		KeysFolder string `conf:"default:zarf/keys/"`
-		Address    string `conf:"default:http://vault-service.api-system.svc.cluster.local:8200"`
-		Token      string `conf:"default:mytoken,mask"`
-		MountPath  string `conf:"default:secret"`
+		ActiveKID  string `conf:"default:54bb2165-71e1-41a6-af3e-7da4a0e1e2c1"`
+		Issuer     string `conf:"default:service project"`
 	}
 }
 
@@ -89,11 +93,11 @@ func processCommands(args conf.Args, log *logger.Logger, cfg config) error {
 		DisableTLS:   cfg.DB.DisableTLS,
 	}
 
-	vaultConfig := vault.Config{
-		Address:   cfg.Vault.Address,
-		Token:     cfg.Vault.Token,
-		MountPath: cfg.Vault.MountPath,
-	}
+	//vaultConfig := vault.Config{
+	//	Address:   cfg.Vault.Address,
+	//	Token:     cfg.Vault.Token,
+	//	MountPath: cfg.Vault.MountPath,
+	//}
 
 	switch args.Num(0) {
 	case "migrate-seed":
@@ -134,15 +138,15 @@ func processCommands(args conf.Args, log *logger.Logger, cfg config) error {
 	//		return fmt.Errorf("generating token: %w", err)
 	//	}
 
-	case "vault":
-		if err := commands.Vault(vaultConfig, cfg.Vault.KeysFolder); err != nil {
-			return fmt.Errorf("setting private key: %w", err)
-		}
+	//case "vault":
+	//	if err := commands.Vault(vaultConfig, cfg.Vault.KeysFolder); err != nil {
+	//		return fmt.Errorf("setting private key: %w", err)
+	//	}
 
-	case "vault-init":
-		if err := commands.VaultInit(vaultConfig); err != nil {
-			return fmt.Errorf("initializing vault instance: %w", err)
-		}
+	//case "vault-init":
+	//	if err := commands.VaultInit(vaultConfig); err != nil {
+	//		return fmt.Errorf("initializing vault instance: %w", err)
+	//	}
 
 	default:
 		fmt.Println("migrate:    create the schema in the database")

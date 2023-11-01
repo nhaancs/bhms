@@ -3,11 +3,11 @@ kind: Kustomization
 resources:
 - ../../base/api/
 - ./dev-api-configmap.yaml
-- ./dev-api-vault.yaml
+#- ./dev-api-vault.yaml
 patches:
 - path: ./dev-api-patch-deploy.yaml
 - path: ./dev-api-patch-service.yaml
-- path: ./dev-api-vault-patch.yaml
+#- path: ./dev-api-vault-patch.yaml
 images:
 - name: api-image
   newName: nhaancs/bhms/api
