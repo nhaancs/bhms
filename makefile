@@ -64,12 +64,12 @@ SHELL = $(if $(wildcard $(SHELL_PATH)),/bin/ash,/bin/bash)
 GOLANG          := golang:1.21.3
 ALPINE          := alpine:3.18
 KIND            := kindest/node:v1.27.3
-POSTGRES        := postgres:15.4
 GRAFANA         := grafana/grafana:10.1.0
 PROMETHEUS      := prom/prometheus:v2.47.0
 TEMPO           := grafana/tempo:2.2.0
 LOKI            := grafana/loki:2.9.0
 PROMTAIL        := grafana/promtail:2.9.0
+#POSTGRES        := postgres:15.4
 #VAULT           := hashicorp/vault:1.14
 
 KIND_CLUSTER    := bhms-cluster
@@ -146,12 +146,12 @@ dev-up:
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
 
-	kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER)
 	kind load docker-image $(GRAFANA) --name $(KIND_CLUSTER)
 	kind load docker-image $(PROMETHEUS) --name $(KIND_CLUSTER)
 	kind load docker-image $(TEMPO) --name $(KIND_CLUSTER)
 	kind load docker-image $(LOKI) --name $(KIND_CLUSTER)
 	kind load docker-image $(PROMTAIL) --name $(KIND_CLUSTER)
+	#kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER)
 	#kind load docker-image $(VAULT) --name $(KIND_CLUSTER)
 
 dev-down:
@@ -172,10 +172,9 @@ dev-apply:
 	kustomize build zarf/k8s/dev/tempo | kubectl apply -f -
 	kustomize build zarf/k8s/dev/loki | kubectl apply -f -
 	kustomize build zarf/k8s/dev/promtail | kubectl apply -f -
-	#kustomize build zarf/k8s/dev/vault | kubectl apply -f -
-
 	kustomize build zarf/k8s/dev/database | kubectl apply -f -
-	kubectl rollout status --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
+	#kubectl rollout status --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
+	#kustomize build zarf/k8s/dev/vault | kubectl apply -f -
 
 	kustomize build zarf/k8s/dev/api | kubectl apply -f -
 	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(APP) --timeout=120s --for=condition=Ready
@@ -218,8 +217,8 @@ dev-describe-grafana:
 	kubectl describe pod --namespace=$(NAMESPACE) -l app=grafana
 # ------------------------------------------------------------------------------
 
-dev-logs-vault:
-	kubectl logs --namespace=$(NAMESPACE) -l app=vault --all-containers=true -f --tail=100
+#dev-logs-vault:
+#	kubectl logs --namespace=$(NAMESPACE) -l app=vault --all-containers=true -f --tail=100
 
 dev-logs-db:
 	kubectl logs --namespace=$(NAMESPACE) -l app=database --all-containers=true -f --tail=100
@@ -244,7 +243,7 @@ dev-services-delete:
 	kustomize build zarf/k8s/dev/tempo | kubectl delete -f -
 	kustomize build zarf/k8s/dev/loki | kubectl delete -f -
 	kustomize build zarf/k8s/dev/promtail | kubectl delete -f -
-	kustomize build zarf/k8s/dev/database | kubectl delete -f -
+	#kustomize build zarf/k8s/dev/database | kubectl delete -f -
 
 dev-describe-replicaset:
 	kubectl get rs

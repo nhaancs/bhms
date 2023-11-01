@@ -4,8 +4,8 @@ metadata:
   name: app-config
   namespace: api-system
 data:
-#  db_host: "database-service.api-system"
+  db_host: "database-service.api-system"
   db_user: "postgres"
   db_password: "postgres"
   db_disabletls: "true"
-  db_host: "database-service.api-system.svc.cluster.local"
+#  db_host: "database-service.api-system.svc.cluster.local"
