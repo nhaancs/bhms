@@ -17,9 +17,9 @@ CREATE TABLE users (
 CREATE TABLE properties (
 	id                  UUID        NOT NULL PRIMARY KEY,
 	name                TEXT        NOT NULL,
-    address_level1_id   TEXT        NOT NULL INDEX idx_address_level1_id,
-    address_level2_id   TEXT        NOT NULL INDEX idx_address_level2_id,
-    address_level3_id   TEXT        NOT NULL INDEX idx_address_level3_id,
+    address_level1_id   SERIAL      NOT NULL INDEX idx_address_level1_id,
+    address_level2_id   SERIAL      NOT NULL INDEX idx_address_level2_id,
+    address_level3_id   SERIAL      NOT NULL INDEX idx_address_level3_id,
 	street              TEXT        NOT NULL,
     manager_id          UUID        NOT NULL INDEX idx_manager_id,
     status              TEXT        NOT NULL INDEX idx_status,
