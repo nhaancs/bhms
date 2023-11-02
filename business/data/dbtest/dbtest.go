@@ -53,10 +53,10 @@ func StopDB(c *docker.Container) {
 type Test struct {
 	DB       *sqlx.DB
 	Log      *logger.Logger
-	Auth     *auth.Auth
 	CoreAPIs CoreAPIs
 	Teardown func()
 	t        *testing.T
+	Auth     *auth.Auth
 }
 
 // NewTest creates a test database inside a Docker container. It creates the
@@ -159,10 +159,10 @@ func NewTest(t *testing.T, c *docker.Container) *Test {
 	test := Test{
 		DB:       db,
 		Log:      log,
-		Auth:     a,
 		CoreAPIs: coreAPIs,
 		Teardown: teardown,
 		t:        t,
+		Auth:     a,
 	}
 
 	return &test
@@ -170,7 +170,7 @@ func NewTest(t *testing.T, c *docker.Container) *Test {
 
 // Token generates an authenticated token for a user.
 func (test *Test) Token(phone string, pass string) string {
-	test.t.Log("Generating token for test ...")
+	test.t.Logf("Generating %q token for test ...", phone)
 
 	ctx := context.Background()
 	store := userdb.NewStore(test.Log, test.DB)
@@ -182,7 +182,7 @@ func (test *Test) Token(phone string, pass string) string {
 	claims := auth.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   dbUsr.ID.String(),
-			Issuer:    "service project",
+			Issuer:    "bhms project",
 			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		},
@@ -229,7 +229,6 @@ type CoreAPIs struct {
 
 func newCoreAPIs(log *logger.Logger, db *sqlx.DB) CoreAPIs {
 	usrCore := user.NewCore(log, userdb.NewStore(log, db))
-
 	return CoreAPIs{
 		User: usrCore,
 	}
@@ -252,7 +251,7 @@ func (ks *keyStore) PublicKey(ctx context.Context, kid string) (string, error) {
 const (
 	kid = "s4sKIjD9kIRjxs2tulPqGLdxSfgPErRN1Mu3Hd9k9NQ"
 
-	privateKeyPEM = `-----BEGIN RSA PRIVATE KEY-----
+	privateKeyPEM = `-----BEGIN PRIVATE KEY-----
 MIIEpQIBAAKCAQEAvMAHb0IoLvoYuW2kA+LTmnk+hfnBq1eYIh4CT/rMPCxgtzjq
 U0guQOMnLg69ydyA5uu37v6rbS1+stuBTEiMQl/bxAhgLkGrUhgpZ10Bt6GzSEgw
 QNloZoGaxe4p20wMPpT4kcMKNHkQds3uONNcLxPUmfjbbH64g+seg28pbgQPwKFK
@@ -278,7 +277,7 @@ U3DxWDrL5L9NqKEwcNt7ZIDsdnfsJp5F7F6o/UiyOFd9YQb7YkxN0r5rUTg7Lpdx
 eMyv0/UCgYEAhX9MPzmTO4+N8naGFof1o8YP97pZj0HkEvM0hTaeAQFKJiwX5ijQ
 xumKGh//G0AYsjqP02ItzOm2mWnbI3FrNlKmGFvR6VxIZMOyXvpLofHucjJ5SWli
 eYjPklKcXaMftt1FVO4n+EKj1k1+Tv14nytq/J5WN+r4FBlNEYj/6vg=
------END RSA PRIVATE KEY-----
+-----END PRIVATE KEY-----
 `
 	publicKeyPEM = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvMAHb0IoLvoYuW2kA+LT
