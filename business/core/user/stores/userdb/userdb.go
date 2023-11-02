@@ -59,7 +59,7 @@ func (s *Store) Update(ctx context.Context, usr user.User) error {
 		"roles" = :roles,
 		"password_hash" = :password_hash,
 		"status" = :status,
-		"created_at" = :created_at
+		"updated_at" = :updated_at
 	WHERE
 		id = :id`
 
@@ -110,15 +110,15 @@ func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, err
 	WHERE 
 		id = :id`
 
-	var dbUsr dbUser
-	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &dbUsr); err != nil {
+	var row dbUser
+	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &row); err != nil {
 		if errors.Is(err, db.ErrDBNotFound) {
 			return user.User{}, fmt.Errorf("namedquerystruct: %w", user.ErrNotFound)
 		}
 		return user.User{}, fmt.Errorf("namedquerystruct: %w", err)
 	}
 
-	usr, err := toCoreUser(dbUsr)
+	usr, err := toCoreUser(row)
 	if err != nil {
 		return user.User{}, err
 	}
