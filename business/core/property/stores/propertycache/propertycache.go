@@ -9,17 +9,19 @@ import (
 )
 
 type Store struct {
-	log   *logger.Logger
-	store property.Storer
-	cache map[string]property.Property
-	mu    sync.RWMutex
+	log            *logger.Logger
+	store          property.Storer
+	cache          map[string]property.Property
+	userProperties map[string][]string
+	mu             sync.RWMutex
 }
 
 func NewStore(log *logger.Logger, store property.Storer) *Store {
 	return &Store{
-		log:   log,
-		store: store,
-		cache: map[string]property.Property{},
+		log:            log,
+		store:          store,
+		cache:          map[string]property.Property{},
+		userProperties: map[string][]string{},
 	}
 }
 
@@ -54,22 +56,37 @@ func (s *Store) Delete(ctx context.Context, prprty property.Property) error {
 }
 
 func (s *Store) QueryByID(ctx context.Context, prprtyID uuid.UUID) (property.Property, error) {
-	cachedUsr, ok := s.readCache(prprtyID.String())
+	cached, ok := s.readCache(prprtyID.String())
 	if ok {
-		return cachedUsr, nil
+		return cached, nil
 	}
 
-	usr, err := s.store.QueryByID(ctx, prprtyID)
+	prprty, err := s.store.QueryByID(ctx, prprtyID)
 	if err != nil {
 		return property.Property{}, err
 	}
 
-	s.writeCache(usr)
+	s.writeCache(prprty)
 
-	return usr, nil
+	return prprty, nil
 }
 
 func (s *Store) QueryByManagerID(ctx context.Context, managerID uuid.UUID) ([]property.Property, error) {
+	prprtyIDs, ok := s.readCacheByManagerID(managerID.String())
+	if ok {
+		var prprties []property.Property
+		for _, prprtyID := range prprtyIDs {
+			p, ok := s.readCache(prprtyID)
+			if !ok {
+				break
+			}
+			prprties = append(prprties, p)
+		}
+		if len(prprtyIDs) == len(prprties) {
+			return prprties, nil
+		}
+	}
+
 	prprties, err := s.store.QueryByManagerID(ctx, managerID)
 	if err != nil {
 		return nil, err
@@ -92,11 +109,31 @@ func (s *Store) readCache(key string) (property.Property, bool) {
 	return prprty, true
 }
 
+func (s *Store) readCacheByManagerID(key string) ([]string, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	prprtyIDs, exists := s.userProperties[key]
+	if !exists {
+		return nil, false
+	}
+
+	return prprtyIDs, true
+}
+
 func (s *Store) writeCache(prprty property.Property) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.cache[prprty.ID.String()] = prprty
+
+	prprtyIDs, _ := s.userProperties[prprty.ManagerID.String()]
+	for _, prprtyID := range prprtyIDs {
+		if prprtyID == prprty.ID.String() {
+			return
+		}
+	}
+	s.userProperties[prprty.ManagerID.String()] = append(prprtyIDs, prprty.ID.String())
 }
 
 func (s *Store) deleteCache(prprty property.Property) {
@@ -104,4 +141,15 @@ func (s *Store) deleteCache(prprty property.Property) {
 	defer s.mu.Unlock()
 
 	delete(s.cache, prprty.ID.String())
+
+	if prprtyIDs, exist := s.userProperties[prprty.ManagerID.String()]; exist {
+		var left []string
+		for _, prprtyID := range prprtyIDs {
+			if prprtyID == prprty.ID.String() {
+				continue
+			}
+			left = append(left, prprtyID)
+		}
+		s.userProperties[prprty.ManagerID.String()] = left
+	}
 }
