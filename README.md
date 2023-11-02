@@ -45,23 +45,23 @@ Bảng `divisions` lưu thông tin các đơn vị hành chính của Việt Nam
 | `level`      | smallint     | &check;  | Cấp đơn vị hành chính - 1: Tỉnh, thành phố, 2: quận, huyện, 3: xã, phường |
 | `parent_id`  | serial       | &cross;  | ID của cấp cao hơn                                                        |
 | `created_at` | timestamp    | &check;  | Thời gian khởi tạo                                                        |
-| `updated_at` | timestamp    | &cross;  | Thời gian cập nhật                                                        |
+| `updated_at` | timestamp    | &check;  | Thời gian cập nhật                                                        |
 
 #### Bảng `properties`
 Bảng `properties` lưu các thông tin cần thiết của khu trọ.
 
-| Tên cột             | Kiểu dữ liệu | Bắt buộc | Mô tả                                |
-|---------------------|--------------|:--------:|--------------------------------------|
-| `id`                | uuid         | &check;  | Khóa chính                           |
-| `name`              | text         | &check;  | Tên khu trọ                          |
-| `address_level1_id` | serial       | &check;  | ID tỉnh, thành phố                   |
-| `address_level2_id` | serial       | &check;  | ID quận, huyện                       |
-| `address_level3_id` | serial       | &check;  | ID xã, phường                        |
-| `street`            | text         | &check;  | Số nhà và tên đường                  |
-| `manager_id`        | uuid         | &check;  | ID của chủ trọ                       |
-| `status`            | text         | &check;  | Trạng thái khu trọ: ACTIVE, DISABLED |
-| `created_at`        | timestamp    | &check;  | Thời gian khởi tạo                   |
-| `updated_at`        | timestamp    | &cross;  | Thời gian cập nhật                   |
+| Tên cột             | Kiểu dữ liệu | Bắt buộc | Mô tả                                         |
+|---------------------|--------------|:--------:|-----------------------------------------------|
+| `id`                | uuid         | &check;  | Khóa chính                                    |
+| `name`              | text         | &check;  | Tên khu trọ                                   |
+| `address_level1_id` | serial       | &check;  | ID tỉnh, thành phố                            |
+| `address_level2_id` | serial       | &check;  | ID quận, huyện                                |
+| `address_level3_id` | serial       | &check;  | ID xã, phường                                 |
+| `street`            | text         | &check;  | Số nhà và tên đường                           |
+| `manager_id`        | uuid         | &check;  | ID của chủ trọ                                |
+| `status`            | text         | &check;  | Trạng thái khu trọ: CREATED, ACTIVE, DISABLED |
+| `created_at`        | timestamp    | &check;  | Thời gian khởi tạo                            |
+| `updated_at`        | timestamp    | &check;  | Thời gian cập nhật                            |
 
 #### Bảng `blocks`
 Bảng `blocks` lưu thông tin các dãy của khu trọ.
@@ -72,7 +72,7 @@ Bảng `blocks` lưu thông tin các dãy của khu trọ.
 | `name`        | text         | &check;  | Tên dãy            |
 | `property_id` | uuid         | &check;  | ID của khu trọ     |
 | `created_at`  | timestamp    | &check;  | Thời gian khởi tạo |
-| `updated_at`  | timestamp    | &cross;  | Thời gian cập nhật |
+| `updated_at`  | timestamp    | &check;  | Thời gian cập nhật |
 
 #### Bảng `floors`
 Bảng `floors` lưu thông tin các tầng của khu trọ.
@@ -83,7 +83,7 @@ Bảng `floors` lưu thông tin các tầng của khu trọ.
 | `name`       | text         | &check;  | Tên tầng           |
 | `block_id`   | uuid         | &check;  | ID của dãy         |
 | `created_at` | timestamp    | &check;  | Thời gian khởi tạo |
-| `updated_at` | timestamp    | &cross;  | Thời gian cập nhật |
+| `updated_at` | timestamp    | &check;  | Thời gian cập nhật |
 
 #### Bảng `units`
 Bảng `units` lưu thông tin các phòng của khu trọ.
@@ -96,7 +96,7 @@ Bảng `units` lưu thông tin các phòng của khu trọ.
 | `block_id`    | uuid         | &check;  | ID của dãy         |
 | `floor_id`    | uuid         | &check;  | ID của tầng        |
 | `created_at`  | timestamp    | &check;  | Thời gian khởi tạo |
-| `updated_at`  | timestamp    | &cross;  | Thời gian cập nhật |
+| `updated_at`  | timestamp    | &check;  | Thời gian cập nhật |
 
 #### Bảng `payment_methods`
 Bảng `payment_methods` lưu thông tin thanh toán (tài khoản ngân hàng) của các chủ trọ.
@@ -111,7 +111,7 @@ Bảng `payment_methods` lưu thông tin thanh toán (tài khoản ngân hàng) 
 | `enabled`        | boolean      | &check;  | Trạng thái bật/tắt của phương thức thanh toán |
 | `property_id`    | uuid         | &check;  | ID của khu trọ                                |
 | `created_at`     | timestamp    | &check;  | Thời gian khởi tạo                            |
-| `updated_at`     | timestamp    | &cross;  | Thời gian cập nhật                            |
+| `updated_at`     | timestamp    | &check;  | Thời gian cập nhật                            |
 
 #### Bảng `sessions`
 Bảng `sessions` lưu thông tin thuê phòng theo thời gian trên hợp đồng.
@@ -128,7 +128,7 @@ Bảng `sessions` lưu thông tin thuê phòng theo thời gian trên hợp đ�
 | `note`             | text         | &cross;  | Ghi chú                          |
 | `enabled`          | boolean      | &check;  | Trạng thái bật/tắt của session   |
 | `created_at`       | timestamp    | &check;  | Thời gian khởi tạo               |
-| `updated_at`       | timestamp    | &cross;  | Thời gian cập nhật               |
+| `updated_at`       | timestamp    | &check;  | Thời gian cập nhật               |
 
 #### Bảng `services`
 Bảng `services` lưu thông tin các dịch vụ của khu trọ.
@@ -143,7 +143,7 @@ Bảng `services` lưu thông tin các dịch vụ của khu trọ.
 | `invoice_type` | text         | &check;  | Đơn vị tính: PER_USAGE, PER_ROOM, PER_MEMBER, PER_PIECE, PER_TIME | 
 | `enabled`      | boolean      | &check;  | Trạng thái bật/tắt dịch vụ                                        |
 | `created_at`   | timestamp    | &check;  | Thời gian khởi tạo                                                |
-| `updated_at`   | timestamp    | &cross;  | Thời gian cập nhật                                                |
+| `updated_at`   | timestamp    | &check;  | Thời gian cập nhật                                                |
 
 
 #### Bảng `session_services`
@@ -172,7 +172,7 @@ Bảng `session_invoices` lưu thông tin hóa đơn của từng session.
 | `finished`              | boolean      | &check;  | Trạng thái chưa hoàn thành/hoàn thành |
 | `enabled`               | boolean      | &check;  | Trạng thái bật/tắt của hóa đơn        |
 | `created_at`            | timestamp    | &check;  | Thời gian khởi tạo                    |
-| `updated_at`            | timestamp    | &cross;  | Thời gian cập nhật                    |
+| `updated_at`            | timestamp    | &check;  | Thời gian cập nhật                    |
 
 #### Bảng `session_service_invoices`
 Bảng `session_service_invoices` lưu thông tin hóa đơn dịch vụ của từng session.
@@ -192,4 +192,4 @@ Bảng `session_service_invoices` lưu thông tin hóa đơn dịch vụ của t
 | `note`                 | integer      | &cross;  | Ghi chú                                                           |
 | `total`                | bigint       | &check;  | Thành tiền                                                        |
 | `created_at`           | timestamp    | &check;  | Thời gian khởi tạo                                                |
-| `updated_at`           | timestamp    | &cross;  | Thời gian cập nhật                                                |
+| `updated_at`           | timestamp    | &check;  | Thời gian cập nhật                                                |
