@@ -53,43 +53,39 @@ func (c *Core) Create(ctx context.Context, e NewProperty) (Property, error) {
 	return prprty, nil
 }
 
-//func (c *Core) Update(ctx context.Context, usr User, uu UpdateUser) (User, error) {
-//	if uu.FirstName != nil {
-//		usr.FirstName = *uu.FirstName
-//	}
-//
-//	if uu.LastName != nil {
-//		usr.LastName = *uu.LastName
-//	}
-//
-//	if uu.Phone != nil {
-//		usr.Phone = *uu.Phone
-//	}
-//
-//	if uu.Roles != nil {
-//		usr.Roles = uu.Roles
-//	}
-//
-//	if uu.Password != nil {
-//		pw, err := bcrypt.GenerateFromPassword([]byte(*uu.Password), bcrypt.DefaultCost)
-//		if err != nil {
-//			return User{}, fmt.Errorf("generatefrompassword: %w", err)
-//		}
-//		usr.PasswordHash = pw
-//	}
-//
-//	if uu.Status != nil {
-//		usr.Status = *uu.Status
-//	}
-//
-//	usr.UpdatedAt = time.Now()
-//
-//	if err := c.store.Update(ctx, usr); err != nil {
-//		return User{}, fmt.Errorf("update: %w", err)
-//	}
-//
-//	return usr, nil
-//}
+func (c *Core) Update(ctx context.Context, prprty Property, up UpdateProperty) (Property, error) {
+	if up.Name != nil {
+		prprty.Name = *up.Name
+	}
+
+	if up.AddressLevel1ID != nil {
+		prprty.AddressLevel1ID = *up.AddressLevel1ID
+	}
+
+	if up.AddressLevel2ID != nil {
+		prprty.AddressLevel2ID = *up.AddressLevel2ID
+	}
+
+	if up.AddressLevel3ID != nil {
+		prprty.AddressLevel3ID = *up.AddressLevel3ID
+	}
+
+	if up.Street != nil {
+		prprty.Street = *up.Street
+	}
+
+	if up.Status != nil {
+		prprty.Status = *up.Status
+	}
+
+	prprty.UpdatedAt = time.Now()
+
+	if err := c.store.Update(ctx, prprty); err != nil {
+		return Property{}, fmt.Errorf("update: %w", err)
+	}
+
+	return prprty, nil
+}
 
 //func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (User, error) {
 //	user, err := c.store.QueryByID(ctx, userID)
