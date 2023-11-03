@@ -96,11 +96,11 @@ func (c *Core) QueryByID(ctx context.Context, propertyID uuid.UUID) (Property, e
 	return prprty, nil
 }
 
-//func (c *Core) QueryByPhone(ctx context.Context, phone string) (User, error) {
-//	user, err := c.store.QueryByPhone(ctx, phone)
-//	if err != nil {
-//		return User{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
-//	}
-//
-//	return user, nil
-//}
+func (c *Core) QueryByManagerID(ctx context.Context, managerID uuid.UUID) ([]Property, error) {
+	prprties, err := c.store.QueryByManagerID(ctx, managerID)
+	if err != nil {
+		return nil, fmt.Errorf("query: manager id[%s]: %w", managerID.String(), err)
+	}
+
+	return prprties, nil
+}
