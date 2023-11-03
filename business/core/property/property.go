@@ -87,14 +87,14 @@ func (c *Core) Update(ctx context.Context, prprty Property, up UpdateProperty) (
 	return prprty, nil
 }
 
-//func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (User, error) {
-//	user, err := c.store.QueryByID(ctx, userID)
-//	if err != nil {
-//		return User{}, fmt.Errorf("query: userID[%s]: %w", userID, err)
-//	}
-//
-//	return user, nil
-//}
+func (c *Core) QueryByID(ctx context.Context, propertyID uuid.UUID) (Property, error) {
+	prprty, err := c.store.QueryByID(ctx, propertyID)
+	if err != nil {
+		return Property{}, fmt.Errorf("query: propertyID[%s]: %w", propertyID, err)
+	}
+
+	return prprty, nil
+}
 
 //func (c *Core) QueryByPhone(ctx context.Context, phone string) (User, error) {
 //	user, err := c.store.QueryByPhone(ctx, phone)
