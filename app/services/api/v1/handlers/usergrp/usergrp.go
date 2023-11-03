@@ -154,3 +154,5 @@ func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Req
 
 	return web.Respond(ctx, w, toToken(token), http.StatusOK)
 }
+
+// TODO: Update user info
