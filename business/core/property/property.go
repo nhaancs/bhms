@@ -34,10 +34,16 @@ func (c *Core) Create(ctx context.Context, e NewProperty) (Property, error) {
 	now := time.Now()
 
 	prprty := Property{
-		ID:        uuid.New(),
-		Status:    e.Status,
-		CreatedAt: now,
-		UpdatedAt: now,
+		ID:              uuid.New(),
+		ManagerID:       e.ManagerID,
+		Name:            e.Name,
+		AddressLevel1ID: e.AddressLevel1ID,
+		AddressLevel2ID: e.AddressLevel2ID,
+		AddressLevel3ID: e.AddressLevel3ID,
+		Street:          e.Street,
+		Status:          e.Status,
+		CreatedAt:       now,
+		UpdatedAt:       now,
 	}
 
 	if err := c.store.Create(ctx, prprty); err != nil {
