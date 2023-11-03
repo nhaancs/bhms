@@ -2,10 +2,17 @@
 package usergrp
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/web/auth"
+	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/sms"
+	"github.com/nhaancs/bhms/foundation/web"
+	"net/http"
 	"time"
 )
 
@@ -39,34 +46,111 @@ func New(
 	}
 }
 
-// AppUser represents information about an individual user.
-type AppUser struct {
-	ID           string   `json:"id"`
-	FirstName    string   `json:"first_name"`
-	LastName     string   `json:"last_name"`
-	Phone        string   `json:"phone"`
-	Roles        []string `json:"roles"`
-	PasswordHash []byte   `json:"-"`
-	Status       string   `json:"status"`
-	CreatedAt    string   `json:"CreatedAt"`
-	UpdatedAt    string   `json:"UpdatedAt"`
+// Register adds a new user to the system.
+// TODO:
+// - Verify phone number by sending otp
+// - Rate limit for this api to prevent sending to many sms
+func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	var app AppRegister
+	if err := web.Decode(r, &app); err != nil {
+		return response.NewError(err, http.StatusBadRequest)
+	}
+
+	e, err := toCoreNewUser(app)
+	if err != nil {
+		return response.NewError(err, http.StatusBadRequest)
+	}
+
+	usr, err := h.user.Create(ctx, e)
+	if err != nil {
+		if errors.Is(err, user.ErrUniquePhone) {
+			return response.NewError(err, http.StatusConflict)
+		}
+		return fmt.Errorf("register: usr[%+v]: %w", app, err)
+	}
+
+	//if _, err = h.sms.SendOTP(ctx, sms.OTPInfo{Phone: usr.Phone}); err != nil {
+	//	return fmt.Errorf("senotp: usr[%+v]: %w", usr, err)
+	//}
+
+	return web.Respond(ctx, w, toAppUser(usr), http.StatusCreated)
 }
 
-func toAppUser(e user.User) AppUser {
-	roles := make([]string, len(e.Roles))
-	for i, role := range e.Roles {
-		roles[i] = role.Name()
+// VerifyOTP verify user OTP.
+func (h *Handlers) VerifyOTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	var app AppVerifyOTP
+	if err := web.Decode(r, &app); err != nil {
+		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	return AppUser{
-		ID:           e.ID.String(),
-		FirstName:    e.FirstName,
-		LastName:     e.LastName,
-		Phone:        e.Phone,
-		PasswordHash: e.PasswordHash,
-		Roles:        roles,
-		Status:       e.Status.Name(),
-		CreatedAt:    e.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:    e.UpdatedAt.Format(time.RFC3339),
+	userID, err := uuid.Parse(app.UserID)
+	if err != nil {
+		return response.NewError(ErrInvalidID, http.StatusBadRequest)
 	}
+
+	usr, err := h.user.QueryByID(ctx, userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, user.ErrNotFound):
+			return response.NewError(err, http.StatusNotFound)
+		default:
+			return fmt.Errorf("querybyid: userID[%s]: %w", userID, err)
+		}
+	}
+	if !usr.Status.Equal(user.StatusCreated) {
+		return response.NewError(ErrInvalidStatus, http.StatusBadRequest)
+	}
+
+	err = h.sms.CheckOTP(ctx, sms.VerifyOTPInfo{
+		Phone: usr.Phone,
+		Code:  app.OTP,
+	})
+	if err != nil {
+		return response.NewError(ErrInvalidOTP, http.StatusBadRequest)
+	}
+
+	status := user.StatusCreated
+	usr, err = h.user.Update(ctx, usr, user.UpdateUser{Status: &status})
+	if err != nil {
+		return fmt.Errorf("update: userID[%s] app[%+v]: %w", userID, app, err)
+	}
+
+	return web.Respond(ctx, w, toAppUser(usr), http.StatusOK)
+}
+
+// Token provides an API token for the authenticated user.
+func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	phone, pass, ok := r.BasicAuth()
+	if !ok {
+		return auth.NewAuthError("must provide email and password in Basic auth")
+	}
+
+	usr, err := h.user.Authenticate(ctx, phone, pass)
+	if err != nil {
+		switch {
+		case errors.Is(err, user.ErrNotFound):
+			return response.NewError(err, http.StatusNotFound)
+		case errors.Is(err, user.ErrAuthenticationFailure) || errors.Is(err, user.ErrInvalidUserStatus):
+			return auth.NewAuthError(err.Error())
+		default:
+			return fmt.Errorf("authenticate: %w", err)
+		}
+	}
+
+	claims := auth.Claims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   usr.ID.String(),
+			Issuer:    "bhms",
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(30 * 24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
+		},
+		Roles: usr.Roles,
+	}
+
+	token, err := h.auth.GenerateToken(ctx, h.keyID, claims)
+	if err != nil {
+		return fmt.Errorf("generatetoken: %w", err)
+	}
+
+	return web.Respond(ctx, w, toToken(token), http.StatusOK)
 }
