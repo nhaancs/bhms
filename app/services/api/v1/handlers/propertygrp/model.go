@@ -39,23 +39,18 @@ func toAppProperty(e property.Property) AppProperty {
 // ===============================================================
 
 type AppNewProperty struct {
-	ManagerID       string `json:"manager_id" validate:"required,uuid"`
-	Name            string `json:"name" validate:"required"`
-	AddressLevel1ID uint32 `json:"address_level_1_id" validate:"required,min=1"`
-	AddressLevel2ID uint32 `json:"address_level_2_id" validate:"required,min=1"`
-	AddressLevel3ID uint32 `json:"address_level_3_id" validate:"required,min=1"`
-	Street          string `json:"street" validate:"required"`
-	Status          string `json:"status" validate:"required"`
+	ManagerID       uuid.UUID `json:"-"`
+	Name            string    `json:"name" validate:"required"`
+	AddressLevel1ID uint32    `json:"address_level_1_id" validate:"required,min=1"`
+	AddressLevel2ID uint32    `json:"address_level_2_id" validate:"required,min=1"`
+	AddressLevel3ID uint32    `json:"address_level_3_id" validate:"required,min=1"`
+	Street          string    `json:"street" validate:"required"`
+	Status          string    `json:"status" validate:"required"`
 }
 
 func toCoreNewProperty(a AppNewProperty) (property.NewProperty, error) {
-	managerID, err := uuid.Parse(a.ManagerID)
-	if err != nil {
-		return property.NewProperty{}, err
-	}
-
 	prprty := property.NewProperty{
-		ManagerID:       managerID,
+		ManagerID:       a.ManagerID,
 		Name:            a.Name,
 		AddressLevel1ID: a.AddressLevel1ID,
 		AddressLevel2ID: a.AddressLevel2ID,

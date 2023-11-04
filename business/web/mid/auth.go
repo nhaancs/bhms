@@ -3,10 +3,9 @@ package mid
 import (
 	"context"
 	"errors"
-	"github.com/nhaancs/bhms/business/web/response"
+	"github.com/google/uuid"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/foundation/web"
 )
@@ -25,7 +24,17 @@ func Authenticate(a *auth.Auth) web.Middleware {
 				return auth.NewAuthError("authenticate: failed: %s", err)
 			}
 
+			if len(claims.Subject) == 0 {
+				return auth.NewAuthError("authenticate: invalid claims: %+v", claims)
+			}
+
+			userID, err := uuid.Parse(claims.Subject)
+			if err != nil {
+				return auth.NewAuthError("authenticate: invalid subject: %s", claims.Subject)
+			}
+
 			ctx = auth.SetClaims(ctx, claims)
+			ctx = auth.SetUserID(ctx, userID)
 
 			return handler(ctx, w, r)
 		}
@@ -46,18 +55,19 @@ func Authorize(a *auth.Auth, rule string) web.Middleware {
 				return auth.NewAuthError("authorize: you are not authorized for that action, no claims")
 			}
 
-			// I will use an zero valued user id if it doesn't exsit.
-			var userID uuid.UUID
-			id := web.Param(r, "user_id")
-			if id != "" {
-				var err error
-				userID, err = uuid.Parse(id)
-				if err != nil {
-					return response.NewError(ErrInvalidID, http.StatusBadRequest)
-				}
-				ctx = auth.SetUserID(ctx, userID)
-			}
+			// I will use an zero valued user id if it doesn't exist.
+			//var userID uuid.UUID
+			//id := web.Param(r, "user_id")
+			//if id != "" {
+			//	var err error
+			//	userID, err = uuid.Parse(id)
+			//	if err != nil {
+			//		return response.NewError(ErrInvalidID, http.StatusBadRequest)
+			//	}
+			//	ctx = auth.SetUserID(ctx, userID)
+			//}
 
+			userID := auth.GetUserID(ctx)
 			if err := a.Authorize(ctx, claims, userID, rule); err != nil {
 				return auth.NewAuthError("authorize: you are not authorized for that action, claims[%v] rule[%v]: %s", claims.Roles, rule, err)
 			}

@@ -4,9 +4,13 @@ package v1
 import (
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/checkgrp"
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/divisiongrp"
+	"github.com/nhaancs/bhms/app/services/api/v1/handlers/propertygrp"
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/usergrp"
 	"github.com/nhaancs/bhms/business/core/division"
 	"github.com/nhaancs/bhms/business/core/division/stores/divisionjson"
+	"github.com/nhaancs/bhms/business/core/property"
+	"github.com/nhaancs/bhms/business/core/property/stores/propertycache"
+	"github.com/nhaancs/bhms/business/core/property/stores/propertydb"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/core/user/stores/usercache"
 	"github.com/nhaancs/bhms/business/core/user/stores/userdb"
@@ -92,6 +96,17 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	divHdl := divisiongrp.New(divCore)
 	app.Handle(http.MethodGet, version, "/divisions/provinces", divHdl.QueryProvinces, mid.Authenticate(cfg.Auth))
 	app.Handle(http.MethodGet, version, "/divisions/children/:parent_id", divHdl.QueryByParentID, mid.Authenticate(cfg.Auth))
+
+	// -------------------------------------------------------------------------
+	// Property routes
+
+	propertyStore := propertycache.NewStore(cfg.Log, propertydb.NewStore(cfg.Log, cfg.DB))
+	if err != nil {
+		return nil, err
+	}
+	propertyCore := property.NewCore(cfg.Log, propertyStore)
+	propertyHdl := propertygrp.New(propertyCore)
+	app.Handle(http.MethodGet, version, "/properties", propertyHdl.Create, mid.Authenticate(cfg.Auth))
 
 	return app, nil
 }

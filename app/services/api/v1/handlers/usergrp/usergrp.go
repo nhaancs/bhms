@@ -74,16 +74,7 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 }
 
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c := auth.GetClaims(ctx)
-	if len(c.Subject) == 0 {
-		return auth.NewAuthError("invalid claims: %+v", c)
-	}
-
-	userID, err := uuid.Parse(c.Subject)
-	if err != nil {
-		return auth.NewAuthError("invalid user id: %s", c.Subject)
-	}
-
+	userID := auth.GetUserID(ctx)
 	usr, err := h.user.QueryByID(ctx, userID)
 	if err != nil {
 		switch {
@@ -193,5 +184,3 @@ func (h *Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Req
 
 	return web.Respond(ctx, w, toToken(token), http.StatusOK)
 }
-
-// TODO: Update user info

@@ -1,7 +1,13 @@
 package propertygrp
 
 import (
+	"context"
+	"fmt"
 	"github.com/nhaancs/bhms/business/core/property"
+	"github.com/nhaancs/bhms/business/web/auth"
+	"github.com/nhaancs/bhms/business/web/response"
+	"github.com/nhaancs/bhms/foundation/web"
+	"net/http"
 )
 
 type Handlers struct {
@@ -17,3 +23,23 @@ func New(
 }
 
 // TODO: create (limit 1 per user), update, list by manager id
+
+func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	var app AppNewProperty
+	if err := web.Decode(r, &app); err != nil {
+		return response.NewError(err, http.StatusBadRequest)
+	}
+	app.ManagerID = auth.GetUserID(ctx)
+
+	e, err := toCoreNewProperty(app)
+	if err != nil {
+		return response.NewError(err, http.StatusBadRequest)
+	}
+
+	prprty, err := h.property.Create(ctx, e)
+	if err != nil {
+		return fmt.Errorf("create: prprty[%+v]: %w", app, err)
+	}
+
+	return web.Respond(ctx, w, toAppProperty(prprty), http.StatusCreated)
+}
