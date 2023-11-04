@@ -50,18 +50,18 @@ Bảng `divisions` lưu thông tin các đơn vị hành chính của Việt Nam
 #### Bảng `properties`
 Bảng `properties` lưu các thông tin cần thiết của khu trọ.
 
-| Tên cột             | Kiểu dữ liệu | Bắt buộc | Mô tả                                         |
-|---------------------|--------------|:--------:|-----------------------------------------------|
-| `id`                | uuid         | &check;  | Khóa chính                                    |
-| `name`              | text         | &check;  | Tên khu trọ                                   |
-| `address_level1_id` | serial       | &check;  | ID tỉnh, thành phố                            |
-| `address_level2_id` | serial       | &check;  | ID quận, huyện                                |
-| `address_level3_id` | serial       | &check;  | ID xã, phường                                 |
-| `street`            | text         | &check;  | Số nhà và tên đường                           |
-| `manager_id`        | uuid         | &check;  | ID của chủ trọ                                |
-| `status`            | text         | &check;  | Trạng thái khu trọ: CREATED, ACTIVE, DISABLED |
-| `created_at`        | timestamp    | &check;  | Thời gian khởi tạo                            |
-| `updated_at`        | timestamp    | &check;  | Thời gian cập nhật                            |
+| Tên cột              | Kiểu dữ liệu | Bắt buộc | Mô tả                                         |
+|----------------------|--------------|:--------:|-----------------------------------------------|
+| `id`                 | uuid         | &check;  | Khóa chính                                    |
+| `name`               | text         | &check;  | Tên khu trọ                                   |
+| `address_level_1_id` | serial       | &check;  | ID tỉnh, thành phố                            |
+| `address_level_2_id` | serial       | &check;  | ID quận, huyện                                |
+| `address_level_3_id` | serial       | &check;  | ID xã, phường                                 |
+| `street`             | text         | &check;  | Số nhà và tên đường                           |
+| `manager_id`         | uuid         | &check;  | ID của chủ trọ                                |
+| `status`             | text         | &check;  | Trạng thái khu trọ: CREATED, ACTIVE, DISABLED |
+| `created_at`         | timestamp    | &check;  | Thời gian khởi tạo                            |
+| `updated_at`         | timestamp    | &check;  | Thời gian cập nhật                            |
 
 #### Bảng `blocks`
 Bảng `blocks` lưu thông tin các dãy của khu trọ.

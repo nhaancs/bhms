@@ -11,9 +11,9 @@ type dbProperty struct {
 	ID              uuid.UUID `db:"id"`
 	ManagerID       uuid.UUID `db:"manager_id"`
 	Name            string    `db:"name"`
-	AddressLevel1ID uint32    `db:"address_level1_id"`
-	AddressLevel2ID uint32    `db:"address_level2_id"`
-	AddressLevel3ID uint32    `db:"address_level3_id"`
+	AddressLevel1ID uint32    `db:"address_level_1_id"`
+	AddressLevel2ID uint32    `db:"address_level_2_id"`
+	AddressLevel3ID uint32    `db:"address_level_3_id"`
 	Street          string    `db:"street"`
 	Status          string    `db:"status"`
 	CreatedAt       time.Time `db:"created_at"`

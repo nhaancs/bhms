@@ -29,9 +29,9 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 func (s *Store) Create(ctx context.Context, prprty property.Property) error {
 	const q = `
 	INSERT INTO properties
-		(id, manager_id, name, address_level1_id, address_level2_id, address_level3_id, street, status, created_at, updated_at)
+		(id, manager_id, name, address_level_1_id, address_level_2_id, address_level_3_id, street, status, created_at, updated_at)
 	VALUES
-		(:id, :manager_id, :name, :address_level1_id, :address_level2_id, :address_level3_id, :street, :status, :created_at, :updated_at)`
+		(:id, :manager_id, :name, :address_level_1_id, :address_level_2_id, :address_level_3_id, :street, :status, :created_at, :updated_at)`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBProperty(prprty)); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
@@ -46,9 +46,9 @@ func (s *Store) Update(ctx context.Context, prprty property.Property) error {
 		properties
 	SET 
 		"name" = :name,
-		"address_level1_id" = :address_level1_id,
-		"address_level2_id" = :address_level2_id,
-		"address_level3_id" = :address_level3_id,
+		"address_level_1_id" = :address_level_1_id,
+		"address_level_2_id" = :address_level_2_id,
+		"address_level_3_id" = :address_level_3_id,
 		"street" = :street,
 		"status" = :status,
 		"updated_at" = :updated_at
@@ -91,7 +91,7 @@ func (s *Store) QueryByID(ctx context.Context, prprtyID uuid.UUID) (property.Pro
 
 	const q = `
 	SELECT
-        id, manager_id, address_level1_id, address_level2_id, address_level3_id, street, status, created_at, updated_at
+        id, manager_id, address_level_1_id, address_level_2_id, address_level_3_id, street, status, created_at, updated_at
 	FROM
 		properties
 	WHERE 
@@ -122,7 +122,7 @@ func (s *Store) QueryByManagerID(ctx context.Context, managerID uuid.UUID) ([]pr
 
 	const q = `
 	SELECT
-        id, manager_id, address_level1_id, address_level2_id, address_level3_id, street, status, created_at, updated_at
+        id, manager_id, address_level_1_id, address_level_2_id, address_level_3_id, street, status, created_at, updated_at
 	FROM
 		properties
 	WHERE
