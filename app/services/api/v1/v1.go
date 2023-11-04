@@ -80,6 +80,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	app.Handle(http.MethodPost, version, "/users/register", usrHdl.Register)
 	app.Handle(http.MethodPost, version, "/users/verify-otp", usrHdl.VerifyOTP)
 	app.Handle(http.MethodGet, version, "/users/token", usrHdl.Token)
+	app.Handle(http.MethodPut, version, "/users", usrHdl.Token, mid.Authenticate(cfg.Auth))
 
 	// -------------------------------------------------------------------------
 	// Division routes

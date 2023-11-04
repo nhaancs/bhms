@@ -47,9 +47,6 @@ func New(
 }
 
 // Register adds a new user to the system.
-// TODO:
-// - Verify phone number by sending otp
-// - Rate limit for this api to prevent sending to many sms
 func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var app AppRegister
 	if err := web.Decode(r, &app); err != nil {
@@ -72,6 +69,48 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 	//if _, err = h.sms.SendOTP(ctx, sms.OTPInfo{Phone: usr.Phone}); err != nil {
 	//	return fmt.Errorf("senotp: usr[%+v]: %w", usr, err)
 	//}
+
+	return web.Respond(ctx, w, toAppUser(usr), http.StatusCreated)
+}
+
+func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	c := auth.GetClaims(ctx)
+	if len(c.Subject) == 0 {
+		return auth.NewAuthError("invalid claims: %+v", c)
+	}
+
+	userID, err := uuid.Parse(c.Subject)
+	if err != nil {
+		return auth.NewAuthError("invalid user id: %s", c.Subject)
+	}
+
+	usr, err := h.user.QueryByID(ctx, userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, user.ErrNotFound):
+			return response.NewError(err, http.StatusNotFound)
+		default:
+			return fmt.Errorf("querybyid: userID[%s]: %w", userID, err)
+		}
+	}
+
+	var app AppUpdateUser
+	if err := web.Decode(r, &app); err != nil {
+		return response.NewError(err, http.StatusBadRequest)
+	}
+
+	e, err := toCoreUpdateUser(app)
+	if err != nil {
+		return response.NewError(err, http.StatusBadRequest)
+	}
+
+	usr, err = h.user.Update(ctx, usr, e)
+	if err != nil {
+		if errors.Is(err, user.ErrUniquePhone) {
+			return response.NewError(err, http.StatusConflict)
+		}
+		return fmt.Errorf("update: usr[%+v]: %w", app, err)
+	}
 
 	return web.Respond(ctx, w, toAppUser(usr), http.StatusCreated)
 }
