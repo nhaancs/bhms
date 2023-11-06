@@ -7,12 +7,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/nhaancs/bhms/business/core/property"
-	"github.com/nhaancs/bhms/business/core/user"
 	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
 	"github.com/nhaancs/bhms/foundation/logger"
 )
 
-// Store manages the set of APIs for user database access.
 type Store struct {
 	log *logger.Logger
 	db  sqlx.ExtContext
@@ -100,7 +98,7 @@ func (s *Store) QueryByID(ctx context.Context, prprtyID uuid.UUID) (property.Pro
 	var row dbProperty
 	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &row); err != nil {
 		if errors.Is(err, db.ErrDBNotFound) {
-			return property.Property{}, fmt.Errorf("namedquerystruct: %w", user.ErrNotFound)
+			return property.Property{}, fmt.Errorf("namedquerystruct: %w", property.ErrNotFound)
 		}
 		return property.Property{}, fmt.Errorf("namedquerystruct: %w", err)
 	}
@@ -131,7 +129,7 @@ func (s *Store) QueryByManagerID(ctx context.Context, managerID uuid.UUID) ([]pr
 	var rows []dbProperty
 	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &rows); err != nil {
 		if errors.Is(err, db.ErrDBNotFound) {
-			return nil, fmt.Errorf("namedqueryslice: %w", user.ErrNotFound)
+			return nil, fmt.Errorf("namedqueryslice: %w", property.ErrNotFound)
 		}
 		return nil, fmt.Errorf("namedqueryslice: %w", err)
 	}

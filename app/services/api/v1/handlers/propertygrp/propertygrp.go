@@ -2,6 +2,7 @@ package propertygrp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/nhaancs/bhms/business/core/property"
 	"github.com/nhaancs/bhms/business/web/auth"
@@ -22,7 +23,7 @@ func New(
 	}
 }
 
-// TODO: create (limit 1 per user), update, list by manager id
+// TODO: update, list by manager id
 
 func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var app AppNewProperty
@@ -38,6 +39,9 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 
 	prprty, err := h.property.Create(ctx, e)
 	if err != nil {
+		if errors.Is(err, property.ErrLimitExceeded) {
+			return response.NewError(err, http.StatusForbidden)
+		}
 		return fmt.Errorf("create: prprty[%+v]: %w", app, err)
 	}
 

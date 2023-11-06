@@ -2,13 +2,17 @@ package property
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/nhaancs/bhms/foundation/logger"
 	"time"
 )
 
-// TODO: limit the number of properties can be created by a user
+var (
+	ErrNotFound      = errors.New("property not found")
+	ErrLimitExceeded = errors.New("max number of properties exceeded")
+)
 
 type Storer interface {
 	Create(ctx context.Context, prprty Property) error
@@ -31,8 +35,15 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 }
 
 func (c *Core) Create(ctx context.Context, e NewProperty) (Property, error) {
-	now := time.Now()
+	prprties, err := c.store.QueryByManagerID(ctx, e.ManagerID)
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return Property{}, err
+	}
+	if len(prprties) > 0 {
+		return Property{}, ErrLimitExceeded
+	}
 
+	now := time.Now()
 	prprty := Property{
 		ID:              uuid.New(),
 		ManagerID:       e.ManagerID,
