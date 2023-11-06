@@ -14,7 +14,7 @@ Hệ thống quản lý nhà trọ được phát triển với Go, Flutter, Pos
 - Tạo hợp đồng cho người đến thuê
 - Quản lý điện, nước, và các dịch vụ khác
 - Quản lý thông tin thanh toán (tài khoản ngân hàng)
-- Tạo và chia sẻ hóa đơn cho từng phòng
+- Tạo và chia sẻ hóa đơn cho từng phòng.
 
 
 ### Thiết kế cơ sở dữ liệu
