@@ -34,6 +34,7 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 	}
 }
 
+// TODO: limit the number of blocks, floors, units can be created
 func (c *Core) Create(ctx context.Context, e NewProperty) (Property, error) {
 	prprties, err := c.store.QueryByManagerID(ctx, e.ManagerID)
 	if err != nil && !errors.Is(err, ErrNotFound) {
