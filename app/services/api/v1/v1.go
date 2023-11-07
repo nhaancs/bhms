@@ -107,6 +107,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	propertyCore := property.NewCore(cfg.Log, propertyStore)
 	propertyHdl := propertygrp.New(propertyCore)
 	app.Handle(http.MethodGet, version, "/properties", propertyHdl.Create, mid.Authenticate(cfg.Auth))
+	app.Handle(http.MethodPut, version, "/properties/:property_id", propertyHdl.Update, mid.Authenticate(cfg.Auth))
 
 	return app, nil
 }
