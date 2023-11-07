@@ -26,3 +26,36 @@ CREATE TABLE properties (
     created_at          TIMESTAMP   NOT NULL,
 	updated_at          TIMESTAMP   NOT NULL
 );
+
+-- Version: 1.03
+-- Description: Create table blocks
+CREATE TABLE blocks (
+	id                  UUID        NOT NULL PRIMARY KEY,
+	name                TEXT        NOT NULL,
+    property_id         UUID        NOT NULL INDEX idx_property_id,
+    created_at          TIMESTAMP   NOT NULL,
+	updated_at          TIMESTAMP   NOT NULL
+);
+
+-- Version: 1.04
+-- Description: Create table floors
+CREATE TABLE floors (
+	id                  UUID        NOT NULL PRIMARY KEY,
+	name                TEXT        NOT NULL,
+    block_id            UUID        NOT NULL INDEX idx_block_id,
+    property_id         UUID        NOT NULL INDEX idx_property_id,
+    created_at          TIMESTAMP   NOT NULL,
+	updated_at          TIMESTAMP   NOT NULL
+);
+
+-- Version: 1.05
+-- Description: Create table units
+CREATE TABLE units (
+   id                  UUID        NOT NULL PRIMARY KEY,
+   name                TEXT        NOT NULL,
+   block_id            UUID        NOT NULL INDEX idx_block_id,
+   property_id         UUID        NOT NULL INDEX idx_property_id,
+   floor_id            UUID        NOT NULL INDEX idx_floor_id,
+   created_at          TIMESTAMP   NOT NULL,
+   updated_at          TIMESTAMP   NOT NULL
+);

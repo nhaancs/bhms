@@ -77,13 +77,14 @@ Bảng `blocks` lưu thông tin các dãy của khu trọ.
 #### Bảng `floors`
 Bảng `floors` lưu thông tin các tầng của khu trọ.
 
-| Tên cột      | Kiểu dữ liệu | Bắt buộc | Mô tả              |
-|--------------|--------------|:--------:|--------------------|
-| `id`         | uuid         | &check;  | Khóa chính         |
-| `name`       | text         | &check;  | Tên tầng           |
-| `block_id`   | uuid         | &check;  | ID của dãy         |
-| `created_at` | timestamp    | &check;  | Thời gian khởi tạo |
-| `updated_at` | timestamp    | &check;  | Thời gian cập nhật |
+| Tên cột       | Kiểu dữ liệu | Bắt buộc | Mô tả              |
+|---------------|--------------|:--------:|--------------------|
+| `id`          | uuid         | &check;  | Khóa chính         |
+| `name`        | text         | &check;  | Tên tầng           |
+| `block_id`    | uuid         | &check;  | ID của dãy         |
+| `property_id` | uuid         | &check;  | ID của khu trọ     |
+| `created_at`  | timestamp    | &check;  | Thời gian khởi tạo |
+| `updated_at`  | timestamp    | &check;  | Thời gian cập nhật |
 
 #### Bảng `units`
 Bảng `units` lưu thông tin các phòng của khu trọ.
