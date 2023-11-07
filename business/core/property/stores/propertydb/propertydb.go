@@ -24,21 +24,21 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 	}
 }
 
-func (s *Store) Create(ctx context.Context, prprty property.Property) error {
+func (s *Store) Create(ctx context.Context, core property.Property) error {
 	const q = `
 	INSERT INTO properties
 		(id, manager_id, name, address_level_1_id, address_level_2_id, address_level_3_id, street, status, created_at, updated_at)
 	VALUES
 		(:id, :manager_id, :name, :address_level_1_id, :address_level_2_id, :address_level_3_id, :street, :status, :created_at, :updated_at)`
 
-	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBProperty(prprty)); err != nil {
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBProperty(core)); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Store) Update(ctx context.Context, prprty property.Property) error {
+func (s *Store) Update(ctx context.Context, core property.Property) error {
 	const q = `
 	UPDATE
 		properties
@@ -53,18 +53,18 @@ func (s *Store) Update(ctx context.Context, prprty property.Property) error {
 	WHERE
 		id = :id`
 
-	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBProperty(prprty)); err != nil {
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBProperty(core)); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Store) Delete(ctx context.Context, prprty property.Property) error {
+func (s *Store) Delete(ctx context.Context, core property.Property) error {
 	data := struct {
 		ID string `db:"id"`
 	}{
-		ID: prprty.ID.String(),
+		ID: core.ID.String(),
 	}
 
 	const q = `
@@ -80,11 +80,11 @@ func (s *Store) Delete(ctx context.Context, prprty property.Property) error {
 	return nil
 }
 
-func (s *Store) QueryByID(ctx context.Context, prprtyID uuid.UUID) (property.Property, error) {
+func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (property.Property, error) {
 	data := struct {
 		ID string `db:"id"`
 	}{
-		ID: prprtyID.String(),
+		ID: id.String(),
 	}
 
 	const q = `

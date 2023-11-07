@@ -35,8 +35,8 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 }
 
 // TODO: limit the number of blocks, floors, units can be created
-func (c *Core) Create(ctx context.Context, e NewProperty) (Property, error) {
-	prprties, err := c.store.QueryByManagerID(ctx, e.ManagerID)
+func (c *Core) Create(ctx context.Context, core NewProperty) (Property, error) {
+	prprties, err := c.store.QueryByManagerID(ctx, core.ManagerID)
 	if err != nil && !errors.Is(err, ErrNotFound) {
 		return Property{}, err
 	}
@@ -47,13 +47,13 @@ func (c *Core) Create(ctx context.Context, e NewProperty) (Property, error) {
 	now := time.Now()
 	prprty := Property{
 		ID:              uuid.New(),
-		ManagerID:       e.ManagerID,
-		Name:            e.Name,
-		AddressLevel1ID: e.AddressLevel1ID,
-		AddressLevel2ID: e.AddressLevel2ID,
-		AddressLevel3ID: e.AddressLevel3ID,
-		Street:          e.Street,
-		Status:          e.Status,
+		ManagerID:       core.ManagerID,
+		Name:            core.Name,
+		AddressLevel1ID: core.AddressLevel1ID,
+		AddressLevel2ID: core.AddressLevel2ID,
+		AddressLevel3ID: core.AddressLevel3ID,
+		Street:          core.Street,
+		Status:          core.Status,
 		CreatedAt:       now,
 		UpdatedAt:       now,
 	}
@@ -65,44 +65,44 @@ func (c *Core) Create(ctx context.Context, e NewProperty) (Property, error) {
 	return prprty, nil
 }
 
-func (c *Core) Update(ctx context.Context, prprty Property, up UpdateProperty) (Property, error) {
-	if up.Name != nil {
-		prprty.Name = *up.Name
+func (c *Core) Update(ctx context.Context, o Property, n UpdateProperty) (Property, error) {
+	if n.Name != nil {
+		o.Name = *n.Name
 	}
 
-	if up.AddressLevel1ID != nil {
-		prprty.AddressLevel1ID = *up.AddressLevel1ID
+	if n.AddressLevel1ID != nil {
+		o.AddressLevel1ID = *n.AddressLevel1ID
 	}
 
-	if up.AddressLevel2ID != nil {
-		prprty.AddressLevel2ID = *up.AddressLevel2ID
+	if n.AddressLevel2ID != nil {
+		o.AddressLevel2ID = *n.AddressLevel2ID
 	}
 
-	if up.AddressLevel3ID != nil {
-		prprty.AddressLevel3ID = *up.AddressLevel3ID
+	if n.AddressLevel3ID != nil {
+		o.AddressLevel3ID = *n.AddressLevel3ID
 	}
 
-	if up.Street != nil {
-		prprty.Street = *up.Street
+	if n.Street != nil {
+		o.Street = *n.Street
 	}
 
-	if up.Status != nil {
-		prprty.Status = *up.Status
+	if n.Status != nil {
+		o.Status = *n.Status
 	}
 
-	prprty.UpdatedAt = time.Now()
+	o.UpdatedAt = time.Now()
 
-	if err := c.store.Update(ctx, prprty); err != nil {
+	if err := c.store.Update(ctx, o); err != nil {
 		return Property{}, fmt.Errorf("update: %w", err)
 	}
 
-	return prprty, nil
+	return o, nil
 }
 
-func (c *Core) QueryByID(ctx context.Context, propertyID uuid.UUID) (Property, error) {
-	prprty, err := c.store.QueryByID(ctx, propertyID)
+func (c *Core) QueryByID(ctx context.Context, id uuid.UUID) (Property, error) {
+	prprty, err := c.store.QueryByID(ctx, id)
 	if err != nil {
-		return Property{}, fmt.Errorf("query: propertyID[%s]: %w", propertyID, err)
+		return Property{}, fmt.Errorf("query: id[%s]: %w", id, err)
 	}
 
 	return prprty, nil

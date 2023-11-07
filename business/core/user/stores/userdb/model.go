@@ -23,59 +23,59 @@ type dbUser struct {
 	UpdatedAt    time.Time      `db:"updated_at"`
 }
 
-func toDBUser(e user.User) dbUser {
-	roles := make([]string, len(e.Roles))
-	for i, role := range e.Roles {
+func toDBUser(c user.User) dbUser {
+	roles := make([]string, len(c.Roles))
+	for i, role := range c.Roles {
 		roles[i] = role.Name()
 	}
 
 	return dbUser{
-		ID:           e.ID,
-		FirstName:    e.FirstName,
-		LastName:     e.LastName,
-		Phone:        e.Phone,
-		PasswordHash: e.PasswordHash,
+		ID:           c.ID,
+		FirstName:    c.FirstName,
+		LastName:     c.LastName,
+		Phone:        c.Phone,
+		PasswordHash: c.PasswordHash,
 		Roles:        roles,
-		Status:       e.Status.Name(),
-		CreatedAt:    e.CreatedAt.UTC(),
-		UpdatedAt:    e.UpdatedAt.UTC(),
+		Status:       c.Status.Name(),
+		CreatedAt:    c.CreatedAt.UTC(),
+		UpdatedAt:    c.UpdatedAt.UTC(),
 	}
 }
 
-func toCoreUser(dbUsr dbUser) (user.User, error) {
-	roles := make([]user.Role, len(dbUsr.Roles))
-	for i, value := range dbUsr.Roles {
+func toCoreUser(r dbUser) (user.User, error) {
+	roles := make([]user.Role, len(r.Roles))
+	for i, value := range r.Roles {
 		var err error
 		roles[i], err = user.ParseRole(value)
 		if err != nil {
 			return user.User{}, fmt.Errorf("parse role: %w", err)
 		}
 	}
-	status, err := user.ParseStatus(dbUsr.Status)
+	status, err := user.ParseStatus(r.Status)
 	if err != nil {
 		return user.User{}, fmt.Errorf("parse status: %w", err)
 	}
 
 	usr := user.User{
-		ID:           dbUsr.ID,
-		FirstName:    dbUsr.FirstName,
-		LastName:     dbUsr.LastName,
-		Phone:        dbUsr.Phone,
+		ID:           r.ID,
+		FirstName:    r.FirstName,
+		LastName:     r.LastName,
+		Phone:        r.Phone,
 		Roles:        roles,
-		PasswordHash: dbUsr.PasswordHash,
+		PasswordHash: r.PasswordHash,
 		Status:       status,
-		CreatedAt:    dbUsr.CreatedAt.In(time.Local),
-		UpdatedAt:    dbUsr.UpdatedAt.In(time.Local),
+		CreatedAt:    r.CreatedAt.In(time.Local),
+		UpdatedAt:    r.UpdatedAt.In(time.Local),
 	}
 
 	return usr, nil
 }
 
-func toCoreUsers(rows []dbUser) ([]user.User, error) {
-	usrs := make([]user.User, len(rows))
+func toCoreUsers(rs []dbUser) ([]user.User, error) {
+	usrs := make([]user.User, len(rs))
 	var err error
-	for i, dbUsr := range rows {
-		usrs[i], err = toCoreUser(dbUsr)
+	for i, r := range rs {
+		usrs[i], err = toCoreUser(r)
 		if err != nil {
 			return nil, err
 		}

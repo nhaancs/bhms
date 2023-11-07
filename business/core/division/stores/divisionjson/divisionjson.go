@@ -109,8 +109,8 @@ func NewStore(log *logger.Logger) (*Store, error) {
 	return &s, nil
 }
 
-func (s *Store) QueryByID(ctx context.Context, divisionID int) (division.Division, error) {
-	div, exist := s.allMap[divisionID]
+func (s *Store) QueryByID(ctx context.Context, id int) (division.Division, error) {
+	div, exist := s.allMap[id]
 	if !exist {
 		return division.Division{}, fmt.Errorf("querybyid: %w", division.ErrNotFound)
 	}

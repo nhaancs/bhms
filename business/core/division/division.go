@@ -34,28 +34,28 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 }
 
 func (c *Core) QueryByID(ctx context.Context, divisionID int) (Division, error) {
-	div, err := c.store.QueryByID(ctx, divisionID)
+	dvsn, err := c.store.QueryByID(ctx, divisionID)
 	if err != nil {
 		return Division{}, fmt.Errorf("query: divisionID[%d]: err: %w", divisionID, err)
 	}
 
-	return div, err
+	return dvsn, err
 }
 
 func (c *Core) QueryByParentID(ctx context.Context, parentID int) ([]Division, error) {
-	divs, err := c.store.QueryByParentID(ctx, parentID)
+	dvsns, err := c.store.QueryByParentID(ctx, parentID)
 	if err != nil {
 		return nil, fmt.Errorf("query: parentID[%d]: err: %w", parentID, err)
 	}
 
-	return divs, err
+	return dvsns, err
 }
 
 func (c *Core) QueryProvinces(ctx context.Context) ([]Division, error) {
-	provinces, err := c.store.QueryLevel1s(ctx)
+	prvncs, err := c.store.QueryLevel1s(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("get provinces: err: %w", err)
+		return nil, fmt.Errorf("query provinces: err: %w", err)
 	}
 
-	return provinces, err
+	return prvncs, err
 }

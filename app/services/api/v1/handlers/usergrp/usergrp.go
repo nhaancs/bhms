@@ -53,12 +53,12 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	e, err := toCoreNewUser(app)
+	c, err := toCoreNewUser(app)
 	if err != nil {
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	usr, err := h.user.Create(ctx, e)
+	usr, err := h.user.Create(ctx, c)
 	if err != nil {
 		if errors.Is(err, user.ErrUniquePhone) {
 			return response.NewError(err, http.StatusConflict)
@@ -90,12 +90,12 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	e, err := toCoreUpdateUser(app)
+	c, err := toCoreUpdateUser(app)
 	if err != nil {
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	usr, err = h.user.Update(ctx, usr, e)
+	usr, err = h.user.Update(ctx, usr, c)
 	if err != nil {
 		if errors.Is(err, user.ErrUniquePhone) {
 			return response.NewError(err, http.StatusConflict)

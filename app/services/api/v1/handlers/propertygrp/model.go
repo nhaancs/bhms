@@ -22,23 +22,23 @@ type AppProperty struct {
 	UpdatedAt       string `json:"updated_at"`
 }
 
-func toAppProperty(e property.Property) AppProperty {
+func toAppProperty(c property.Property) AppProperty {
 	return AppProperty{
-		ID:              e.ID.String(),
-		ManagerID:       e.ManagerID.String(),
-		AddressLevel1ID: e.AddressLevel1ID,
-		AddressLevel2ID: e.AddressLevel2ID,
-		AddressLevel3ID: e.AddressLevel3ID,
-		Street:          e.Street,
-		Status:          e.Status.Name(),
-		CreatedAt:       e.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:       e.UpdatedAt.Format(time.RFC3339),
+		ID:              c.ID.String(),
+		ManagerID:       c.ManagerID.String(),
+		AddressLevel1ID: c.AddressLevel1ID,
+		AddressLevel2ID: c.AddressLevel2ID,
+		AddressLevel3ID: c.AddressLevel3ID,
+		Street:          c.Street,
+		Status:          c.Status.Name(),
+		CreatedAt:       c.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:       c.UpdatedAt.Format(time.RFC3339),
 	}
 }
-func toAppProperties(es []property.Property) []AppProperty {
-	result := make([]AppProperty, len(es))
-	for i := range es {
-		result[i] = toAppProperty(es[i])
+func toAppProperties(cs []property.Property) []AppProperty {
+	result := make([]AppProperty, len(cs))
+	for i := range cs {
+		result[i] = toAppProperty(cs[i])
 	}
 	return result
 }
@@ -56,7 +56,7 @@ type AppNewProperty struct {
 }
 
 func toCoreNewProperty(a AppNewProperty) (property.NewProperty, error) {
-	prprty := property.NewProperty{
+	return property.NewProperty{
 		ManagerID:       a.ManagerID,
 		Name:            a.Name,
 		AddressLevel1ID: a.AddressLevel1ID,
@@ -64,9 +64,7 @@ func toCoreNewProperty(a AppNewProperty) (property.NewProperty, error) {
 		AddressLevel3ID: a.AddressLevel3ID,
 		Street:          a.Street,
 		Status:          property.StatusCreated,
-	}
-
-	return prprty, nil
+	}, nil
 }
 
 // Validate checks the data in the model is considered clean.
@@ -89,15 +87,13 @@ type AppUpdateProperty struct {
 }
 
 func toCoreUpdateProperty(a AppUpdateProperty) (property.UpdateProperty, error) {
-	prprty := property.UpdateProperty{
+	return property.UpdateProperty{
 		Name:            a.Name,
 		AddressLevel1ID: a.AddressLevel1ID,
 		AddressLevel2ID: a.AddressLevel2ID,
 		AddressLevel3ID: a.AddressLevel3ID,
 		Street:          a.Street,
-	}
-
-	return prprty, nil
+	}, nil
 }
 
 // Validate checks the data in the model is considered clean.

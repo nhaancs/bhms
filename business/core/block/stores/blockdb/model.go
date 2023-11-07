@@ -1,1 +1,35 @@
 package blockdb
+
+import (
+	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/business/core/block"
+	"time"
+)
+
+type dbBlock struct {
+	ID         uuid.UUID `db:"id"`
+	Name       string    `db:"name"`
+	PropertyID uuid.UUID `db:"property_id"`
+	CreatedAt  time.Time `db:"created_at"`
+	UpdatedAt  time.Time `db:"updated_at"`
+}
+
+func toDBBlock(c block.Block) dbBlock {
+	return dbBlock{
+		ID:         c.ID,
+		Name:       c.Name,
+		PropertyID: c.PropertyID,
+		CreatedAt:  c.CreatedAt.UTC(),
+		UpdatedAt:  c.UpdatedAt.UTC(),
+	}
+}
+
+func toCoreBlock(r dbBlock) (block.Block, error) {
+	return block.Block{
+		ID:         r.ID,
+		Name:       r.Name,
+		PropertyID: r.PropertyID,
+		CreatedAt:  r.CreatedAt.In(time.Local),
+		UpdatedAt:  r.UpdatedAt.In(time.Local),
+	}, nil
+}

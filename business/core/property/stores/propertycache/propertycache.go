@@ -55,13 +55,13 @@ func (s *Store) Delete(ctx context.Context, prprty property.Property) error {
 	return nil
 }
 
-func (s *Store) QueryByID(ctx context.Context, prprtyID uuid.UUID) (property.Property, error) {
-	cached, ok := s.readCache(prprtyID.String())
+func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (property.Property, error) {
+	cached, ok := s.readCache(id.String())
 	if ok {
 		return cached, nil
 	}
 
-	prprty, err := s.store.QueryByID(ctx, prprtyID)
+	prprty, err := s.store.QueryByID(ctx, id)
 	if err != nil {
 		return property.Property{}, err
 	}

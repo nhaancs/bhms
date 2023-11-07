@@ -51,8 +51,8 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 }
 
 // Create a new user to the system.
-func (c *Core) Create(ctx context.Context, e NewUser) (User, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(e.Password), bcrypt.DefaultCost)
+func (c *Core) Create(ctx context.Context, core NewUser) (User, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(core.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return User{}, fmt.Errorf("generatefrompassword: %w", err)
 	}
@@ -61,12 +61,12 @@ func (c *Core) Create(ctx context.Context, e NewUser) (User, error) {
 
 	usr := User{
 		ID:           uuid.New(),
-		FirstName:    e.FirstName,
-		LastName:     e.LastName,
-		Phone:        e.Phone,
+		FirstName:    core.FirstName,
+		LastName:     core.LastName,
+		Phone:        core.Phone,
 		PasswordHash: hash,
-		Roles:        e.Roles,
-		Status:       e.Status,
+		Roles:        core.Roles,
+		Status:       core.Status,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
@@ -79,62 +79,62 @@ func (c *Core) Create(ctx context.Context, e NewUser) (User, error) {
 }
 
 // Update modifies information about a user.
-func (c *Core) Update(ctx context.Context, usr User, uu UpdateUser) (User, error) {
-	if uu.FirstName != nil {
-		usr.FirstName = *uu.FirstName
+func (c *Core) Update(ctx context.Context, o User, n UpdateUser) (User, error) {
+	if n.FirstName != nil {
+		o.FirstName = *n.FirstName
 	}
 
-	if uu.LastName != nil {
-		usr.LastName = *uu.LastName
+	if n.LastName != nil {
+		o.LastName = *n.LastName
 	}
 
-	if uu.Phone != nil {
-		usr.Phone = *uu.Phone
+	if n.Phone != nil {
+		o.Phone = *n.Phone
 	}
 
-	if uu.Roles != nil {
-		usr.Roles = uu.Roles
+	if n.Roles != nil {
+		o.Roles = n.Roles
 	}
 
-	if uu.Password != nil {
-		pw, err := bcrypt.GenerateFromPassword([]byte(*uu.Password), bcrypt.DefaultCost)
+	if n.Password != nil {
+		pw, err := bcrypt.GenerateFromPassword([]byte(*n.Password), bcrypt.DefaultCost)
 		if err != nil {
 			return User{}, fmt.Errorf("generatefrompassword: %w", err)
 		}
-		usr.PasswordHash = pw
+		o.PasswordHash = pw
 	}
 
-	if uu.Status != nil {
-		usr.Status = *uu.Status
+	if n.Status != nil {
+		o.Status = *n.Status
 	}
 
-	usr.UpdatedAt = time.Now()
+	o.UpdatedAt = time.Now()
 
-	if err := c.store.Update(ctx, usr); err != nil {
+	if err := c.store.Update(ctx, o); err != nil {
 		return User{}, fmt.Errorf("update: %w", err)
+	}
+
+	return o, nil
+}
+
+// QueryByID finds the user by the specified ID.
+func (c *Core) QueryByID(ctx context.Context, id uuid.UUID) (User, error) {
+	usr, err := c.store.QueryByID(ctx, id)
+	if err != nil {
+		return User{}, fmt.Errorf("query: id[%s]: %w", id, err)
 	}
 
 	return usr, nil
 }
 
-// QueryByID finds the user by the specified ID.
-func (c *Core) QueryByID(ctx context.Context, userID uuid.UUID) (User, error) {
-	user, err := c.store.QueryByID(ctx, userID)
-	if err != nil {
-		return User{}, fmt.Errorf("query: userID[%s]: %w", userID, err)
-	}
-
-	return user, nil
-}
-
 // QueryByPhone finds the user by a specified user phone.
 func (c *Core) QueryByPhone(ctx context.Context, phone string) (User, error) {
-	user, err := c.store.QueryByPhone(ctx, phone)
+	usr, err := c.store.QueryByPhone(ctx, phone)
 	if err != nil {
 		return User{}, fmt.Errorf("query: phone[%s]: %w", phone, err)
 	}
 
-	return user, nil
+	return usr, nil
 }
 
 // =============================================================================

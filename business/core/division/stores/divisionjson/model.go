@@ -63,21 +63,21 @@ type divisionJSON struct {
 	Name     string
 }
 
-func toCoreDivision(d divisionJSON) (division.Division, error) {
+func toCoreDivision(o divisionJSON) (division.Division, error) {
 	return division.Division{
-		ID:       d.ID,
-		ParentID: d.ParentID,
-		Code:     d.Code,
-		Level:    d.Level,
-		Name:     d.Name,
+		ID:       o.ID,
+		ParentID: o.ParentID,
+		Code:     o.Code,
+		Level:    o.Level,
+		Name:     o.Name,
 	}, nil
 }
 
-func toCoreDivisions(divs []divisionJSON) ([]division.Division, error) {
-	divisions := make([]division.Division, len(divs))
+func toCoreDivisions(os []divisionJSON) ([]division.Division, error) {
+	divisions := make([]division.Division, len(os))
 	var err error
-	for i := range divs {
-		divisions[i], err = toCoreDivision(divs[i])
+	for i := range os {
+		divisions[i], err = toCoreDivision(os[i])
 		if err != nil {
 			return nil, err
 		}

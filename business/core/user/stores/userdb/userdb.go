@@ -30,14 +30,14 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 }
 
 // Create inserts a new user into the database.
-func (s *Store) Create(ctx context.Context, usr user.User) error {
+func (s *Store) Create(ctx context.Context, core user.User) error {
 	const q = `
 	INSERT INTO users
 		(id, first_name, last_name, phone, password_hash, roles, status, created_at, updated_at)
 	VALUES
 		(:id, :first_name, :last_name, :phone, :password_hash, :roles, :status, :created_at, :updated_at)`
 
-	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBUser(usr)); err != nil {
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBUser(core)); err != nil {
 		if errors.Is(err, db.ErrDBDuplicatedEntry) {
 			return fmt.Errorf("namedexeccontext: %w", user.ErrUniquePhone)
 		}
@@ -48,7 +48,7 @@ func (s *Store) Create(ctx context.Context, usr user.User) error {
 }
 
 // Update replaces a user document in the database.
-func (s *Store) Update(ctx context.Context, usr user.User) error {
+func (s *Store) Update(ctx context.Context, core user.User) error {
 	const q = `
 	UPDATE
 		users
@@ -63,7 +63,7 @@ func (s *Store) Update(ctx context.Context, usr user.User) error {
 	WHERE
 		id = :id`
 
-	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBUser(usr)); err != nil {
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBUser(core)); err != nil {
 		if errors.Is(err, db.ErrDBDuplicatedEntry) {
 			return user.ErrUniquePhone
 		}
@@ -74,11 +74,11 @@ func (s *Store) Update(ctx context.Context, usr user.User) error {
 }
 
 // Delete removes a user from the database.
-func (s *Store) Delete(ctx context.Context, usr user.User) error {
+func (s *Store) Delete(ctx context.Context, core user.User) error {
 	data := struct {
 		ID string `db:"id"`
 	}{
-		ID: usr.ID.String(),
+		ID: core.ID.String(),
 	}
 
 	const q = `
@@ -95,11 +95,11 @@ func (s *Store) Delete(ctx context.Context, usr user.User) error {
 }
 
 // QueryByID gets the specified user from the database.
-func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, error) {
+func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (user.User, error) {
 	data := struct {
 		ID string `db:"id"`
 	}{
-		ID: userID.String(),
+		ID: id.String(),
 	}
 
 	const q = `
@@ -127,10 +127,10 @@ func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, err
 }
 
 // QueryByIDs gets the specified users from the database.
-func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.User, error) {
-	ids := make([]string, len(userIDs))
-	for i, userID := range userIDs {
-		ids[i] = userID.String()
+func (s *Store) QueryByIDs(ctx context.Context, ids []uuid.UUID) ([]user.User, error) {
+	uIDs := make([]string, len(ids))
+	for i, userID := range ids {
+		uIDs[i] = userID.String()
 	}
 
 	data := struct {
@@ -139,7 +139,7 @@ func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.Use
 			sql.Scanner
 		} `db:"id"`
 	}{
-		ID: dbarray.Array(ids),
+		ID: dbarray.Array(uIDs),
 	}
 
 	const q = `

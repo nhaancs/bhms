@@ -19,23 +19,23 @@ var (
 
 // Handlers manages the set of user endpoints.
 type Handlers struct {
-	div *division.Core
+	division *division.Core
 }
 
 // New constructs a handlers for route access.
-func New(div *division.Core) *Handlers {
+func New(division *division.Core) *Handlers {
 	return &Handlers{
-		div: div,
+		division: division,
 	}
 }
 
 func (h *Handlers) QueryProvinces(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	provinces, err := h.div.QueryProvinces(ctx)
+	prvncs, err := h.division.QueryProvinces(ctx)
 	if err != nil {
 		return fmt.Errorf("get province: %w", err)
 	}
 
-	return web.Respond(ctx, w, toAppDivisions(provinces), http.StatusOK)
+	return web.Respond(ctx, w, toAppDivisions(prvncs), http.StatusOK)
 }
 
 func (h *Handlers) QueryByParentID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -44,10 +44,10 @@ func (h *Handlers) QueryByParentID(ctx context.Context, w http.ResponseWriter, r
 		return response.NewError(ErrInvalidID, http.StatusBadRequest)
 	}
 
-	divs, err := h.div.QueryByParentID(ctx, int(parentID))
+	dvsn, err := h.division.QueryByParentID(ctx, int(parentID))
 	if err != nil {
 		return fmt.Errorf("query by parrent id: %w", err)
 	}
 
-	return web.Respond(ctx, w, toAppDivisions(divs), http.StatusOK)
+	return web.Respond(ctx, w, toAppDivisions(dvsn), http.StatusOK)
 }

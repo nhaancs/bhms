@@ -9,20 +9,19 @@ type AppDivision struct {
 	Name     string `json:"name"`
 }
 
-func toAppDivision(d division.Division) AppDivision {
+func toAppDivision(c division.Division) AppDivision {
 	return AppDivision{
-		ID:       d.ID,
-		ParentID: d.ParentID,
-		Level:    d.Level,
-		Name:     d.Name,
+		ID:       c.ID,
+		ParentID: c.ParentID,
+		Level:    c.Level,
+		Name:     c.Name,
 	}
 }
 
-func toAppDivisions(divs []division.Division) []AppDivision {
-	result := make([]AppDivision, len(divs))
-
-	for i := range divs {
-		result[i] = toAppDivision(divs[i])
+func toAppDivisions(cs []division.Division) []AppDivision {
+	result := make([]AppDivision, len(cs))
+	for i := range cs {
+		result[i] = toAppDivision(cs[i])
 	}
 
 	return result

@@ -20,48 +20,46 @@ type dbProperty struct {
 	UpdatedAt       time.Time `db:"updated_at"`
 }
 
-func toDBProperty(e property.Property) dbProperty {
+func toDBProperty(c property.Property) dbProperty {
 	return dbProperty{
-		ID:              e.ID,
-		ManagerID:       e.ManagerID,
-		Name:            e.Name,
-		AddressLevel1ID: e.AddressLevel1ID,
-		AddressLevel2ID: e.AddressLevel2ID,
-		AddressLevel3ID: e.AddressLevel3ID,
-		Street:          e.Street,
-		Status:          e.Status.Name(),
-		CreatedAt:       e.CreatedAt.UTC(),
-		UpdatedAt:       e.UpdatedAt.UTC(),
+		ID:              c.ID,
+		ManagerID:       c.ManagerID,
+		Name:            c.Name,
+		AddressLevel1ID: c.AddressLevel1ID,
+		AddressLevel2ID: c.AddressLevel2ID,
+		AddressLevel3ID: c.AddressLevel3ID,
+		Street:          c.Street,
+		Status:          c.Status.Name(),
+		CreatedAt:       c.CreatedAt.UTC(),
+		UpdatedAt:       c.UpdatedAt.UTC(),
 	}
 }
 
-func toCoreProperty(dbProperty dbProperty) (property.Property, error) {
-	status, err := property.ParseStatus(dbProperty.Status)
+func toCoreProperty(r dbProperty) (property.Property, error) {
+	status, err := property.ParseStatus(r.Status)
 	if err != nil {
 		return property.Property{}, fmt.Errorf("parse status: %w", err)
 	}
 
-	prprty := property.Property{
-		ID:              dbProperty.ID,
-		ManagerID:       dbProperty.ManagerID,
-		Name:            dbProperty.Name,
-		AddressLevel1ID: dbProperty.AddressLevel1ID,
-		AddressLevel2ID: dbProperty.AddressLevel2ID,
-		AddressLevel3ID: dbProperty.AddressLevel3ID,
-		Street:          dbProperty.Street,
+	return property.Property{
+		ID:              r.ID,
+		ManagerID:       r.ManagerID,
+		Name:            r.Name,
+		AddressLevel1ID: r.AddressLevel1ID,
+		AddressLevel2ID: r.AddressLevel2ID,
+		AddressLevel3ID: r.AddressLevel3ID,
+		Street:          r.Street,
 		Status:          status,
-		CreatedAt:       dbProperty.CreatedAt.In(time.Local),
-		UpdatedAt:       dbProperty.UpdatedAt.In(time.Local),
-	}
-
-	return prprty, nil
+		CreatedAt:       r.CreatedAt.In(time.Local),
+		UpdatedAt:       r.UpdatedAt.In(time.Local),
+	}, nil
 }
 
-func toCoreProperties(rows []dbProperty) ([]property.Property, error) {
-	prprties := make([]property.Property, len(rows))
+func toCoreProperties(rs []dbProperty) ([]property.Property, error) {
+	prprties := make([]property.Property, len(rs))
 	var err error
-	for i, dbPrprty := range rows {
-		prprties[i], err = toCoreProperty(dbPrprty)
+	for i, r := range rs {
+		prprties[i], err = toCoreProperty(r)
 		if err != nil {
 			return nil, err
 		}

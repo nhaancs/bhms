@@ -28,46 +28,46 @@ func NewStore(log *logger.Logger, store user.Storer) *Store {
 }
 
 // Create inserts a new user into the database.
-func (s *Store) Create(ctx context.Context, usr user.User) error {
-	if err := s.store.Create(ctx, usr); err != nil {
+func (s *Store) Create(ctx context.Context, core user.User) error {
+	if err := s.store.Create(ctx, core); err != nil {
 		return err
 	}
 
-	s.writeCache(usr)
+	s.writeCache(core)
 
 	return nil
 }
 
 // Update replaces a user document in the database.
-func (s *Store) Update(ctx context.Context, usr user.User) error {
-	if err := s.store.Update(ctx, usr); err != nil {
+func (s *Store) Update(ctx context.Context, core user.User) error {
+	if err := s.store.Update(ctx, core); err != nil {
 		return err
 	}
 
-	s.writeCache(usr)
+	s.writeCache(core)
 
 	return nil
 }
 
 // Delete removes a user from the database.
-func (s *Store) Delete(ctx context.Context, usr user.User) error {
-	if err := s.store.Delete(ctx, usr); err != nil {
+func (s *Store) Delete(ctx context.Context, core user.User) error {
+	if err := s.store.Delete(ctx, core); err != nil {
 		return err
 	}
 
-	s.deleteCache(usr)
+	s.deleteCache(core)
 
 	return nil
 }
 
 // QueryByID gets the specified user from the database.
-func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, error) {
-	cachedUsr, ok := s.readCache(userID.String())
+func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (user.User, error) {
+	cachedUsr, ok := s.readCache(id.String())
 	if ok {
 		return cachedUsr, nil
 	}
 
-	usr, err := s.store.QueryByID(ctx, userID)
+	usr, err := s.store.QueryByID(ctx, id)
 	if err != nil {
 		return user.User{}, err
 	}
@@ -78,8 +78,8 @@ func (s *Store) QueryByID(ctx context.Context, userID uuid.UUID) (user.User, err
 }
 
 // QueryByIDs gets the specified users from the database.
-func (s *Store) QueryByIDs(ctx context.Context, userIDs []uuid.UUID) ([]user.User, error) {
-	usr, err := s.store.QueryByIDs(ctx, userIDs)
+func (s *Store) QueryByIDs(ctx context.Context, ids []uuid.UUID) ([]user.User, error) {
+	usr, err := s.store.QueryByIDs(ctx, ids)
 	if err != nil {
 		return nil, err
 	}

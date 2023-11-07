@@ -16,9 +16,7 @@ type Handlers struct {
 	property *property.Core
 }
 
-func New(
-	property *property.Core,
-) *Handlers {
+func New(property *property.Core) *Handlers {
 	return &Handlers{
 		property: property,
 	}
@@ -31,12 +29,12 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 	app.ManagerID = auth.GetUserID(ctx)
 
-	e, err := toCoreNewProperty(app)
+	c, err := toCoreNewProperty(app)
 	if err != nil {
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	prprty, err := h.property.Create(ctx, e)
+	prprty, err := h.property.Create(ctx, c)
 	if err != nil {
 		if errors.Is(err, property.ErrLimitExceeded) {
 			return response.NewError(err, http.StatusForbidden)
@@ -72,12 +70,12 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	e, err := toCoreUpdateProperty(app)
+	c, err := toCoreUpdateProperty(app)
 	if err != nil {
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	prprty, err = h.property.Update(ctx, prprty, e)
+	prprty, err = h.property.Update(ctx, prprty, c)
 	if err != nil {
 		return fmt.Errorf("update: usr[%+v]: %w", app, err)
 	}
