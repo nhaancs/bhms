@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/nhaancs/bhms/business/core/property"
-	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/web"
@@ -24,8 +23,6 @@ func New(
 		property: property,
 	}
 }
-
-// TODO: list by manager id
 
 func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var app AppNewProperty
@@ -59,10 +56,10 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 	prprty, err := h.property.QueryByID(ctx, prprtyID)
 	if err != nil {
 		switch {
-		case errors.Is(err, user.ErrNotFound):
+		case errors.Is(err, property.ErrNotFound):
 			return response.NewError(err, http.StatusNotFound)
 		default:
-			return fmt.Errorf("querybyid: userID[%s]: %w", prprtyID, err)
+			return fmt.Errorf("querybyid: ID[%s]: %w", prprtyID, err)
 		}
 	}
 
@@ -86,4 +83,19 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 
 	return web.Respond(ctx, w, toAppProperty(prprty), http.StatusCreated)
+}
+
+func (h *Handlers) Query(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	managerID := auth.GetUserID(ctx)
+	prprties, err := h.property.QueryByManagerID(ctx, managerID)
+	if err != nil {
+		switch {
+		case errors.Is(err, property.ErrNotFound):
+			return response.NewError(err, http.StatusNotFound)
+		default:
+			return fmt.Errorf("querybymanagerid: managerID[%s]: %w", managerID, err)
+		}
+	}
+
+	return web.Respond(ctx, w, toAppProperties(prprties), http.StatusCreated)
 }

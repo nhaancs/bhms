@@ -71,6 +71,8 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 		app.EnableCORS(mid.Cors(opts.corsOrigin))
 	}
 
+	auth := mid.Authenticate(cfg.Auth)
+
 	// -------------------------------------------------------------------------
 	// Check routes
 	checkHdl := checkgrp.New(cfg.Build, cfg.DB)
@@ -81,10 +83,10 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	// User routes
 	usrCore := user.NewCore(cfg.Log, usercache.NewStore(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB)))
 	usrHdl := usergrp.New(usrCore, cfg.Auth, cfg.KeyID, cfg.SMS)
+	app.Handle(http.MethodGet, version, "/users/token", usrHdl.Token)
 	app.Handle(http.MethodPost, version, "/users/register", usrHdl.Register)
 	app.Handle(http.MethodPost, version, "/users/verify-otp", usrHdl.VerifyOTP)
-	app.Handle(http.MethodGet, version, "/users/token", usrHdl.Token)
-	app.Handle(http.MethodPut, version, "/users", usrHdl.Token, mid.Authenticate(cfg.Auth))
+	app.Handle(http.MethodPut, version, "/users", usrHdl.Update, auth)
 
 	// -------------------------------------------------------------------------
 	// Division routes
@@ -94,8 +96,8 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	}
 	divCore := division.NewCore(cfg.Log, divStore)
 	divHdl := divisiongrp.New(divCore)
-	app.Handle(http.MethodGet, version, "/divisions/provinces", divHdl.QueryProvinces, mid.Authenticate(cfg.Auth))
-	app.Handle(http.MethodGet, version, "/divisions/children/:parent_id", divHdl.QueryByParentID, mid.Authenticate(cfg.Auth))
+	app.Handle(http.MethodGet, version, "/divisions/provinces", divHdl.QueryProvinces, auth)
+	app.Handle(http.MethodGet, version, "/divisions/children/:parent_id", divHdl.QueryByParentID, auth)
 
 	// -------------------------------------------------------------------------
 	// Property routes
@@ -106,8 +108,9 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	}
 	propertyCore := property.NewCore(cfg.Log, propertyStore)
 	propertyHdl := propertygrp.New(propertyCore)
-	app.Handle(http.MethodGet, version, "/properties", propertyHdl.Create, mid.Authenticate(cfg.Auth))
-	app.Handle(http.MethodPut, version, "/properties/:property_id", propertyHdl.Update, mid.Authenticate(cfg.Auth))
+	app.Handle(http.MethodGet, version, "/properties", propertyHdl.Query, auth)
+	app.Handle(http.MethodPost, version, "/properties", propertyHdl.Create, auth)
+	app.Handle(http.MethodPut, version, "/properties/:property_id", propertyHdl.Update, auth)
 
 	return app, nil
 }

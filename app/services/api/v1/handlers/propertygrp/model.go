@@ -35,6 +35,13 @@ func toAppProperty(e property.Property) AppProperty {
 		UpdatedAt:       e.UpdatedAt.Format(time.RFC3339),
 	}
 }
+func toAppProperties(es []property.Property) []AppProperty {
+	result := make([]AppProperty, len(es))
+	for i := range es {
+		result[i] = toAppProperty(es[i])
+	}
+	return result
+}
 
 // ===============================================================
 
