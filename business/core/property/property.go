@@ -15,10 +15,10 @@ var (
 )
 
 type Storer interface {
-	Create(ctx context.Context, prprty Property) error
-	Update(ctx context.Context, prprty Property) error
-	Delete(ctx context.Context, prprty Property) error
-	QueryByID(ctx context.Context, prprtyID uuid.UUID) (Property, error)
+	Create(ctx context.Context, core Property) error
+	Update(ctx context.Context, core Property) error
+	Delete(ctx context.Context, core Property) error
+	QueryByID(ctx context.Context, id uuid.UUID) (Property, error)
 	QueryByManagerID(ctx context.Context, managerID uuid.UUID) ([]Property, error)
 }
 

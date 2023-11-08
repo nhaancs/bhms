@@ -16,7 +16,7 @@ var (
 // =============================================================================
 
 type Storer interface {
-	QueryByID(ctx context.Context, divisionID int) (Division, error)
+	QueryByID(ctx context.Context, id int) (Division, error)
 	QueryByParentID(ctx context.Context, parentID int) ([]Division, error)
 	QueryLevel1s(ctx context.Context) ([]Division, error)
 }
