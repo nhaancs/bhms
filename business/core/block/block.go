@@ -19,7 +19,7 @@ type Storer interface {
 	Update(ctx context.Context, core Block) error
 	Delete(ctx context.Context, core Block) error
 	QueryByID(ctx context.Context, id uuid.UUID) (Block, error)
-	QueryByPropertyID(ctx context.Context, propertyID uuid.UUID) ([]Block, error)
+	QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]Block, error)
 }
 
 type Core struct {
@@ -94,10 +94,10 @@ func (c *Core) QueryByID(ctx context.Context, id uuid.UUID) (Block, error) {
 	return blck, nil
 }
 
-func (c *Core) QueryByPropertyID(ctx context.Context, propertyID uuid.UUID) ([]Block, error) {
-	blcks, err := c.store.QueryByPropertyID(ctx, propertyID)
+func (c *Core) QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]Block, error) {
+	blcks, err := c.store.QueryByPropertyID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("query: property id[%s]: %w", propertyID.String(), err)
+		return nil, fmt.Errorf("query: property id[%s]: %w", id.String(), err)
 	}
 
 	return blcks, nil

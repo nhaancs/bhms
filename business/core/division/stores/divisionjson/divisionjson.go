@@ -117,20 +117,20 @@ func (s *Store) QueryByID(ctx context.Context, id int) (division.Division, error
 	return toCoreDivision(div)
 }
 
-func (s *Store) QueryByParentID(ctx context.Context, parentID int) ([]division.Division, error) {
-	parent, err := s.QueryByID(ctx, parentID)
+func (s *Store) QueryByParentID(ctx context.Context, id int) ([]division.Division, error) {
+	parent, err := s.QueryByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("querybyparentid parent: %w", division.ErrNotFound)
 	}
 	switch parent.Level {
 	case 2:
-		divisions, exist := s.level2[parentID]
+		divisions, exist := s.level2[id]
 		if !exist {
 			return nil, fmt.Errorf("querybyparentid level 2: %w", division.ErrNotFound)
 		}
 		return toCoreDivisions(divisions)
 	case 3:
-		divisions, exist := s.level3[parentID]
+		divisions, exist := s.level3[id]
 		if !exist {
 			return nil, fmt.Errorf("querybyparentid level 3: %w", division.ErrNotFound)
 		}

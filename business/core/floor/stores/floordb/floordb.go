@@ -120,11 +120,11 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (floor.Floor, error
 	return flr, nil
 }
 
-func (s *Store) QueryByBlockID(ctx context.Context, blockID uuid.UUID) ([]floor.Floor, error) {
+func (s *Store) QueryByBlockID(ctx context.Context, id uuid.UUID) ([]floor.Floor, error) {
 	data := struct {
 		BlockID string `db:"block_id"`
 	}{
-		BlockID: blockID.String(),
+		BlockID: id.String(),
 	}
 
 	const q = `

@@ -111,11 +111,11 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (property.Property,
 	return prprty, nil
 }
 
-func (s *Store) QueryByManagerID(ctx context.Context, managerID uuid.UUID) ([]property.Property, error) {
+func (s *Store) QueryByManagerID(ctx context.Context, id uuid.UUID) ([]property.Property, error) {
 	data := struct {
 		ManagerID string `db:"manager_id"`
 	}{
-		ManagerID: managerID.String(),
+		ManagerID: id.String(),
 	}
 
 	const q = `

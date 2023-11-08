@@ -120,11 +120,11 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (unit.Unit, error) 
 	return unt, nil
 }
 
-func (s *Store) QueryByFloorID(ctx context.Context, floorID uuid.UUID) ([]unit.Unit, error) {
+func (s *Store) QueryByFloorID(ctx context.Context, id uuid.UUID) ([]unit.Unit, error) {
 	data := struct {
 		FloorID string `db:"floor_id"`
 	}{
-		FloorID: floorID.String(),
+		FloorID: id.String(),
 	}
 
 	const q = `

@@ -17,7 +17,7 @@ var (
 
 type Storer interface {
 	QueryByID(ctx context.Context, id int) (Division, error)
-	QueryByParentID(ctx context.Context, parentID int) ([]Division, error)
+	QueryByParentID(ctx context.Context, id int) ([]Division, error)
 	QueryLevel1s(ctx context.Context) ([]Division, error)
 }
 
@@ -42,10 +42,10 @@ func (c *Core) QueryByID(ctx context.Context, divisionID int) (Division, error) 
 	return dvsn, err
 }
 
-func (c *Core) QueryByParentID(ctx context.Context, parentID int) ([]Division, error) {
-	dvsns, err := c.store.QueryByParentID(ctx, parentID)
+func (c *Core) QueryByParentID(ctx context.Context, id int) ([]Division, error) {
+	dvsns, err := c.store.QueryByParentID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("query: parentID[%d]: err: %w", parentID, err)
+		return nil, fmt.Errorf("query: parent id[%d]: err: %w", id, err)
 	}
 
 	return dvsns, err

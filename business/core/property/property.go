@@ -19,7 +19,7 @@ type Storer interface {
 	Update(ctx context.Context, core Property) error
 	Delete(ctx context.Context, core Property) error
 	QueryByID(ctx context.Context, id uuid.UUID) (Property, error)
-	QueryByManagerID(ctx context.Context, managerID uuid.UUID) ([]Property, error)
+	QueryByManagerID(ctx context.Context, id uuid.UUID) ([]Property, error)
 }
 
 type Core struct {
