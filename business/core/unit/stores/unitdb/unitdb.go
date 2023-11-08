@@ -112,19 +112,19 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (unit.Unit, error) 
 		return unit.Unit{}, fmt.Errorf("namedquerystruct: %w", err)
 	}
 
-	flr, err := toCoreUnit(row)
+	unt, err := toCoreUnit(row)
 	if err != nil {
 		return unit.Unit{}, err
 	}
 
-	return flr, nil
+	return unt, nil
 }
 
-func (s *Store) QueryByBlockID(ctx context.Context, blockID uuid.UUID) ([]unit.Unit, error) {
+func (s *Store) QueryByFloorID(ctx context.Context, floorID uuid.UUID) ([]unit.Unit, error) {
 	data := struct {
-		BlockID string `db:"block_id"`
+		FloorID string `db:"floor_id"`
 	}{
-		BlockID: blockID.String(),
+		FloorID: floorID.String(),
 	}
 
 	const q = `
@@ -133,7 +133,7 @@ func (s *Store) QueryByBlockID(ctx context.Context, blockID uuid.UUID) ([]unit.U
 	FROM
 		units
 	WHERE
-		block_id = :block_id`
+		floor_id = :floor_id`
 
 	var rows []dbUnit
 	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &rows); err != nil {
@@ -143,10 +143,10 @@ func (s *Store) QueryByBlockID(ctx context.Context, blockID uuid.UUID) ([]unit.U
 		return nil, fmt.Errorf("namedqueryslice: %w", err)
 	}
 
-	flrs, err := toCoreUnits(rows)
+	unts, err := toCoreUnits(rows)
 	if err != nil {
 		return nil, err
 	}
 
-	return flrs, nil
+	return unts, nil
 }
