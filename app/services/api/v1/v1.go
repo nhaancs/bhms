@@ -13,6 +13,7 @@ import (
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/core/user/stores/usercache"
 	"github.com/nhaancs/bhms/business/core/user/stores/userdb"
+	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
 	"github.com/nhaancs/bhms/business/web/mid"
 	"github.com/nhaancs/bhms/foundation/sms"
 	"net/http"
@@ -71,6 +72,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	}
 
 	auth := mid.Authenticate(cfg.Auth)
+	tran := mid.ExecuteInTransaction(cfg.Log, db.NewBeginner(cfg.DB))
 
 	// -------------------------------------------------------------------------
 	// Check routes
@@ -108,7 +110,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	propertyCore := property.NewCore(cfg.Log, propertyStore)
 	propertyHdl := propertygrp.New(propertyCore)
 	app.Handle(http.MethodGet, version, "/properties", propertyHdl.Query, auth)
-	app.Handle(http.MethodPost, version, "/properties", propertyHdl.Create, auth)
+	app.Handle(http.MethodPost, version, "/properties", propertyHdl.Create, auth, tran)
 	app.Handle(http.MethodPut, version, "/properties/:property_id", propertyHdl.Update, auth)
 
 	return app, nil
