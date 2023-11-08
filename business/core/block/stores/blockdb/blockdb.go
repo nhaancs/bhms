@@ -1,1 +1,138 @@
 package blockdb
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
+	"github.com/nhaancs/bhms/business/core/block"
+	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
+	"github.com/nhaancs/bhms/foundation/logger"
+)
+
+type Store struct {
+	log *logger.Logger
+	db  sqlx.ExtContext
+}
+
+// NewStore constructs the api for data access.
+func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
+	return &Store{
+		log: log,
+		db:  db,
+	}
+}
+
+func (s *Store) Create(ctx context.Context, core block.Block) error {
+	const q = `
+	INSERT INTO blocks
+		(id, name, property_id, created_at, updated_at)
+	VALUES
+		(:id, :name, :property_id, :created_at, :updated_at)`
+
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBBlock(core)); err != nil {
+		return fmt.Errorf("namedexeccontext: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Store) Update(ctx context.Context, core block.Block) error {
+	const q = `
+	UPDATE
+		blocks
+	SET 
+		"name" = :name,
+		"updated_at" = :updated_at
+	WHERE
+		id = :id`
+
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBBlock(core)); err != nil {
+		return fmt.Errorf("namedexeccontext: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Store) Delete(ctx context.Context, core block.Block) error {
+	data := struct {
+		ID string `db:"id"`
+	}{
+		ID: core.ID.String(),
+	}
+
+	const q = `
+	DELETE FROM
+		blocks
+	WHERE
+		id = :id`
+
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, data); err != nil {
+		return fmt.Errorf("namedexeccontext: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (block.Block, error) {
+	data := struct {
+		ID string `db:"id"`
+	}{
+		ID: id.String(),
+	}
+
+	const q = `
+	SELECT
+        id, name, property_id, created_at, updated_at
+	FROM
+		blocks
+	WHERE 
+		id = :id`
+
+	var row dbBlock
+	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &row); err != nil {
+		if errors.Is(err, db.ErrDBNotFound) {
+			return block.Block{}, fmt.Errorf("namedquerystruct: %w", block.ErrNotFound)
+		}
+		return block.Block{}, fmt.Errorf("namedquerystruct: %w", err)
+	}
+
+	blck, err := toCoreBlock(row)
+	if err != nil {
+		return block.Block{}, err
+	}
+
+	return blck, nil
+}
+
+func (s *Store) QueryByPropertyID(ctx context.Context, propertyID uuid.UUID) ([]block.Block, error) {
+	data := struct {
+		PropertyID string `db:"property_id"`
+	}{
+		PropertyID: propertyID.String(),
+	}
+
+	const q = `
+	SELECT
+        id, name, property_id, created_at, updated_at
+	FROM
+		blocks
+	WHERE
+		property_id = :property_id`
+
+	var rows []dbBlock
+	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &rows); err != nil {
+		if errors.Is(err, db.ErrDBNotFound) {
+			return nil, fmt.Errorf("namedqueryslice: %w", block.ErrNotFound)
+		}
+		return nil, fmt.Errorf("namedqueryslice: %w", err)
+	}
+
+	blcks, err := toCoreBlocks(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return blcks, nil
+}

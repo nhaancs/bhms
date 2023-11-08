@@ -33,3 +33,16 @@ func toCoreBlock(r dbBlock) (block.Block, error) {
 		UpdatedAt:  r.UpdatedAt.In(time.Local),
 	}, nil
 }
+
+func toCoreBlocks(rs []dbBlock) ([]block.Block, error) {
+	result := make([]block.Block, len(rs))
+	for i := range rs {
+		blck, err := toCoreBlock(rs[i])
+		if err != nil {
+			return nil, err
+		}
+		result[i] = blck
+	}
+
+	return result, nil
+}
