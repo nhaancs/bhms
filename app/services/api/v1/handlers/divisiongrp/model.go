@@ -4,7 +4,7 @@ import "github.com/nhaancs/bhms/business/core/division"
 
 type AppDivision struct {
 	ID       int    `json:"id"`
-	ParentID int    `json:"parent_id"`
+	ParentID int    `json:"parentID"`
 	Level    uint8  `json:"level"`
 	Name     string `json:"name"`
 }

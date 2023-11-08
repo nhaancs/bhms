@@ -24,8 +24,8 @@ func (r AppVerifyOTP) Validate() error {
 
 // AppRegister contains information needed for a new user to register.
 type AppRegister struct {
-	FirstName string `json:"first_name" validate:"required"`
-	LastName  string `json:"last_name"`
+	FirstName string `json:"firstName" validate:"required"`
+	LastName  string `json:"lastName"`
 	Phone     string `json:"phone" validate:"required,number,startswith=0,len=10"`
 	Password  string `json:"password" validate:"required,min=6"`
 }
@@ -55,8 +55,8 @@ func (r AppRegister) Validate() error {
 // ===============================================================
 
 type AppUpdateUser struct {
-	FirstName *string `json:"first_name" validate:"required"`
-	LastName  *string `json:"last_name"`
+	FirstName *string `json:"firstName" validate:"required"`
+	LastName  *string `json:"lastName"`
 	Phone     *string `json:"phone" validate:"required,number,startswith=0,len=10"`
 	Password  *string `json:"password" validate:"required,min=6"`
 }
@@ -98,8 +98,8 @@ func toToken(v string) token {
 // AppUser represents information about an individual user.
 type AppUser struct {
 	ID           string   `json:"id"`
-	FirstName    string   `json:"first_name"`
-	LastName     string   `json:"last_name"`
+	FirstName    string   `json:"firstName"`
+	LastName     string   `json:"lastName"`
 	Phone        string   `json:"phone"`
 	Roles        []string `json:"roles"`
 	PasswordHash []byte   `json:"-"`

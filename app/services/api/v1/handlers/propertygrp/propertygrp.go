@@ -5,7 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/business/core/block"
+	"github.com/nhaancs/bhms/business/core/floor"
 	"github.com/nhaancs/bhms/business/core/property"
+	"github.com/nhaancs/bhms/business/core/unit"
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/web"
@@ -14,6 +17,9 @@ import (
 
 type Handlers struct {
 	property *property.Core
+	block    *block.Core
+	floor    *floor.Core
+	unit     *unit.Core
 }
 
 func New(property *property.Core) *Handlers {

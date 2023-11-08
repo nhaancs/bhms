@@ -10,16 +10,44 @@ import (
 // ==========================================================
 
 type AppProperty struct {
-	ID              string `json:"id"`
-	ManagerID       string `json:"manager_id"`
-	Name            string `json:"name"`
-	AddressLevel1ID uint32 `json:"address_level_1_id"`
-	AddressLevel2ID uint32 `json:"address_level_2_id"`
-	AddressLevel3ID uint32 `json:"address_level_3_id"`
-	Street          string `json:"street"`
-	Status          string `json:"status"`
-	CreatedAt       string `json:"created_at"`
-	UpdatedAt       string `json:"updated_at"`
+	ID              string     `json:"id"`
+	ManagerID       string     `json:"managerID"`
+	Name            string     `json:"name"`
+	AddressLevel1ID uint32     `json:"addressLevel1ID"`
+	AddressLevel2ID uint32     `json:"addressLevel2ID"`
+	AddressLevel3ID uint32     `json:"addressLevel3ID"`
+	Street          string     `json:"street"`
+	Status          string     `json:"status"`
+	CreatedAt       string     `json:"createdAt"`
+	UpdatedAt       string     `json:"updatedAt"`
+	Blocks          []AppBlock `json:"blocks"`
+}
+
+type AppBlock struct {
+	ID         string     `json:"id"`
+	PropertyID string     `json:"propertyID"`
+	Name       string     `json:"name"`
+	Floors     []AppFloor `json:"floors"`
+	CreatedAt  string     `json:"createdAt"`
+	UpdatedAt  string     `json:"updatedAt"`
+}
+type AppFloor struct {
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	PropertyID string    `json:"propertyID"`
+	BlockID    string    `json:"blockID"`
+	Units      []AppUnit `json:"units"`
+	CreatedAt  string    `json:"createdAt"`
+	UpdatedAt  string    `json:"updatedAt"`
+}
+type AppUnit struct {
+	ID         string `json:"id"`
+	PropertyID string `json:"propertyID"`
+	BlockID    string `json:"blockID"`
+	FloorID    string `json:"floorID"`
+	Name       string `json:"name"`
+	CreatedAt  string `json:"createdAt"`
+	UpdatedAt  string `json:"updatedAt"`
 }
 
 func toAppProperty(c property.Property) AppProperty {
@@ -46,13 +74,26 @@ func toAppProperties(cs []property.Property) []AppProperty {
 // ===============================================================
 
 type AppNewProperty struct {
-	ManagerID       uuid.UUID `json:"-"`
-	Name            string    `json:"name" validate:"required"`
-	AddressLevel1ID uint32    `json:"address_level_1_id" validate:"required,min=1"`
-	AddressLevel2ID uint32    `json:"address_level_2_id" validate:"required,min=1"`
-	AddressLevel3ID uint32    `json:"address_level_3_id" validate:"required,min=1"`
-	Street          string    `json:"street" validate:"required"`
-	Status          string    `json:"status" validate:"required"`
+	ManagerID       uuid.UUID     `json:"-"`
+	Name            string        `json:"name" validate:"required"`
+	AddressLevel1ID uint32        `json:"addressLevel1ID" validate:"required,min=1"`
+	AddressLevel2ID uint32        `json:"addressLevel2ID" validate:"required,min=1"`
+	AddressLevel3ID uint32        `json:"addressLevel3ID" validate:"required,min=1"`
+	Street          string        `json:"street" validate:"required"`
+	Status          string        `json:"status" validate:"required"`
+	Blocks          []AppNewBlock `json:"blocks"`
+}
+
+type AppNewBlock struct {
+	Name   string        `json:"name"`
+	Floors []AppNewFloor `json:"floors"`
+}
+type AppNewFloor struct {
+	Name  string       `json:"name"`
+	Units []AppNewUnit `json:"units"`
+}
+type AppNewUnit struct {
+	Name string `json:"name"`
 }
 
 func toCoreNewProperty(a AppNewProperty) (property.NewProperty, error) {
@@ -80,9 +121,9 @@ func (r AppNewProperty) Validate() error {
 
 type AppUpdateProperty struct {
 	Name            *string `json:"name" validate:"required"`
-	AddressLevel1ID *uint32 `json:"address_level_1_id" validate:"required,min=1"`
-	AddressLevel2ID *uint32 `json:"address_level_2_id" validate:"required,min=1"`
-	AddressLevel3ID *uint32 `json:"address_level_3_id" validate:"required,min=1"`
+	AddressLevel1ID *uint32 `json:"addressLevel1ID" validate:"required,min=1"`
+	AddressLevel2ID *uint32 `json:"addressLevel2ID" validate:"required,min=1"`
+	AddressLevel3ID *uint32 `json:"addressLevel3ID" validate:"required,min=1"`
 	Street          *string `json:"street" validate:"required"`
 }
 
