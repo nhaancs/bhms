@@ -129,7 +129,7 @@ func (s *Store) QueryByBlockID(ctx context.Context, blockID uuid.UUID) ([]floor.
 
 	const q = `
 	SELECT
-        id, name, property_id, block_id created_at, updated_at
+        id, name, property_id, block_id, created_at, updated_at
 	FROM
 		floors
 	WHERE

@@ -39,6 +39,7 @@ func toCoreFloor(r dbFloor) (floor.Floor, error) {
 		ID:         r.ID,
 		Name:       r.Name,
 		PropertyID: r.PropertyID,
+		BlockID:    r.BlockID,
 		CreatedAt:  r.CreatedAt.In(time.Local),
 		UpdatedAt:  r.UpdatedAt.In(time.Local),
 	}, nil
