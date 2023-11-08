@@ -15,6 +15,7 @@ var (
 
 type Storer interface {
 	Create(ctx context.Context, core Block) error
+	BatchCreate(ctx context.Context, cores []Block) error
 	Update(ctx context.Context, core Block) error
 	Delete(ctx context.Context, core Block) error
 	QueryByID(ctx context.Context, id uuid.UUID) (Block, error)
@@ -48,6 +49,27 @@ func (c *Core) Create(ctx context.Context, core NewBlock) (Block, error) {
 	}
 
 	return blck, nil
+}
+
+func (c *Core) BatchCreate(ctx context.Context, cores []NewBlock) ([]Block, error) {
+	now := time.Now()
+	blcks := make([]Block, len(cores))
+
+	for i := range cores {
+		blcks[i] = Block{
+			ID:         uuid.New(),
+			Name:       cores[i].Name,
+			PropertyID: cores[i].PropertyID,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+		}
+	}
+
+	if err := c.store.BatchCreate(ctx, blcks); err != nil {
+		return nil, fmt.Errorf("batch create: %w", err)
+	}
+
+	return blcks, nil
 }
 
 func (c *Core) Update(ctx context.Context, o Block, n UpdateBlock) (Block, error) {

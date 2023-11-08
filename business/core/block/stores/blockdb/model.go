@@ -24,6 +24,14 @@ func toDBBlock(c block.Block) dbBlock {
 	}
 }
 
+func toDBBlocks(cs []block.Block) []dbBlock {
+	result := make([]dbBlock, len(cs))
+	for i := range cs {
+		result[i] = toDBBlock(cs[i])
+	}
+	return result
+}
+
 func toCoreBlock(r dbBlock) (block.Block, error) {
 	return block.Block{
 		ID:         r.ID,

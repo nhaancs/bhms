@@ -38,6 +38,20 @@ func (s *Store) Create(ctx context.Context, core block.Block) error {
 	return nil
 }
 
+func (s *Store) BatchCreate(ctx context.Context, cores []block.Block) error {
+	const q = `
+	INSERT INTO blocks
+		(id, name, property_id, created_at, updated_at)
+	VALUES
+		(:id, :name, :property_id, :created_at, :updated_at)`
+
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBBlocks(cores)); err != nil {
+		return fmt.Errorf("namedexeccontext: %w", err)
+	}
+
+	return nil
+}
+
 func (s *Store) Update(ctx context.Context, core block.Block) error {
 	const q = `
 	UPDATE
