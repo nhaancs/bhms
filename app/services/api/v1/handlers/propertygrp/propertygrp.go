@@ -9,6 +9,7 @@ import (
 	"github.com/nhaancs/bhms/business/core/floor"
 	"github.com/nhaancs/bhms/business/core/property"
 	"github.com/nhaancs/bhms/business/core/unit"
+	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/web"
@@ -29,6 +30,11 @@ func New(property *property.Core) *Handlers {
 }
 
 func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	h, err := h.executeUnderTransaction(ctx)
+	if err != nil {
+		return err
+	}
+
 	var app AppNewProperty
 	if err := web.Decode(r, &app); err != nil {
 		return response.NewError(err, http.StatusBadRequest)
@@ -102,4 +108,41 @@ func (h *Handlers) Query(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	return web.Respond(ctx, w, toAppProperties(prprties), http.StatusCreated)
+}
+
+// executeUnderTransaction constructs a new Handlers value with the core apis
+// using a store transaction that was created via middleware.
+func (h *Handlers) executeUnderTransaction(ctx context.Context) (*Handlers, error) {
+	if tx, ok := transaction.Get(ctx); ok {
+		property, err := h.property.ExecuteUnderTransaction(tx)
+		if err != nil {
+			return nil, err
+		}
+
+		block, err := h.block.ExecuteUnderTransaction(tx)
+		if err != nil {
+			return nil, err
+		}
+
+		floor, err := h.floor.ExecuteUnderTransaction(tx)
+		if err != nil {
+			return nil, err
+		}
+
+		unit, err := h.unit.ExecuteUnderTransaction(tx)
+		if err != nil {
+			return nil, err
+		}
+
+		h = &Handlers{
+			property: property,
+			block:    block,
+			floor:    floor,
+			unit:     unit,
+		}
+
+		return h, nil
+	}
+
+	return h, nil
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/foundation/logger"
 	"time"
 )
@@ -20,6 +21,7 @@ type Storer interface {
 	Delete(ctx context.Context, core Property) error
 	QueryByID(ctx context.Context, id uuid.UUID) (Property, error)
 	QueryByManagerID(ctx context.Context, id uuid.UUID) ([]Property, error)
+	ExecuteUnderTransaction(tx transaction.Transaction) (Storer, error)
 }
 
 type Core struct {
@@ -115,4 +117,20 @@ func (c *Core) QueryByManagerID(ctx context.Context, managerID uuid.UUID) ([]Pro
 	}
 
 	return prprties, nil
+}
+
+// ExecuteUnderTransaction constructs a new Core value that will use the
+// specified transaction in any store related calls.
+func (c *Core) ExecuteUnderTransaction(tx transaction.Transaction) (*Core, error) {
+	store, err := c.store.ExecuteUnderTransaction(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	c = &Core{
+		store: store,
+		log:   c.log,
+	}
+
+	return c, nil
 }

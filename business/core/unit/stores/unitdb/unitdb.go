@@ -8,6 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/nhaancs/bhms/business/core/unit"
 	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
+	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/foundation/logger"
 )
 
@@ -149,4 +150,20 @@ func (s *Store) QueryByFloorID(ctx context.Context, id uuid.UUID) ([]unit.Unit, 
 	}
 
 	return unts, nil
+}
+
+// ExecuteUnderTransaction constructs a new Store value replacing the sqlx DB
+// value with a sqlx DB value that is currently inside a transaction.
+func (s *Store) ExecuteUnderTransaction(tx transaction.Transaction) (unit.Storer, error) {
+	ec, err := db.GetExtContext(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	s = &Store{
+		log: s.log,
+		db:  ec,
+	}
+
+	return s, nil
 }
