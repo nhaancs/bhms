@@ -15,6 +15,7 @@ type Floor struct {
 }
 
 type NewFloor struct {
+	ID         uuid.UUID
 	Name       string
 	PropertyID uuid.UUID
 	BlockID    uuid.UUID

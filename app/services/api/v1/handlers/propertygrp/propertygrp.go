@@ -41,12 +41,27 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 	app.ManagerID = auth.GetUserID(ctx)
 
-	c, err := toCoreNewProperty(app)
-	if err != nil {
-		return response.NewError(err, http.StatusBadRequest)
+	var (
+		crNwPrprty = toCoreNewProperty(app)
+		crNwBlcks  = make([]block.NewBlock, len(app.Blocks))
+		crNwFlrs   []floor.NewFloor
+		crNwUnts   []unit.NewUnit
+	)
+	for i, appBlck := range app.Blocks {
+		crNwBlck := toCoreNewBlock(appBlck, crNwPrprty.ID)
+		crNwBlcks[i] = crNwBlck
+
+		for _, appFlr := range appBlck.Floors {
+			crNwFlr := toCoreNewFloor(appFlr, crNwPrprty.ID, crNwBlck.ID)
+			crNwFlrs = append(crNwFlrs, crNwFlr)
+
+			for _, appUnt := range appFlr.Units {
+				crNwUnts = append(crNwUnts, toCoreNewUnit(appUnt, crNwPrprty.ID, crNwBlck.ID, crNwFlr.ID))
+			}
+		}
 	}
 
-	prprty, err := h.property.Create(ctx, c)
+	prprty, err := h.property.Create(ctx, crNwPrprty)
 	if err != nil {
 		if errors.Is(err, property.ErrLimitExceeded) {
 			return response.NewError(err, http.StatusForbidden)
@@ -54,7 +69,22 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return fmt.Errorf("create: prprty[%+v]: %w", app, err)
 	}
 
-	return web.Respond(ctx, w, toAppProperty(prprty), http.StatusCreated)
+	blcks, err := h.block.BatchCreate(ctx, crNwBlcks)
+	if err != nil {
+		return fmt.Errorf("batch create blocks: prprty[%+v]: %w", app, err)
+	}
+
+	flrs, err := h.floor.BatchCreate(ctx, crNwFlrs)
+	if err != nil {
+		return fmt.Errorf("batch create floors: prprty[%+v]: %w", app, err)
+	}
+
+	unts, err := h.unit.BatchCreate(ctx, crNwUnts)
+	if err != nil {
+		return fmt.Errorf("batch create units: prprty[%+v]: %w", app, err)
+	}
+
+	return web.Respond(ctx, w, toAppPropertyFull(prprty, blcks, flrs, unts), http.StatusCreated)
 }
 
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

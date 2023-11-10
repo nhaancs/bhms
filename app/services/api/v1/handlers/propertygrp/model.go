@@ -2,7 +2,10 @@ package propertygrp
 
 import (
 	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/business/core/block"
+	"github.com/nhaancs/bhms/business/core/floor"
 	"github.com/nhaancs/bhms/business/core/property"
+	"github.com/nhaancs/bhms/business/core/unit"
 	"github.com/nhaancs/bhms/foundation/validate"
 	"time"
 )
@@ -10,6 +13,19 @@ import (
 // ==========================================================
 
 type AppProperty struct {
+	ID              string `json:"id"`
+	ManagerID       string `json:"managerID"`
+	Name            string `json:"name"`
+	AddressLevel1ID uint32 `json:"addressLevel1ID"`
+	AddressLevel2ID uint32 `json:"addressLevel2ID"`
+	AddressLevel3ID uint32 `json:"addressLevel3ID"`
+	Street          string `json:"street"`
+	Status          string `json:"status"`
+	CreatedAt       string `json:"createdAt"`
+	UpdatedAt       string `json:"updatedAt"`
+}
+
+type AppPropertyFull struct {
 	ID              string     `json:"id"`
 	ManagerID       string     `json:"managerID"`
 	Name            string     `json:"name"`
@@ -50,19 +66,36 @@ type AppUnit struct {
 	UpdatedAt  string `json:"updatedAt"`
 }
 
-func toAppProperty(c property.Property) AppProperty {
-	return AppProperty{
-		ID:              c.ID.String(),
-		ManagerID:       c.ManagerID.String(),
-		AddressLevel1ID: c.AddressLevel1ID,
-		AddressLevel2ID: c.AddressLevel2ID,
-		AddressLevel3ID: c.AddressLevel3ID,
-		Street:          c.Street,
-		Status:          c.Status.Name(),
-		CreatedAt:       c.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:       c.UpdatedAt.Format(time.RFC3339),
+// TODO: implement this
+func toAppPropertyFull(p property.Property, bs []block.Block, fs []floor.Floor, us []unit.Unit) AppPropertyFull {
+	return AppPropertyFull{
+		ID:              p.ID.String(),
+		ManagerID:       p.ManagerID.String(),
+		AddressLevel1ID: p.AddressLevel1ID,
+		AddressLevel2ID: p.AddressLevel2ID,
+		AddressLevel3ID: p.AddressLevel3ID,
+		Street:          p.Street,
+		Status:          p.Status.Name(),
+		CreatedAt:       p.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:       p.UpdatedAt.Format(time.RFC3339),
 	}
 }
+
+func toAppProperty(p property.Property) AppProperty {
+	return AppProperty{
+		ID:              p.ID.String(),
+		ManagerID:       p.ManagerID.String(),
+		AddressLevel1ID: p.AddressLevel1ID,
+		AddressLevel2ID: p.AddressLevel2ID,
+		AddressLevel3ID: p.AddressLevel3ID,
+		Street:          p.Street,
+		Status:          p.Status.Name(),
+		CreatedAt:       p.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:       p.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+// TODO: added blocks, floors, units
 func toAppProperties(cs []property.Property) []AppProperty {
 	result := make([]AppProperty, len(cs))
 	for i := range cs {
@@ -96,8 +129,9 @@ type AppNewUnit struct {
 	Name string `json:"name" validate:"required"`
 }
 
-func toCoreNewProperty(a AppNewProperty) (property.NewProperty, error) {
+func toCoreNewProperty(a AppNewProperty) property.NewProperty {
 	return property.NewProperty{
+		ID:              uuid.New(),
 		ManagerID:       a.ManagerID,
 		Name:            a.Name,
 		AddressLevel1ID: a.AddressLevel1ID,
@@ -105,7 +139,7 @@ func toCoreNewProperty(a AppNewProperty) (property.NewProperty, error) {
 		AddressLevel3ID: a.AddressLevel3ID,
 		Street:          a.Street,
 		Status:          property.StatusCreated,
-	}, nil
+	}
 }
 
 // Validate checks the data in the model is considered clean.
@@ -115,6 +149,32 @@ func (r AppNewProperty) Validate() error {
 	}
 
 	return nil
+}
+
+func toCoreNewBlock(a AppNewBlock, propertyID uuid.UUID) block.NewBlock {
+	return block.NewBlock{
+		ID:         uuid.New(),
+		Name:       a.Name,
+		PropertyID: propertyID,
+	}
+}
+func toCoreNewFloor(a AppNewFloor, propertyID, blockID uuid.UUID) floor.NewFloor {
+	return floor.NewFloor{
+		ID:         uuid.New(),
+		Name:       a.Name,
+		PropertyID: propertyID,
+		BlockID:    blockID,
+	}
+}
+
+func toCoreNewUnit(a AppNewUnit, propertyID, blockID, floorID uuid.UUID) unit.NewUnit {
+	return unit.NewUnit{
+		ID:         uuid.New(),
+		Name:       a.Name,
+		PropertyID: propertyID,
+		BlockID:    blockID,
+		FloorID:    floorID,
+	}
 }
 
 // ===============================================================

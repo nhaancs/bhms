@@ -48,7 +48,7 @@ func (c *Core) Create(ctx context.Context, core NewProperty) (Property, error) {
 
 	now := time.Now()
 	prprty := Property{
-		ID:              uuid.New(),
+		ID:              core.ID,
 		ManagerID:       core.ManagerID,
 		Name:            core.Name,
 		AddressLevel1ID: core.AddressLevel1ID,

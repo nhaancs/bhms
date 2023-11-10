@@ -39,7 +39,7 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 func (c *Core) Create(ctx context.Context, core NewUnit) (Unit, error) {
 	now := time.Now()
 	unt := Unit{
-		ID:         uuid.New(),
+		ID:         core.ID,
 		Name:       core.Name,
 		PropertyID: core.PropertyID,
 		BlockID:    core.BlockID,

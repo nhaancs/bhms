@@ -39,7 +39,7 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 func (c *Core) Create(ctx context.Context, core NewFloor) (Floor, error) {
 	now := time.Now()
 	flr := Floor{
-		ID:         uuid.New(),
+		ID:         core.ID,
 		Name:       core.Name,
 		PropertyID: core.PropertyID,
 		BlockID:    core.BlockID,

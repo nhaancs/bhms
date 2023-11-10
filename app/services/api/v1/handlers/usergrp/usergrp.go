@@ -90,11 +90,7 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	c, err := toCoreUpdateUser(app)
-	if err != nil {
-		return response.NewError(err, http.StatusBadRequest)
-	}
-
+	c := toCoreUpdateUser(app)
 	usr, err = h.user.Update(ctx, usr, c)
 	if err != nil {
 		if errors.Is(err, user.ErrUniquePhone) {

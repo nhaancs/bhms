@@ -61,15 +61,13 @@ type AppUpdateUser struct {
 	Password  *string `json:"password" validate:"required,min=6"`
 }
 
-func toCoreUpdateUser(a AppUpdateUser) (user.UpdateUser, error) {
-	usr := user.UpdateUser{
+func toCoreUpdateUser(a AppUpdateUser) user.UpdateUser {
+	return user.UpdateUser{
 		FirstName: a.FirstName,
 		LastName:  a.LastName,
 		Phone:     a.Phone,
 		Password:  a.Password,
 	}
-
-	return usr, nil
 }
 
 // Validate checks the data in the model is considered clean.

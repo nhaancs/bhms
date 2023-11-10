@@ -16,6 +16,7 @@ type Unit struct {
 }
 
 type NewUnit struct {
+	ID         uuid.UUID
 	Name       string
 	PropertyID uuid.UUID
 	BlockID    uuid.UUID

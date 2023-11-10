@@ -14,6 +14,7 @@ type Block struct {
 }
 
 type NewBlock struct {
+	ID         uuid.UUID
 	Name       string
 	PropertyID uuid.UUID
 }
