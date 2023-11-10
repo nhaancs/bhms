@@ -81,19 +81,19 @@ type AppNewProperty struct {
 	AddressLevel3ID uint32        `json:"addressLevel3ID" validate:"required,min=1"`
 	Street          string        `json:"street" validate:"required"`
 	Status          string        `json:"status" validate:"required"`
-	Blocks          []AppNewBlock `json:"blocks"`
+	Blocks          []AppNewBlock `json:"blocks" validate:"required"`
 }
 
 type AppNewBlock struct {
-	Name   string        `json:"name"`
-	Floors []AppNewFloor `json:"floors"`
+	Name   string        `json:"name" validate:"required"`
+	Floors []AppNewFloor `json:"floors" validate:"required"`
 }
 type AppNewFloor struct {
-	Name  string       `json:"name"`
-	Units []AppNewUnit `json:"units"`
+	Name  string       `json:"name" validate:"required"`
+	Units []AppNewUnit `json:"units" validate:"required"`
 }
 type AppNewUnit struct {
-	Name string `json:"name"`
+	Name string `json:"name" validate:"required"`
 }
 
 func toCoreNewProperty(a AppNewProperty) (property.NewProperty, error) {
