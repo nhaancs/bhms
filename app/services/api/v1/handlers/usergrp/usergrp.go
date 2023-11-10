@@ -47,6 +47,7 @@ func New(
 }
 
 // Register adds a new user to the system.
+// TODO: limit the number of user canbe created (use reCAPTCHA v3)
 func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var app AppRegister
 	if err := web.Decode(r, &app); err != nil {
