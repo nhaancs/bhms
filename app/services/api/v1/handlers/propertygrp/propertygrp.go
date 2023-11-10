@@ -41,6 +41,10 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 	app.ManagerID = auth.GetUserID(ctx)
 
+	if len(app.Blocks) > 5 {
+		return response.NewError(errors.New("maximum number of blocks exceeded"), http.StatusBadRequest)
+	}
+
 	var (
 		crNwPrprty = toCoreNewProperty(app)
 		crNwBlcks  = make([]block.NewBlock, len(app.Blocks))
@@ -48,10 +52,24 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 		crNwUnts   []unit.NewUnit
 	)
 	for i, appBlck := range app.Blocks {
+		if len(appBlck.Floors) > 10 {
+			return response.NewError(errors.New("maximum number of units of a floor exceeded"), http.StatusBadRequest)
+		}
+
 		crNwBlck := toCoreNewBlock(appBlck, crNwPrprty.ID)
 		crNwBlcks[i] = crNwBlck
 
 		for _, appFlr := range appBlck.Floors {
+			{
+				maxUnitsPerFloor := 200
+				if len(appBlck.Floors) > 1 {
+					maxUnitsPerFloor = 20
+				}
+				if len(appFlr.Units) > maxUnitsPerFloor {
+					return response.NewError(errors.New("maximum number of floors of a block exceeded"), http.StatusBadRequest)
+				}
+			}
+
 			crNwFlr := toCoreNewFloor(appFlr, crNwPrprty.ID, crNwBlck.ID)
 			crNwFlrs = append(crNwFlrs, crNwFlr)
 
@@ -64,7 +82,7 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 	prprty, err := h.property.Create(ctx, crNwPrprty)
 	if err != nil {
 		if errors.Is(err, property.ErrLimitExceeded) {
-			return response.NewError(err, http.StatusForbidden)
+			return response.NewError(err, http.StatusBadRequest)
 		}
 		return fmt.Errorf("create: prprty[%+v]: %w", app, err)
 	}
