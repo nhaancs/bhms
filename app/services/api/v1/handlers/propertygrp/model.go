@@ -25,7 +25,7 @@ type AppProperty struct {
 	UpdatedAt       string `json:"updatedAt"`
 }
 
-type AppPropertyFull struct {
+type AppPropertyDetail struct {
 	ID              string     `json:"id"`
 	ManagerID       string     `json:"managerID"`
 	Name            string     `json:"name"`
@@ -67,8 +67,8 @@ type AppUnit struct {
 }
 
 // TODO: implement this
-func toAppPropertyFull(p property.Property, bs []block.Block, fs []floor.Floor, us []unit.Unit) AppPropertyFull {
-	return AppPropertyFull{
+func toAppPropertyDetail(p property.Property, bs []block.Block, fs []floor.Floor, us []unit.Unit) AppPropertyDetail {
+	return AppPropertyDetail{
 		ID:              p.ID.String(),
 		ManagerID:       p.ManagerID.String(),
 		AddressLevel1ID: p.AddressLevel1ID,

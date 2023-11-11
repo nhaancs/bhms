@@ -109,7 +109,7 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return fmt.Errorf("batch create units: prprty[%+v]: %w", app, err)
 	}
 
-	return web.Respond(ctx, w, toAppPropertyFull(prprty, blcks, flrs, unts), http.StatusCreated)
+	return web.Respond(ctx, w, toAppPropertyDetail(prprty, blcks, flrs, unts), http.StatusCreated)
 }
 
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
