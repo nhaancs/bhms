@@ -46,10 +46,11 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 
 	var (
-		crNwPrprty = toCoreNewProperty(app)
-		crNwBlcks  = make([]block.NewBlock, len(app.Blocks))
-		crNwFlrs   []floor.NewFloor
-		crNwUnts   []unit.NewUnit
+		crNwPrprty     = toCoreNewProperty(app)
+		crNwBlcks      = make([]block.NewBlock, len(app.Blocks))
+		crNwFlrs       []floor.NewFloor
+		appNwUntsMap   = make(map[[2]uuid.UUID][]AppNewUnit) // for convert O(n^3) to O(n^2)
+		appNwUntsCount = 0
 	)
 	for i, appBlck := range app.Blocks {
 		if len(appBlck.Floors) > 10 {
@@ -73,9 +74,15 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 			crNwFlr := toCoreNewFloor(appFlr, crNwPrprty.ID, crNwBlck.ID)
 			crNwFlrs = append(crNwFlrs, crNwFlr)
 
-			for _, appUnt := range appFlr.Units {
-				crNwUnts = append(crNwUnts, toCoreNewUnit(appUnt, crNwPrprty.ID, crNwBlck.ID, crNwFlr.ID))
-			}
+			appNwUntsMap[[2]uuid.UUID{crNwBlck.ID, crNwFlr.ID}] = appFlr.Units
+			appNwUntsCount += len(appFlr.Units)
+		}
+	}
+
+	crNwUnts := make([]unit.NewUnit, appNwUntsCount)
+	for ids, appUnts := range appNwUntsMap {
+		for i := range appUnts {
+			crNwUnts[i] = toCoreNewUnit(appUnts[i], crNwPrprty.ID, ids[0], ids[1])
 		}
 	}
 
