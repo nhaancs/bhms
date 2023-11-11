@@ -25,6 +25,31 @@ type AppProperty struct {
 	UpdatedAt       string `json:"updatedAt"`
 }
 
+func toAppProperty(p property.Property) AppProperty {
+	return AppProperty{
+		ID:              p.ID.String(),
+		ManagerID:       p.ManagerID.String(),
+		AddressLevel1ID: p.AddressLevel1ID,
+		AddressLevel2ID: p.AddressLevel2ID,
+		AddressLevel3ID: p.AddressLevel3ID,
+		Street:          p.Street,
+		Status:          p.Status.Name(),
+		CreatedAt:       p.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:       p.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+// TODO: added blocks, floors, units
+func toAppProperties(cs []property.Property) []AppProperty {
+	result := make([]AppProperty, len(cs))
+	for i := range cs {
+		result[i] = toAppProperty(cs[i])
+	}
+	return result
+}
+
+// ==========================================================
+
 type AppPropertyDetail struct {
 	ID              string     `json:"id"`
 	ManagerID       string     `json:"managerID"`
@@ -132,29 +157,6 @@ func toAppBlock(b block.Block, appFlrs []AppFloor) AppBlock {
 		UpdatedAt:  b.UpdatedAt.Format(time.RFC3339),
 		Floors:     appFlrs,
 	}
-}
-
-func toAppProperty(p property.Property) AppProperty {
-	return AppProperty{
-		ID:              p.ID.String(),
-		ManagerID:       p.ManagerID.String(),
-		AddressLevel1ID: p.AddressLevel1ID,
-		AddressLevel2ID: p.AddressLevel2ID,
-		AddressLevel3ID: p.AddressLevel3ID,
-		Street:          p.Street,
-		Status:          p.Status.Name(),
-		CreatedAt:       p.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:       p.UpdatedAt.Format(time.RFC3339),
-	}
-}
-
-// TODO: added blocks, floors, units
-func toAppProperties(cs []property.Property) []AppProperty {
-	result := make([]AppProperty, len(cs))
-	for i := range cs {
-		result[i] = toAppProperty(cs[i])
-	}
-	return result
 }
 
 // ===============================================================
