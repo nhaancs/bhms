@@ -162,7 +162,25 @@ func (h *Handlers) Query(ctx context.Context, w http.ResponseWriter, r *http.Req
 		}
 	}
 
-	return web.Respond(ctx, w, toAppProperties(prprties), http.StatusCreated)
+	appPrprtyDtls := make([]AppPropertyDetail, len(prprties))
+	for i := range prprties {
+		blcks, err := h.block.QueryByPropertyID(ctx, prprties[i].ID)
+		if err != nil {
+			return err
+		}
+		flrs, err := h.floor.QueryByPropertyID(ctx, prprties[i].ID)
+		if err != nil {
+			return err
+		}
+		unts, err := h.unit.QueryByPropertyID(ctx, prprties[i].ID)
+		if err != nil {
+			return err
+		}
+
+		appPrprtyDtls[i] = toAppPropertyDetail(prprties[i], blcks, flrs, unts)
+	}
+
+	return web.Respond(ctx, w, appPrprtyDtls, http.StatusCreated)
 }
 
 // executeUnderTransaction constructs a new Handlers value with the core apis

@@ -39,15 +39,6 @@ func toAppProperty(p property.Property) AppProperty {
 	}
 }
 
-// TODO: added blocks, floors, units
-func toAppProperties(cs []property.Property) []AppProperty {
-	result := make([]AppProperty, len(cs))
-	for i := range cs {
-		result[i] = toAppProperty(cs[i])
-	}
-	return result
-}
-
 // ==========================================================
 
 type AppPropertyDetail struct {
@@ -89,6 +80,15 @@ type AppUnit struct {
 	Name       string `json:"name"`
 	CreatedAt  string `json:"createdAt"`
 	UpdatedAt  string `json:"updatedAt"`
+}
+
+// TODO: added blocks, floors, units
+func toAppPropertyDetails(cs []property.Property) []AppProperty {
+	result := make([]AppProperty, len(cs))
+	for i := range cs {
+		result[i] = toAppProperty(cs[i])
+	}
+	return result
 }
 
 func toAppPropertyDetail(prprty property.Property, blcks []block.Block, flrs []floor.Floor, unts []unit.Unit) AppPropertyDetail {

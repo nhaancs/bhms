@@ -152,6 +152,37 @@ func (s *Store) QueryByBlockID(ctx context.Context, id uuid.UUID) ([]floor.Floor
 	return flrs, nil
 }
 
+func (s *Store) QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]floor.Floor, error) {
+	data := struct {
+		PropertyID string `db:"property_id"`
+	}{
+		PropertyID: id.String(),
+	}
+
+	const q = `
+	SELECT
+        id, name, property_id, block_id, created_at, updated_at
+	FROM
+		floors
+	WHERE
+		property_id = :property_id`
+
+	var rows []dbFloor
+	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &rows); err != nil {
+		if errors.Is(err, db.ErrDBNotFound) {
+			return nil, fmt.Errorf("namedqueryslice: %w", floor.ErrNotFound)
+		}
+		return nil, fmt.Errorf("namedqueryslice: %w", err)
+	}
+
+	flrs, err := toCoreFloors(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return flrs, nil
+}
+
 // ExecuteUnderTransaction constructs a new Store value replacing the sqlx DB
 // value with a sqlx DB value that is currently inside a transaction.
 func (s *Store) ExecuteUnderTransaction(tx transaction.Transaction) (floor.Storer, error) {

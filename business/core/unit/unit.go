@@ -21,6 +21,7 @@ type Storer interface {
 	Delete(ctx context.Context, core Unit) error
 	QueryByID(ctx context.Context, id uuid.UUID) (Unit, error)
 	QueryByFloorID(ctx context.Context, id uuid.UUID) ([]Unit, error)
+	QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]Unit, error)
 	ExecuteUnderTransaction(tx transaction.Transaction) (Storer, error)
 }
 
@@ -104,6 +105,15 @@ func (c *Core) QueryByFloorID(ctx context.Context, id uuid.UUID) ([]Unit, error)
 	unts, err := c.store.QueryByFloorID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("query: block id[%s]: %w", id.String(), err)
+	}
+
+	return unts, nil
+}
+
+func (c *Core) QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]Unit, error) {
+	unts, err := c.store.QueryByPropertyID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("query: property id[%s]: %w", id.String(), err)
 	}
 
 	return unts, nil
