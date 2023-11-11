@@ -4,16 +4,16 @@ import "fmt"
 
 // Set of possible status for a user.
 var (
-	StatusCreated  = Status{"CREATED"}
-	StatusActive   = Status{"ACTIVE"}
-	StatusDisabled = Status{"DISABLED"}
+	StatusCreated = Status{"CREATED"}
+	StatusActive  = Status{"ACTIVE"}
+	StatusDeleted = Status{"DELETED"}
 )
 
 // Set of known roles.
 var status = map[string]Status{
-	StatusCreated.name:  StatusCreated,
-	StatusActive.name:   StatusActive,
-	StatusDisabled.name: StatusDisabled,
+	StatusCreated.name: StatusCreated,
+	StatusActive.name:  StatusActive,
+	StatusDeleted.name: StatusDeleted,
 }
 
 // Status represents a user status in the system.
