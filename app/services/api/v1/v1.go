@@ -98,7 +98,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	divCore := division.NewCore(cfg.Log, divStore)
 	divHdl := divisiongrp.New(divCore)
 	app.Handle(http.MethodGet, version, "/divisions/provinces", divHdl.QueryProvinces, auth)
-	app.Handle(http.MethodGet, version, "/divisions/children/:parent_id", divHdl.QueryByParentID, auth)
+	app.Handle(http.MethodGet, version, "/divisions/:parent_id", divHdl.QueryByParentID, auth)
 
 	// -------------------------------------------------------------------------
 	// Property routes
@@ -109,9 +109,25 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	}
 	propertyCore := property.NewCore(cfg.Log, propertyStore)
 	propertyHdl := propertygrp.New(propertyCore)
-	app.Handle(http.MethodGet, version, "/properties", propertyHdl.Query, auth)
+	app.Handle(http.MethodGet, version, "/properties", propertyHdl.QueryByManagerID, auth)
 	app.Handle(http.MethodPost, version, "/properties", propertyHdl.Create, auth, tran)
-	app.Handle(http.MethodPut, version, "/properties/:property_id", propertyHdl.Update, auth)
+	app.Handle(http.MethodPut, version, "/properties/:id", propertyHdl.Update, auth)
+	// todo: can also update, disable property, update query api using status fields
+
+	// -------------------------------------------------------------------------
+	// Block routes
+	// Add // todo: also create floors, units, return a block detail
+	// Update // todo: can also update, disable blocks (add status field: active, disabled), update query, create, create property api using status fields
+
+	// -------------------------------------------------------------------------
+	// Floor routes
+	// Add // todo: also create units, return a floor detail
+	// Update // todo: can also update, disable floors (add status field: active, disabled), update query, create, create property api using status fields
+
+	// -------------------------------------------------------------------------
+	// Unit routes
+	// Add
+	// Update // todo: can also update, disable units (add status field: active, disabled), update query, create, create property api using status fields
 
 	return app, nil
 }

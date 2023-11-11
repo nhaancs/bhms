@@ -82,15 +82,6 @@ type AppUnit struct {
 	UpdatedAt  string `json:"updatedAt"`
 }
 
-// TODO: added blocks, floors, units
-func toAppPropertyDetails(cs []property.Property) []AppProperty {
-	result := make([]AppProperty, len(cs))
-	for i := range cs {
-		result[i] = toAppProperty(cs[i])
-	}
-	return result
-}
-
 func toAppPropertyDetail(prprty property.Property, blcks []block.Block, flrs []floor.Floor, unts []unit.Unit) AppPropertyDetail {
 	appUntsMap := make(map[[2]uuid.UUID][]AppUnit) // [blockID, floorID] => units
 	for i := range unts {

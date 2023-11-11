@@ -113,7 +113,7 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	prprtyIDStr := web.Param(r, "property_id")
+	prprtyIDStr := web.Param(r, "id")
 	prprtyID, err := uuid.Parse(prprtyIDStr)
 	if err != nil {
 		return response.NewError(errors.New("invalid property id"), http.StatusBadRequest)
@@ -150,7 +150,7 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 	return web.Respond(ctx, w, toAppProperty(prprty), http.StatusCreated)
 }
 
-func (h *Handlers) Query(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *Handlers) QueryByManagerID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	managerID := auth.GetUserID(ctx)
 	prprties, err := h.property.QueryByManagerID(ctx, managerID)
 	if err != nil {
