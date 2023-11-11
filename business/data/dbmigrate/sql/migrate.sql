@@ -12,7 +12,7 @@ CREATE TABLE users (
 	updated_at      TIMESTAMP   NOT NULL
 );
 
-CREATE INDEX idx_status ON users (status);
+CREATE INDEX idx_users_status ON users (status);
 
 -- Version: 1.02
 -- Description: Create table properties
@@ -29,11 +29,11 @@ CREATE TABLE properties (
 	updated_at          TIMESTAMP   NOT NULL
 );
 
-CREATE INDEX idx_address_level_1_id ON properties (address_level_1_id);
-CREATE INDEX idx_address_level_2_id ON properties (address_level_2_id);
-CREATE INDEX idx_address_level_3_id ON properties (address_level_3_id);
-CREATE INDEX idx_manager_id ON properties (manager_id);
-CREATE INDEX idx_status ON properties (status);
+CREATE INDEX idx_properties_address_level_1_id ON properties (address_level_1_id);
+CREATE INDEX idx_properties_address_level_2_id ON properties (address_level_2_id);
+CREATE INDEX idx_properties_address_level_3_id ON properties (address_level_3_id);
+CREATE INDEX idx_properties_manager_id ON properties (manager_id);
+CREATE INDEX idx_properties_status ON properties (status);
 
 -- Version: 1.03
 -- Description: Create table blocks
@@ -46,8 +46,8 @@ CREATE TABLE blocks (
 	updated_at          TIMESTAMP   NOT NULL
 );
 
-CREATE INDEX idx_property_id ON blocks (property_id);
-CREATE INDEX idx_status ON blocks (status);
+CREATE INDEX idx_blocks_property_id ON blocks (property_id);
+CREATE INDEX idx_blocks_status ON blocks (status);
 
 -- Version: 1.04
 -- Description: Create table floors
@@ -61,9 +61,9 @@ CREATE TABLE floors (
 	updated_at          TIMESTAMP   NOT NULL
 );
 
-CREATE INDEX idx_property_id ON floors (property_id);
-CREATE INDEX idx_block_id ON floors (block_id);
-CREATE INDEX idx_status ON floors (status);
+CREATE INDEX idx_floors_property_id ON floors (property_id);
+CREATE INDEX idx_floors_block_id ON floors (block_id);
+CREATE INDEX idx_floors_status ON floors (status);
 
 -- Version: 1.05
 -- Description: Create table units
@@ -78,7 +78,7 @@ CREATE TABLE units (
    updated_at          TIMESTAMP   NOT NULL
 );
 
-CREATE INDEX idx_property_id ON units (property_id);
-CREATE INDEX idx_block_id ON units (block_id);
-CREATE INDEX idx_floor_id ON units (floor_id);
-CREATE INDEX idx_status ON units (status);
+CREATE INDEX idx_units_property_id ON units (property_id);
+CREATE INDEX idx_units_block_id ON units (block_id);
+CREATE INDEX idx_units_floor_id ON units (floor_id);
+CREATE INDEX idx_units_status ON units (status);
