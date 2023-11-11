@@ -66,18 +66,71 @@ type AppUnit struct {
 	UpdatedAt  string `json:"updatedAt"`
 }
 
-// TODO: implement this
-func toAppPropertyDetail(p property.Property, bs []block.Block, fs []floor.Floor, us []unit.Unit) AppPropertyDetail {
+func toAppPropertyDetail(prprty property.Property, blcks []block.Block, flrs []floor.Floor, unts []unit.Unit) AppPropertyDetail {
+	appUntsMap := make(map[[2]uuid.UUID][]AppUnit) // [blockID, floorID] => units
+	for i := range unts {
+		key := [2]uuid.UUID{unts[i].BlockID, unts[i].FloorID}
+		appUntsMap[key] = append(appUntsMap[key], toAppUnit(unts[i]))
+	}
+
+	appFlrsMap := make(map[uuid.UUID][]AppFloor) // [blockID] => floor
+	for j := range flrs {
+		flrKey := flrs[j].BlockID
+		untKey := [2]uuid.UUID{flrs[j].BlockID, flrs[j].ID}
+		appFlrsMap[flrKey] = append(appFlrsMap[flrKey], toAppFloor(flrs[j], appUntsMap[untKey]))
+	}
+
+	appBlcks := make([]AppBlock, len(blcks))
+	for k := range blcks {
+		appBlcks[k] = toAppBlock(blcks[k], appFlrsMap[blcks[k].ID])
+	}
+
 	return AppPropertyDetail{
-		ID:              p.ID.String(),
-		ManagerID:       p.ManagerID.String(),
-		AddressLevel1ID: p.AddressLevel1ID,
-		AddressLevel2ID: p.AddressLevel2ID,
-		AddressLevel3ID: p.AddressLevel3ID,
-		Street:          p.Street,
-		Status:          p.Status.Name(),
-		CreatedAt:       p.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:       p.UpdatedAt.Format(time.RFC3339),
+		ID:              prprty.ID.String(),
+		ManagerID:       prprty.ManagerID.String(),
+		AddressLevel1ID: prprty.AddressLevel1ID,
+		AddressLevel2ID: prprty.AddressLevel2ID,
+		AddressLevel3ID: prprty.AddressLevel3ID,
+		Street:          prprty.Street,
+		Status:          prprty.Status.Name(),
+		CreatedAt:       prprty.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:       prprty.UpdatedAt.Format(time.RFC3339),
+		Blocks:          appBlcks,
+	}
+}
+
+func toAppUnit(u unit.Unit) AppUnit {
+	return AppUnit{
+		ID:         u.ID.String(),
+		PropertyID: u.PropertyID.String(),
+		BlockID:    u.BlockID.String(),
+		FloorID:    u.FloorID.String(),
+		Name:       u.Name,
+		CreatedAt:  u.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:  u.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+func toAppFloor(f floor.Floor, appUnts []AppUnit) AppFloor {
+	return AppFloor{
+		ID:         f.ID.String(),
+		PropertyID: f.PropertyID.String(),
+		BlockID:    f.BlockID.String(),
+		Name:       f.Name,
+		CreatedAt:  f.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:  f.UpdatedAt.Format(time.RFC3339),
+		Units:      appUnts,
+	}
+}
+
+func toAppBlock(b block.Block, appFlrs []AppFloor) AppBlock {
+	return AppBlock{
+		ID:         b.ID.String(),
+		PropertyID: b.PropertyID.String(),
+		Name:       b.Name,
+		CreatedAt:  b.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:  b.UpdatedAt.Format(time.RFC3339),
+		Floors:     appFlrs,
 	}
 }
 
