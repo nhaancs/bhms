@@ -237,15 +237,28 @@ type AppUpdateProperty struct {
 	AddressLevel2ID *uint32 `json:"addressLevel2ID" validate:"required,min=1"`
 	AddressLevel3ID *uint32 `json:"addressLevel3ID" validate:"required,min=1"`
 	Street          *string `json:"street" validate:"required"`
+	Status          *string `json:"status" validate:"required"`
 }
 
 func toCoreUpdateProperty(a AppUpdateProperty) (property.UpdateProperty, error) {
+	var (
+		status *property.Status
+	)
+	if a.Status != nil {
+		parsed, err := property.ParseStatus(*a.Status)
+		if err != nil {
+			return property.UpdateProperty{}, err
+		}
+		status = &parsed
+	}
+
 	return property.UpdateProperty{
 		Name:            a.Name,
 		AddressLevel1ID: a.AddressLevel1ID,
 		AddressLevel2ID: a.AddressLevel2ID,
 		AddressLevel3ID: a.AddressLevel3ID,
 		Street:          a.Street,
+		Status:          status,
 	}, nil
 }
 

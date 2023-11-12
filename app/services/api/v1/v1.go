@@ -112,7 +112,6 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	app.Handle(http.MethodGet, version, "/properties", propertyHdl.QueryByManagerID, auth)
 	app.Handle(http.MethodPost, version, "/properties", propertyHdl.Create, auth, tran)
 	app.Handle(http.MethodPut, version, "/properties/:id", propertyHdl.Update, auth)
-	// todo: can also update, disable property, update query api using status fields
 
 	// -------------------------------------------------------------------------
 	// Block routes
