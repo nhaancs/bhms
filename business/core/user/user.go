@@ -28,7 +28,6 @@ var (
 type Storer interface {
 	Create(ctx context.Context, core User) error
 	Update(ctx context.Context, core User) error
-	Delete(ctx context.Context, core User) error
 	QueryByID(ctx context.Context, id uuid.UUID) (User, error)
 	QueryByIDs(ctx context.Context, ids []uuid.UUID) ([]User, error)
 	QueryByPhone(ctx context.Context, phone string) (User, error)

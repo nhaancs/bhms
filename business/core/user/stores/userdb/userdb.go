@@ -61,7 +61,7 @@ func (s *Store) Update(ctx context.Context, core user.User) error {
 		"status" = :status,
 		"updated_at" = :updated_at
 	WHERE
-		id = :id`
+		id = :id AND status != 'DELETED'`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBUser(core)); err != nil {
 		if errors.Is(err, db.ErrDBDuplicatedEntry) {
@@ -73,33 +73,14 @@ func (s *Store) Update(ctx context.Context, core user.User) error {
 	return nil
 }
 
-// Delete removes a user from the database.
-func (s *Store) Delete(ctx context.Context, core user.User) error {
-	data := struct {
-		ID string `db:"id"`
-	}{
-		ID: core.ID.String(),
-	}
-
-	const q = `
-	DELETE FROM
-		users
-	WHERE
-		id = :id`
-
-	if err := db.NamedExecContext(ctx, s.log, s.db, q, data); err != nil {
-		return fmt.Errorf("namedexeccontext: %w", err)
-	}
-
-	return nil
-}
-
 // QueryByID gets the specified user from the database.
 func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (user.User, error) {
 	data := struct {
-		ID string `db:"id"`
+		ID     string `db:"id"`
+		Status string `db:"status"`
 	}{
-		ID: id.String(),
+		ID:     id.String(),
+		Status: user.StatusDeleted.Name(),
 	}
 
 	const q = `
@@ -108,7 +89,7 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (user.User, error) 
 	FROM
 		users
 	WHERE 
-		id = :id`
+		id = :id AND status != :status`
 
 	var row dbUser
 	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &row); err != nil {
@@ -138,8 +119,10 @@ func (s *Store) QueryByIDs(ctx context.Context, ids []uuid.UUID) ([]user.User, e
 			driver.Valuer
 			sql.Scanner
 		} `db:"id"`
+		Status string `db:"status"`
 	}{
-		ID: dbarray.Array(uIDs),
+		ID:     dbarray.Array(uIDs),
+		Status: user.StatusDeleted.Name(),
 	}
 
 	const q = `
@@ -148,7 +131,7 @@ func (s *Store) QueryByIDs(ctx context.Context, ids []uuid.UUID) ([]user.User, e
 	FROM
 		users
 	WHERE
-		id = ANY(:id)`
+		id = ANY(:id) AND status != :status`
 
 	var rows []dbUser
 	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &rows); err != nil {
@@ -169,9 +152,11 @@ func (s *Store) QueryByIDs(ctx context.Context, ids []uuid.UUID) ([]user.User, e
 // QueryByPhone gets the specified user from the database by email.
 func (s *Store) QueryByPhone(ctx context.Context, phone string) (user.User, error) {
 	data := struct {
-		Phone string `db:"phone"`
+		Phone  string `db:"phone"`
+		Status string `db:"status"`
 	}{
-		Phone: phone,
+		Phone:  phone,
+		Status: user.StatusDeleted.Name(),
 	}
 
 	const q = `
@@ -180,7 +165,7 @@ func (s *Store) QueryByPhone(ctx context.Context, phone string) (user.User, erro
 	FROM
 		users
 	WHERE
-		phone = :phone`
+		phone = :phone AND status != :status`
 
 	var row dbUser
 	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &row); err != nil {

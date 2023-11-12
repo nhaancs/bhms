@@ -44,18 +44,11 @@ func (s *Store) Update(ctx context.Context, core user.User) error {
 		return err
 	}
 
-	s.writeCache(core)
-
-	return nil
-}
-
-// Delete removes a user from the database.
-func (s *Store) Delete(ctx context.Context, core user.User) error {
-	if err := s.store.Delete(ctx, core); err != nil {
-		return err
+	if core.Status.Equal(user.StatusDeleted) {
+		s.deleteCache(core)
+	} else {
+		s.writeCache(core)
 	}
-
-	s.deleteCache(core)
 
 	return nil
 }

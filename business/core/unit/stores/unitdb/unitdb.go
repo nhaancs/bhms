@@ -62,7 +62,7 @@ func (s *Store) Update(ctx context.Context, core unit.Unit) error {
 		"status" = :status,
 		"updated_at" = :updated_at
 	WHERE
-		id = :id`
+		id = :id AND status != 'DELETED'`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBUnit(core)); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
@@ -73,9 +73,11 @@ func (s *Store) Update(ctx context.Context, core unit.Unit) error {
 
 func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (unit.Unit, error) {
 	data := struct {
-		ID string `db:"id"`
+		ID     string `db:"id"`
+		Status string `db:"status"`
 	}{
-		ID: id.String(),
+		ID:     id.String(),
+		Status: unit.StatusDeleted.Name(),
 	}
 
 	const q = `
@@ -84,7 +86,7 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (unit.Unit, error) 
 	FROM
 		units
 	WHERE 
-		id = :id`
+		id = :id AND status != :status`
 
 	var row dbUnit
 	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &row); err != nil {
@@ -105,8 +107,10 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (unit.Unit, error) 
 func (s *Store) QueryByFloorID(ctx context.Context, id uuid.UUID) ([]unit.Unit, error) {
 	data := struct {
 		FloorID string `db:"floor_id"`
+		Status  string `db:"status"`
 	}{
 		FloorID: id.String(),
+		Status:  unit.StatusDeleted.Name(),
 	}
 
 	const q = `
@@ -115,7 +119,7 @@ func (s *Store) QueryByFloorID(ctx context.Context, id uuid.UUID) ([]unit.Unit, 
 	FROM
 		units
 	WHERE
-		floor_id = :floor_id`
+		floor_id = :floor_id AND status != :status`
 
 	var rows []dbUnit
 	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &rows); err != nil {
@@ -136,8 +140,10 @@ func (s *Store) QueryByFloorID(ctx context.Context, id uuid.UUID) ([]unit.Unit, 
 func (s *Store) QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]unit.Unit, error) {
 	data := struct {
 		PropertyID string `db:"property_id"`
+		Status     string `db:"status"`
 	}{
 		PropertyID: id.String(),
+		Status:     unit.StatusDeleted.Name(),
 	}
 
 	const q = `
@@ -146,7 +152,7 @@ func (s *Store) QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]unit.Uni
 	FROM
 		units
 	WHERE
-		property_id = :property_id`
+		property_id = :property_id AND status != :status`
 
 	var rows []dbUnit
 	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &rows); err != nil {

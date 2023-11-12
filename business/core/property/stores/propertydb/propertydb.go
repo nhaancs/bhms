@@ -52,7 +52,7 @@ func (s *Store) Update(ctx context.Context, core property.Property) error {
 		"status" = :status,
 		"updated_at" = :updated_at
 	WHERE
-		id = :id`
+		id = :id AND status != 'DELETED'`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBProperty(core)); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
@@ -63,9 +63,11 @@ func (s *Store) Update(ctx context.Context, core property.Property) error {
 
 func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (property.Property, error) {
 	data := struct {
-		ID string `db:"id"`
+		ID     string `db:"id"`
+		Status string `db:"status"`
 	}{
-		ID: id.String(),
+		ID:     id.String(),
+		Status: property.StatusDeleted.Name(),
 	}
 
 	const q = `
@@ -74,7 +76,7 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (property.Property,
 	FROM
 		properties
 	WHERE 
-		id = :id`
+		id = :id AND status != :status`
 
 	var row dbProperty
 	if err := db.NamedQueryStruct(ctx, s.log, s.db, q, data, &row); err != nil {
@@ -95,8 +97,10 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (property.Property,
 func (s *Store) QueryByManagerID(ctx context.Context, id uuid.UUID) ([]property.Property, error) {
 	data := struct {
 		ManagerID string `db:"manager_id"`
+		Status    string `db:"status"`
 	}{
 		ManagerID: id.String(),
+		Status:    property.StatusDeleted.Name(),
 	}
 
 	const q = `
@@ -105,7 +109,7 @@ func (s *Store) QueryByManagerID(ctx context.Context, id uuid.UUID) ([]property.
 	FROM
 		properties
 	WHERE
-		manager_id = :manager_id`
+		manager_id = :manager_id AND status != :status`
 
 	var rows []dbProperty
 	if err := db.NamedQuerySlice(ctx, s.log, s.db, q, data, &rows); err != nil {
