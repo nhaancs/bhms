@@ -114,20 +114,5 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	app.Handle(http.MethodPut, version, "/properties/:id", propertyHdl.Update, auth)
 	app.Handle(http.MethodDelete, version, "/properties/:id", propertyHdl.Delete, auth, tran)
 
-	// -------------------------------------------------------------------------
-	// Block routes
-	// Add // todo: also create floors, units, return a block detail
-	// Update // todo: can also update, disable blocks (add status field: active, disabled), update query, create, create property api using status fields
-
-	// -------------------------------------------------------------------------
-	// Floor routes
-	// Add // todo: also create units, return a floor detail
-	// Update // todo: can also update, disable floors (add status field: active, disabled), update query, create, create property api using status fields
-
-	// -------------------------------------------------------------------------
-	// Unit routes
-	// Add
-	// Update // todo: can also update, disable units (add status field: active, disabled), update query, create, create property api using status fields
-
 	return app, nil
 }
