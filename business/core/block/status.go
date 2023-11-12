@@ -1,17 +1,15 @@
-package property
+package block
 
 import "fmt"
 
 // Set of possible status for a user.
 var (
-	StatusCreated = Status{"CREATED"}
 	StatusActive  = Status{"ACTIVE"}
 	StatusDeleted = Status{"DELETED"}
 )
 
 // Set of known status.
 var status = map[string]Status{
-	StatusCreated.name: StatusCreated,
 	StatusActive.name:  StatusActive,
 	StatusDeleted.name: StatusDeleted,
 }

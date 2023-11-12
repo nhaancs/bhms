@@ -60,6 +60,7 @@ type AppBlock struct {
 	PropertyID string     `json:"propertyID"`
 	Name       string     `json:"name"`
 	Floors     []AppFloor `json:"floors"`
+	Status     string     `json:"status"`
 	CreatedAt  string     `json:"createdAt"`
 	UpdatedAt  string     `json:"updatedAt"`
 }
@@ -69,6 +70,7 @@ type AppFloor struct {
 	PropertyID string    `json:"propertyID"`
 	BlockID    string    `json:"blockID"`
 	Units      []AppUnit `json:"units"`
+	Status     string    `json:"status"`
 	CreatedAt  string    `json:"createdAt"`
 	UpdatedAt  string    `json:"updatedAt"`
 }
@@ -78,6 +80,7 @@ type AppUnit struct {
 	BlockID    string `json:"blockID"`
 	FloorID    string `json:"floorID"`
 	Name       string `json:"name"`
+	Status     string `json:"status"`
 	CreatedAt  string `json:"createdAt"`
 	UpdatedAt  string `json:"updatedAt"`
 }
@@ -122,6 +125,7 @@ func toAppUnit(u unit.Unit) AppUnit {
 		BlockID:    u.BlockID.String(),
 		FloorID:    u.FloorID.String(),
 		Name:       u.Name,
+		Status:     u.Status.Name(),
 		CreatedAt:  u.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:  u.UpdatedAt.Format(time.RFC3339),
 	}
@@ -133,6 +137,7 @@ func toAppFloor(f floor.Floor, appUnts []AppUnit) AppFloor {
 		PropertyID: f.PropertyID.String(),
 		BlockID:    f.BlockID.String(),
 		Name:       f.Name,
+		Status:     f.Status.Name(),
 		CreatedAt:  f.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:  f.UpdatedAt.Format(time.RFC3339),
 		Units:      appUnts,
@@ -144,6 +149,7 @@ func toAppBlock(b block.Block, appFlrs []AppFloor) AppBlock {
 		ID:         b.ID.String(),
 		PropertyID: b.PropertyID.String(),
 		Name:       b.Name,
+		Status:     b.Status.Name(),
 		CreatedAt:  b.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:  b.UpdatedAt.Format(time.RFC3339),
 		Floors:     appFlrs,

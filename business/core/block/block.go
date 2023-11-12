@@ -42,6 +42,7 @@ func (c *Core) Create(ctx context.Context, core NewBlock) (Block, error) {
 		ID:         core.ID,
 		Name:       core.Name,
 		PropertyID: core.PropertyID,
+		Status:     StatusActive,
 		CreatedAt:  now,
 		UpdatedAt:  now,
 	}
@@ -62,6 +63,7 @@ func (c *Core) BatchCreate(ctx context.Context, cores []NewBlock) ([]Block, erro
 			ID:         uuid.New(),
 			Name:       cores[i].Name,
 			PropertyID: cores[i].PropertyID,
+			Status:     StatusActive,
 			CreatedAt:  now,
 			UpdatedAt:  now,
 		}
@@ -77,6 +79,9 @@ func (c *Core) BatchCreate(ctx context.Context, cores []NewBlock) ([]Block, erro
 func (c *Core) Update(ctx context.Context, o Block, n UpdateBlock) (Block, error) {
 	if n.Name != nil {
 		o.Name = *n.Name
+	}
+	if n.Status != nil {
+		o.Status = *n.Status
 	}
 	o.UpdatedAt = time.Now()
 

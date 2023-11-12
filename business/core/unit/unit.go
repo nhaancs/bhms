@@ -45,6 +45,7 @@ func (c *Core) Create(ctx context.Context, core NewUnit) (Unit, error) {
 		PropertyID: core.PropertyID,
 		BlockID:    core.BlockID,
 		FloorID:    core.FloorID,
+		Status:     StatusActive,
 		CreatedAt:  now,
 		UpdatedAt:  now,
 	}
@@ -67,6 +68,7 @@ func (c *Core) BatchCreate(ctx context.Context, cores []NewUnit) ([]Unit, error)
 			PropertyID: cores[i].PropertyID,
 			BlockID:    cores[i].BlockID,
 			FloorID:    cores[i].FloorID,
+			Status:     StatusActive,
 			CreatedAt:  now,
 			UpdatedAt:  now,
 		}
@@ -83,6 +85,11 @@ func (c *Core) Update(ctx context.Context, o Unit, n UpdateUnit) (Unit, error) {
 	if n.Name != nil {
 		o.Name = *n.Name
 	}
+
+	if n.Status != nil {
+		o.Status = *n.Status
+	}
+
 	o.UpdatedAt = time.Now()
 
 	if err := c.store.Update(ctx, o); err != nil {

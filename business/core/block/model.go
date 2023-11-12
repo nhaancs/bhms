@@ -8,6 +8,7 @@ import (
 type Block struct {
 	ID         uuid.UUID
 	Name       string
+	Status     Status
 	PropertyID uuid.UUID
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
@@ -20,5 +21,6 @@ type NewBlock struct {
 }
 
 type UpdateBlock struct {
-	Name *string
+	Name   *string
+	Status *Status
 }

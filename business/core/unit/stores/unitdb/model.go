@@ -9,6 +9,7 @@ import (
 type dbUnit struct {
 	ID         uuid.UUID `db:"id"`
 	Name       string    `db:"name"`
+	Status     string    `db:"status"`
 	PropertyID uuid.UUID `db:"property_id"`
 	BlockID    uuid.UUID `db:"block_id"`
 	FloorID    uuid.UUID `db:"floor_id"`
@@ -20,6 +21,7 @@ func toDBUnit(c unit.Unit) dbUnit {
 	return dbUnit{
 		ID:         c.ID,
 		Name:       c.Name,
+		Status:     c.Status.Name(),
 		PropertyID: c.PropertyID,
 		BlockID:    c.BlockID,
 		FloorID:    c.FloorID,
@@ -37,9 +39,14 @@ func toDBUnits(cs []unit.Unit) []dbUnit {
 }
 
 func toCoreUnit(r dbUnit) (unit.Unit, error) {
+	status, err := unit.ParseStatus(r.Status)
+	if err != nil {
+		return unit.Unit{}, err
+	}
 	return unit.Unit{
 		ID:         r.ID,
 		Name:       r.Name,
+		Status:     status,
 		PropertyID: r.PropertyID,
 		BlockID:    r.BlockID,
 		FloorID:    r.FloorID,

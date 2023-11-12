@@ -28,9 +28,9 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 func (s *Store) Create(ctx context.Context, core floor.Floor) error {
 	const q = `
 	INSERT INTO floors
-		(id, name, property_id, block_id, created_at, updated_at)
+		(id, name, property_id, block_id, status, created_at, updated_at)
 	VALUES
-		(:id, :name, :property_id, :block_id, :created_at, :updated_at)`
+		(:id, :name, :property_id, :block_id, :status, :created_at, :updated_at)`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBFloor(core)); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
@@ -42,9 +42,9 @@ func (s *Store) Create(ctx context.Context, core floor.Floor) error {
 func (s *Store) BatchCreate(ctx context.Context, cores []floor.Floor) error {
 	const q = `
 	INSERT INTO floors
-		(id, name, property_id, block_id, created_at, updated_at)
+		(id, name, property_id, block_id, status, created_at, updated_at)
 	VALUES
-		(:id, :name, :property_id, :block_id, :created_at, :updated_at)`
+		(:id, :name, :property_id, :block_id, :status, :created_at, :updated_at)`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBFloors(cores)); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
@@ -59,6 +59,7 @@ func (s *Store) Update(ctx context.Context, core floor.Floor) error {
 		floors
 	SET 
 		"name" = :name,
+		"status" = :status,
 		"updated_at" = :updated_at
 	WHERE
 		id = :id`
@@ -99,7 +100,7 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (floor.Floor, error
 
 	const q = `
 	SELECT
-        id, name, property_id, block_id, created_at, updated_at
+        id, name, property_id, block_id, status, created_at, updated_at
 	FROM
 		floors
 	WHERE 
@@ -130,7 +131,7 @@ func (s *Store) QueryByBlockID(ctx context.Context, id uuid.UUID) ([]floor.Floor
 
 	const q = `
 	SELECT
-        id, name, property_id, block_id, created_at, updated_at
+        id, name, property_id, block_id, status, created_at, updated_at
 	FROM
 		floors
 	WHERE
@@ -161,7 +162,7 @@ func (s *Store) QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]floor.Fl
 
 	const q = `
 	SELECT
-        id, name, property_id, block_id, created_at, updated_at
+        id, name, property_id, block_id, status, created_at, updated_at
 	FROM
 		floors
 	WHERE

@@ -9,6 +9,7 @@ import (
 type dbBlock struct {
 	ID         uuid.UUID `db:"id"`
 	Name       string    `db:"name"`
+	Status     string    `db:"status"`
 	PropertyID uuid.UUID `db:"property_id"`
 	CreatedAt  time.Time `db:"created_at"`
 	UpdatedAt  time.Time `db:"updated_at"`
@@ -19,6 +20,7 @@ func toDBBlock(c block.Block) dbBlock {
 		ID:         c.ID,
 		Name:       c.Name,
 		PropertyID: c.PropertyID,
+		Status:     c.Status.Name(),
 		CreatedAt:  c.CreatedAt.UTC(),
 		UpdatedAt:  c.UpdatedAt.UTC(),
 	}
@@ -33,10 +35,15 @@ func toDBBlocks(cs []block.Block) []dbBlock {
 }
 
 func toCoreBlock(r dbBlock) (block.Block, error) {
+	status, err := block.ParseStatus(r.Status)
+	if err != nil {
+		return block.Block{}, err
+	}
 	return block.Block{
 		ID:         r.ID,
 		Name:       r.Name,
 		PropertyID: r.PropertyID,
+		Status:     status,
 		CreatedAt:  r.CreatedAt.In(time.Local),
 		UpdatedAt:  r.UpdatedAt.In(time.Local),
 	}, nil

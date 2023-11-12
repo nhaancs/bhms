@@ -28,9 +28,9 @@ func NewStore(log *logger.Logger, db *sqlx.DB) *Store {
 func (s *Store) Create(ctx context.Context, core block.Block) error {
 	const q = `
 	INSERT INTO blocks
-		(id, name, property_id, created_at, updated_at)
+		(id, name, property_id, status, created_at, updated_at)
 	VALUES
-		(:id, :name, :property_id, :created_at, :updated_at)`
+		(:id, :name, :property_id, :status, :created_at, :updated_at)`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBBlock(core)); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
@@ -42,9 +42,9 @@ func (s *Store) Create(ctx context.Context, core block.Block) error {
 func (s *Store) BatchCreate(ctx context.Context, cores []block.Block) error {
 	const q = `
 	INSERT INTO blocks
-		(id, name, property_id, created_at, updated_at)
+		(id, name, property_id, status, created_at, updated_at)
 	VALUES
-		(:id, :name, :property_id, :created_at, :updated_at)`
+		(:id, :name, :property_id, :status, :created_at, :updated_at)`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBBlocks(cores)); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
@@ -59,6 +59,7 @@ func (s *Store) Update(ctx context.Context, core block.Block) error {
 		blocks
 	SET 
 		"name" = :name,
+		"status" = :status,
 		"updated_at" = :updated_at
 	WHERE
 		id = :id`
@@ -99,7 +100,7 @@ func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (block.Block, error
 
 	const q = `
 	SELECT
-        id, name, property_id, created_at, updated_at
+        id, name, property_id, status, created_at, updated_at
 	FROM
 		blocks
 	WHERE 
@@ -130,7 +131,7 @@ func (s *Store) QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]block.Bl
 
 	const q = `
 	SELECT
-        id, name, property_id, created_at, updated_at
+        id, name, property_id, status, created_at, updated_at
 	FROM
 		blocks
 	WHERE

@@ -8,6 +8,7 @@ import (
 type Floor struct {
 	ID         uuid.UUID
 	Name       string
+	Status     Status
 	PropertyID uuid.UUID
 	BlockID    uuid.UUID
 	CreatedAt  time.Time
@@ -22,5 +23,6 @@ type NewFloor struct {
 }
 
 type UpdateFloor struct {
-	Name *string
+	Name   *string
+	Status *Status
 }

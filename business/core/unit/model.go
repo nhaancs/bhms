@@ -8,6 +8,7 @@ import (
 type Unit struct {
 	ID         uuid.UUID
 	Name       string
+	Status     Status
 	PropertyID uuid.UUID
 	BlockID    uuid.UUID
 	FloorID    uuid.UUID
@@ -24,5 +25,6 @@ type NewUnit struct {
 }
 
 type UpdateUnit struct {
-	Name *string
+	Name   *string
+	Status *Status
 }
