@@ -25,6 +25,5 @@ type NewUnit struct {
 }
 
 type UpdateUnit struct {
-	Name   *string
-	Status *Status
+	Name *string
 }

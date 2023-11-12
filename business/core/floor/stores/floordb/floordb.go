@@ -71,26 +71,6 @@ func (s *Store) Update(ctx context.Context, core floor.Floor) error {
 	return nil
 }
 
-func (s *Store) Delete(ctx context.Context, core floor.Floor) error {
-	data := struct {
-		ID string `db:"id"`
-	}{
-		ID: core.ID.String(),
-	}
-
-	const q = `
-	DELETE FROM
-		floors
-	WHERE
-		id = :id`
-
-	if err := db.NamedExecContext(ctx, s.log, s.db, q, data); err != nil {
-		return fmt.Errorf("namedexeccontext: %w", err)
-	}
-
-	return nil
-}
-
 func (s *Store) QueryByID(ctx context.Context, id uuid.UUID) (floor.Floor, error) {
 	data := struct {
 		ID string `db:"id"`

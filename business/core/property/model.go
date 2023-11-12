@@ -35,5 +35,8 @@ type UpdateProperty struct {
 	AddressLevel2ID *uint32
 	AddressLevel3ID *uint32
 	Street          *string
-	Status          *Status
+}
+
+type UpdatePropertyStatus struct {
+	Status *Status
 }

@@ -18,7 +18,6 @@ var (
 type Storer interface {
 	Create(ctx context.Context, core Property) error
 	Update(ctx context.Context, core Property) error
-	Delete(ctx context.Context, core Property) error
 	QueryByID(ctx context.Context, id uuid.UUID) (Property, error)
 	QueryByManagerID(ctx context.Context, id uuid.UUID) ([]Property, error)
 	ExecuteUnderTransaction(tx transaction.Transaction) (Storer, error)
@@ -36,7 +35,6 @@ func NewCore(log *logger.Logger, store Storer) *Core {
 	}
 }
 
-// TODO: limit the number of blocks, floors, units can be created
 func (c *Core) Create(ctx context.Context, core NewProperty) (Property, error) {
 	prprties, err := c.store.QueryByManagerID(ctx, core.ManagerID)
 	if err != nil && !errors.Is(err, ErrNotFound) {
@@ -88,10 +86,6 @@ func (c *Core) Update(ctx context.Context, o Property, n UpdateProperty) (Proper
 		o.Street = *n.Street
 	}
 
-	if n.Status != nil {
-		o.Status = *n.Status
-	}
-
 	o.UpdatedAt = time.Now()
 
 	if err := c.store.Update(ctx, o); err != nil {
@@ -99,6 +93,17 @@ func (c *Core) Update(ctx context.Context, o Property, n UpdateProperty) (Proper
 	}
 
 	return o, nil
+}
+
+func (c *Core) Delete(ctx context.Context, core Property) (Property, error) {
+	core.UpdatedAt = time.Now()
+	core.Status = StatusDeleted
+
+	if err := c.store.Update(ctx, core); err != nil {
+		return Property{}, fmt.Errorf("update: %w", err)
+	}
+
+	return core, nil
 }
 
 func (c *Core) QueryByID(ctx context.Context, id uuid.UUID) (Property, error) {

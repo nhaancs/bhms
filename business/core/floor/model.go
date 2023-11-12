@@ -23,6 +23,5 @@ type NewFloor struct {
 }
 
 type UpdateFloor struct {
-	Name   *string
-	Status *Status
+	Name *string
 }

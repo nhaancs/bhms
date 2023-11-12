@@ -21,6 +21,5 @@ type NewBlock struct {
 }
 
 type UpdateBlock struct {
-	Name   *string
-	Status *Status
+	Name *string
 }

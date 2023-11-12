@@ -18,7 +18,6 @@ type Storer interface {
 	Create(ctx context.Context, core Floor) error
 	BatchCreate(ctx context.Context, cores []Floor) error
 	Update(ctx context.Context, core Floor) error
-	Delete(ctx context.Context, core Floor) error
 	QueryByID(ctx context.Context, id uuid.UUID) (Floor, error)
 	QueryByBlockID(ctx context.Context, id uuid.UUID) ([]Floor, error)
 	QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]Floor, error)
@@ -84,10 +83,6 @@ func (c *Core) Update(ctx context.Context, o Floor, n UpdateFloor) (Floor, error
 		o.Name = *n.Name
 	}
 
-	if n.Status != nil {
-		o.Status = *n.Status
-	}
-
 	o.UpdatedAt = time.Now()
 
 	if err := c.store.Update(ctx, o); err != nil {
@@ -95,6 +90,17 @@ func (c *Core) Update(ctx context.Context, o Floor, n UpdateFloor) (Floor, error
 	}
 
 	return o, nil
+}
+
+func (c *Core) Delete(ctx context.Context, core Floor) (Floor, error) {
+	core.UpdatedAt = time.Now()
+	core.Status = StatusDeleted
+
+	if err := c.store.Update(ctx, core); err != nil {
+		return Floor{}, fmt.Errorf("update: %w", err)
+	}
+
+	return core, nil
 }
 
 func (c *Core) QueryByID(ctx context.Context, id uuid.UUID) (Floor, error) {
