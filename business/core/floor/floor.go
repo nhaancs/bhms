@@ -18,6 +18,8 @@ type Storer interface {
 	Create(ctx context.Context, core Floor) error
 	BatchCreate(ctx context.Context, cores []Floor) error
 	Update(ctx context.Context, core Floor) error
+
+	DeleteByPropertyID(ctx context.Context, id uuid.UUID) error
 	QueryByID(ctx context.Context, id uuid.UUID) (Floor, error)
 	QueryByBlockID(ctx context.Context, id uuid.UUID) ([]Floor, error)
 	QueryByPropertyID(ctx context.Context, id uuid.UUID) ([]Floor, error)
@@ -101,6 +103,13 @@ func (c *Core) Delete(ctx context.Context, core Floor) (Floor, error) {
 	}
 
 	return core, nil
+}
+
+func (c *Core) DeleteByPropertyID(ctx context.Context, propertyID uuid.UUID) error {
+	if err := c.store.DeleteByPropertyID(ctx, propertyID); err != nil {
+		return fmt.Errorf("DeleteByPropertyID: %w", err)
+	}
+	return nil
 }
 
 func (c *Core) QueryByID(ctx context.Context, id uuid.UUID) (Floor, error) {

@@ -151,6 +151,11 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handlers) Delete(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	h, err := h.executeUnderTransaction(ctx)
+	if err != nil {
+		return err
+	}
+
 	prprtyIDStr := web.Param(r, "id")
 	prprtyID, err := uuid.Parse(prprtyIDStr)
 	if err != nil {
@@ -170,7 +175,18 @@ func (h *Handlers) Delete(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return response.NewError(errors.New("no permission"), http.StatusForbidden)
 	}
 
-	// TODO: Check any related tables before delete
+	if err = h.unit.DeleteByPropertyID(ctx, prprtyID); err != nil {
+		return err
+	}
+
+	if err = h.floor.DeleteByPropertyID(ctx, prprtyID); err != nil {
+		return err
+	}
+
+	if err = h.block.DeleteByPropertyID(ctx, prprtyID); err != nil {
+		return err
+	}
+
 	prprty, err = h.property.Delete(ctx, prprty)
 	if err != nil {
 		return fmt.Errorf("delete: prprty id[%s]: %w", prprtyIDStr, err)

@@ -10,6 +10,7 @@ import (
 	db "github.com/nhaancs/bhms/business/data/dbsql/pgx"
 	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/foundation/logger"
+	"time"
 )
 
 type Store struct {
@@ -65,6 +66,33 @@ func (s *Store) Update(ctx context.Context, core unit.Unit) error {
 		id = :id AND status != 'DELETED'`
 
 	if err := db.NamedExecContext(ctx, s.log, s.db, q, toDBUnit(core)); err != nil {
+		return fmt.Errorf("namedexeccontext: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Store) DeleteByPropertyID(ctx context.Context, id uuid.UUID) error {
+	data := struct {
+		PropertyID string    `db:"property_id"`
+		Status     string    `db:"status"`
+		UpdatedAt  time.Time `db:"updated_at"`
+	}{
+		PropertyID: id.String(),
+		Status:     unit.StatusDeleted.Name(),
+		UpdatedAt:  time.Now().UTC(),
+	}
+
+	const q = `
+	UPDATE
+		units
+	SET 
+		"status" = :status,
+		"updated_at" = :updated_at
+	WHERE
+		property_id = :property_id AND status != 'DELETED'`
+
+	if err := db.NamedExecContext(ctx, s.log, s.db, q, data); err != nil {
 		return fmt.Errorf("namedexeccontext: %w", err)
 	}
 
