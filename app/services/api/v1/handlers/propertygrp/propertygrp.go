@@ -170,6 +170,7 @@ func (h *Handlers) Delete(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return response.NewError(errors.New("no permission"), http.StatusForbidden)
 	}
 
+	// TODO: Check any related tables before delete
 	prprty, err = h.property.Delete(ctx, prprty)
 	if err != nil {
 		return fmt.Errorf("delete: prprty id[%s]: %w", prprtyIDStr, err)
