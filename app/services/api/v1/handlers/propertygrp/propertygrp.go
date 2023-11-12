@@ -109,7 +109,7 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return fmt.Errorf("batch create units: prprty[%+v]: %w", app, err)
 	}
 
-	return web.Respond(ctx, w, toAppPropertyDetail(prprty, blcks, flrs, unts), http.StatusCreated)
+	return web.Respond(ctx, w, toAppPropertyDetail(prprty, blcks, flrs, unts), http.StatusOK)
 }
 
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -144,10 +144,38 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 
 	prprty, err = h.property.Update(ctx, prprty, c)
 	if err != nil {
-		return fmt.Errorf("update: usr[%+v]: %w", app, err)
+		return fmt.Errorf("update: prprty[%+v]: %w", app, err)
 	}
 
-	return web.Respond(ctx, w, toAppProperty(prprty), http.StatusCreated)
+	return web.Respond(ctx, w, toAppProperty(prprty), http.StatusOK)
+}
+
+func (h *Handlers) Delete(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	prprtyIDStr := web.Param(r, "id")
+	prprtyID, err := uuid.Parse(prprtyIDStr)
+	if err != nil {
+		return response.NewError(errors.New("invalid property id"), http.StatusBadRequest)
+	}
+	prprty, err := h.property.QueryByID(ctx, prprtyID)
+	if err != nil {
+		switch {
+		case errors.Is(err, property.ErrNotFound):
+			return response.NewError(err, http.StatusNotFound)
+		default:
+			return fmt.Errorf("querybyid: ID[%s]: %w", prprtyID, err)
+		}
+	}
+
+	if prprty.ManagerID != auth.GetUserID(ctx) {
+		return response.NewError(errors.New("no permission"), http.StatusForbidden)
+	}
+
+	prprty, err = h.property.Delete(ctx, prprty)
+	if err != nil {
+		return fmt.Errorf("delete: prprty id[%s]: %w", prprtyIDStr, err)
+	}
+
+	return web.Respond(ctx, w, toAppProperty(prprty), http.StatusOK)
 }
 
 func (h *Handlers) QueryByManagerID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -180,7 +208,7 @@ func (h *Handlers) QueryByManagerID(ctx context.Context, w http.ResponseWriter, 
 		appPrprtyDtls[i] = toAppPropertyDetail(prprties[i], blcks, flrs, unts)
 	}
 
-	return web.Respond(ctx, w, appPrprtyDtls, http.StatusCreated)
+	return web.Respond(ctx, w, appPrprtyDtls, http.StatusOK)
 }
 
 // executeUnderTransaction constructs a new Handlers value with the core apis

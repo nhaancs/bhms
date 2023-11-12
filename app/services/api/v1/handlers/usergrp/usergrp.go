@@ -71,7 +71,7 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 	//	return fmt.Errorf("senotp: usr[%+v]: %w", usr, err)
 	//}
 
-	return web.Respond(ctx, w, toAppUser(usr), http.StatusCreated)
+	return web.Respond(ctx, w, toAppUser(usr), http.StatusOK)
 }
 
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -100,7 +100,7 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return fmt.Errorf("update: usr[%+v]: %w", app, err)
 	}
 
-	return web.Respond(ctx, w, toAppUser(usr), http.StatusCreated)
+	return web.Respond(ctx, w, toAppUser(usr), http.StatusOK)
 }
 
 // VerifyOTP verify user OTP.

@@ -112,6 +112,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	app.Handle(http.MethodGet, version, "/properties", propertyHdl.QueryByManagerID, auth)
 	app.Handle(http.MethodPost, version, "/properties", propertyHdl.Create, auth, tran)
 	app.Handle(http.MethodPut, version, "/properties/:id", propertyHdl.Update, auth)
+	app.Handle(http.MethodDelete, version, "/properties/:id", propertyHdl.Delete, auth)
 
 	// -------------------------------------------------------------------------
 	// Block routes
