@@ -139,5 +139,10 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	app.Handle(http.MethodPut, version, "/properties/:id", propertyHdl.Update, auth)
 	app.Handle(http.MethodDelete, version, "/properties/:id", propertyHdl.Delete, auth, tran)
 
+	// update unit
+	// add unit
+	// delete unit (check related tables)
+	// TODO: app idea: fast navigation to a specific block, floor, unit
+
 	return app, nil
 }

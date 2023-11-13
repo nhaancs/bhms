@@ -120,7 +120,6 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 	return web.Respond(ctx, w, toAppPropertyDetail(prprty, blcks, flrs, unts), http.StatusOK)
 }
 
-// TODO: can update blocks, floors, units info
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	prprtyIDStr := web.Param(r, "id")
 	prprtyID, err := uuid.Parse(prprtyIDStr)
