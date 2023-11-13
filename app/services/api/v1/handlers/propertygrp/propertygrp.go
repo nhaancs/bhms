@@ -23,9 +23,17 @@ type Handlers struct {
 	unit     *unit.Core
 }
 
-func New(property *property.Core) *Handlers {
+func New(
+	property *property.Core,
+	block *block.Core,
+	floor *floor.Core,
+	unit *unit.Core,
+) *Handlers {
 	return &Handlers{
 		property: property,
+		block:    block,
+		floor:    floor,
+		unit:     unit,
 	}
 }
 

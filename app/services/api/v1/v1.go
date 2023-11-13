@@ -6,10 +6,16 @@ import (
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/divisiongrp"
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/propertygrp"
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/usergrp"
+	"github.com/nhaancs/bhms/business/core/block"
+	"github.com/nhaancs/bhms/business/core/block/stores/blockdb"
 	"github.com/nhaancs/bhms/business/core/division"
 	"github.com/nhaancs/bhms/business/core/division/stores/divisionjson"
+	"github.com/nhaancs/bhms/business/core/floor"
+	"github.com/nhaancs/bhms/business/core/floor/stores/floordb"
 	"github.com/nhaancs/bhms/business/core/property"
 	"github.com/nhaancs/bhms/business/core/property/stores/propertydb"
+	"github.com/nhaancs/bhms/business/core/unit"
+	"github.com/nhaancs/bhms/business/core/unit/stores/unitdb"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/core/user/stores/usercache"
 	"github.com/nhaancs/bhms/business/core/user/stores/userdb"
@@ -108,7 +114,26 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 		return nil, err
 	}
 	propertyCore := property.NewCore(cfg.Log, propertyStore)
-	propertyHdl := propertygrp.New(propertyCore)
+
+	blockStore := blockdb.NewStore(cfg.Log, cfg.DB)
+	if err != nil {
+		return nil, err
+	}
+	blockCore := block.NewCore(cfg.Log, blockStore)
+
+	floorStore := floordb.NewStore(cfg.Log, cfg.DB)
+	if err != nil {
+		return nil, err
+	}
+	floorCore := floor.NewCore(cfg.Log, floorStore)
+
+	unitStore := unitdb.NewStore(cfg.Log, cfg.DB)
+	if err != nil {
+		return nil, err
+	}
+	unitCore := unit.NewCore(cfg.Log, unitStore)
+
+	propertyHdl := propertygrp.New(propertyCore, blockCore, floorCore, unitCore)
 	app.Handle(http.MethodGet, version, "/properties", propertyHdl.QueryByManagerID, auth)
 	app.Handle(http.MethodPost, version, "/properties", propertyHdl.Create, auth, tran)
 	app.Handle(http.MethodPut, version, "/properties/:id", propertyHdl.Update, auth)
