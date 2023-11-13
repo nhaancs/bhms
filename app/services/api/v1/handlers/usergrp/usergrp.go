@@ -75,7 +75,7 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 }
 
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	userID := auth.GetUserID(ctx)
+	userID := uuid.New() // auth.GetUserID(ctx)
 	usr, err := h.user.QueryByID(ctx, userID)
 	if err != nil {
 		switch {

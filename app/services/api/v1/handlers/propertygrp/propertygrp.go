@@ -10,7 +10,6 @@ import (
 	"github.com/nhaancs/bhms/business/core/property"
 	"github.com/nhaancs/bhms/business/core/unit"
 	"github.com/nhaancs/bhms/business/data/transaction"
-	"github.com/nhaancs/bhms/business/web/auth"
 	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/web"
 	"net/http"
@@ -47,7 +46,7 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 	if err := web.Decode(r, &app); err != nil {
 		return response.NewError(err, http.StatusBadRequest)
 	}
-	app.ManagerID = auth.GetUserID(ctx)
+	//app.ManagerID = auth.GetUserID(ctx)
 
 	if len(app.Blocks) > 5 {
 		return response.NewError(errors.New("maximum number of blocks exceeded"), http.StatusBadRequest)
@@ -136,9 +135,9 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	if prprty.ManagerID != auth.GetUserID(ctx) {
-		return response.NewError(errors.New("no permission"), http.StatusForbidden)
-	}
+	//if prprty.ManagerID != auth.GetUserID(ctx) {
+	//	return response.NewError(errors.New("no permission"), http.StatusForbidden)
+	//}
 
 	var app AppUpdateProperty
 	if err := web.Decode(r, &app); err != nil {
@@ -179,9 +178,9 @@ func (h *Handlers) Delete(ctx context.Context, w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	if prprty.ManagerID != auth.GetUserID(ctx) {
-		return response.NewError(errors.New("no permission"), http.StatusForbidden)
-	}
+	//if prprty.ManagerID != auth.GetUserID(ctx) {
+	//	return response.NewError(errors.New("no permission"), http.StatusForbidden)
+	//}
 
 	if err = h.unit.DeleteByPropertyID(ctx, prprtyID); err != nil {
 		return err
@@ -204,7 +203,7 @@ func (h *Handlers) Delete(ctx context.Context, w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handlers) QueryByManagerID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	managerID := auth.GetUserID(ctx)
+	managerID := uuid.New() // auth.GetUserID(ctx)
 	prprties, err := h.property.QueryByManagerID(ctx, managerID)
 	if err != nil {
 		switch {

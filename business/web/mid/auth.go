@@ -34,8 +34,8 @@ func Authenticate(a *auth.Auth) web.Middleware {
 				return response.NewError(ErrInvalidID, http.StatusBadRequest)
 			}
 
-			ctx = auth.SetUserID(ctx, subjectID)
-			ctx = auth.SetClaims(ctx, claims)
+			ctx = setUserID(ctx, subjectID)
+			ctx = setClaims(ctx, claims)
 
 			return handler(ctx, w, r)
 		}

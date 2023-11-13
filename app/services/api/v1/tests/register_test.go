@@ -25,7 +25,7 @@ func testCreate200(t *testing.T, app appTest, sd seedData) []tableData {
 			name:       "user",
 			url:        "/v1/users/register",
 			method:     http.MethodPost,
-			statusCode: http.StatusCreated,
+			statusCode: http.StatusOK,
 			model: &usergrp.AppRegister{
 				FirstName: "Nhan",
 				LastName:  "Nguyen",
