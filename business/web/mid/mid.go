@@ -22,8 +22,8 @@ func setClaims(ctx context.Context, claims auth.Claims) context.Context {
 	return context.WithValue(ctx, claimKey, claims)
 }
 
-// getClaims returns the claims from the context.
-func getClaims(ctx context.Context) auth.Claims {
+// GetClaims returns the claims from the context.
+func GetClaims(ctx context.Context) auth.Claims {
 	v, ok := ctx.Value(claimKey).(auth.Claims)
 	if !ok {
 		return auth.Claims{}
@@ -38,8 +38,8 @@ func setUserID(ctx context.Context, userID uuid.UUID) context.Context {
 	return context.WithValue(ctx, userKey, userID)
 }
 
-// getUserID returns the claims from the context.
-func getUserID(ctx context.Context) uuid.UUID {
+// GetUserID returns the claims from the context.
+func GetUserID(ctx context.Context) uuid.UUID {
 	v, ok := ctx.Value(userKey).(uuid.UUID)
 	if !ok {
 		return uuid.UUID{}

@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/web/auth"
+	"github.com/nhaancs/bhms/business/web/mid"
 	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/sms"
 	"github.com/nhaancs/bhms/foundation/web"
@@ -75,7 +76,7 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 }
 
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	userID := uuid.New() // auth.GetUserID(ctx)
+	userID := mid.GetUserID(ctx)
 	usr, err := h.user.QueryByID(ctx, userID)
 	if err != nil {
 		switch {
