@@ -5,13 +5,19 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/business/core/block"
+	"github.com/nhaancs/bhms/business/core/floor"
+	"github.com/nhaancs/bhms/business/core/property"
 	"github.com/nhaancs/bhms/business/data/transaction"
 	"github.com/nhaancs/bhms/foundation/logger"
 	"time"
 )
 
 var (
-	ErrNotFound = errors.New("unit not found")
+	ErrNotFound      = errors.New("unit not found")
+	ErrLimitExceeded = errors.New("max number of units exceeded")
+	ErrBlockNotFound = errors.New("block not found")
+	ErrFloorNotFound = errors.New("floor not found")
 )
 
 type Storer interface {
@@ -26,18 +32,58 @@ type Storer interface {
 }
 
 type Core struct {
-	store Storer
-	log   *logger.Logger
+	store    Storer
+	log      *logger.Logger
+	property *property.Core
+	block    *block.Core
+	floor    *floor.Core
 }
 
-func NewCore(log *logger.Logger, store Storer) *Core {
+func NewCore(
+	log *logger.Logger,
+	store Storer,
+	property *property.Core,
+	block *block.Core,
+	floor *floor.Core,
+) *Core {
 	return &Core{
-		store: store,
-		log:   log,
+		store:    store,
+		log:      log,
+		property: property,
+		block:    block,
+		floor:    floor,
 	}
 }
 
 func (c *Core) Create(ctx context.Context, core NewUnit) (Unit, error) {
+	unts, err := c.store.QueryByPropertyID(ctx, core.PropertyID)
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return Unit{}, fmt.Errorf("QueryByPropertyID: id[%s]: %w", core.PropertyID, err)
+	}
+	if len(unts) >= 1000 {
+		return Unit{}, ErrLimitExceeded
+	}
+
+	_, err = c.block.QueryByID(ctx, core.BlockID)
+	if err != nil {
+		switch {
+		case errors.Is(err, block.ErrNotFound):
+			return Unit{}, ErrBlockNotFound
+		default:
+			return Unit{}, fmt.Errorf("querybyid: block id[%s]: %w", core.BlockID, err)
+		}
+	}
+
+	_, err = c.floor.QueryByID(ctx, core.FloorID)
+	if err != nil {
+		switch {
+		case errors.Is(err, floor.ErrNotFound):
+			return Unit{}, ErrFloorNotFound
+		default:
+			return Unit{}, fmt.Errorf("querybyid: floor id[%s]: %w", core.FloorID, err)
+		}
+	}
+
 	now := time.Now()
 	unt := Unit{
 		ID:         core.ID,

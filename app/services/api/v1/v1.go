@@ -135,7 +135,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	if err != nil {
 		return nil, err
 	}
-	unitCore := unit.NewCore(cfg.Log, unitStore)
+	unitCore := unit.NewCore(cfg.Log, unitStore, propertyCore, blockCore, floorCore)
 
 	propertyHdl := propertygrp.New(propertyCore, blockCore, floorCore, unitCore)
 	rulePropertyAdminOrSubject := mid.AuthorizeProperty(cfg.Auth, auth.RuleAdminOrSubject, propertyCore)
@@ -148,7 +148,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	// -------------------------------------------------------------------------
 	// Unit routes
 
-	unitHdl := unitgrp.New(propertyCore, blockCore, floorCore, unitCore)
+	unitHdl := unitgrp.New(unitCore)
 	app.Handle(http.MethodPost, version, "/properties/:property_id/units", unitHdl.Create, authen, rulePropertyAdminOrSubject)
 	app.Handle(http.MethodPut, version, "/properties/:property_id/units/:unit_id", unitHdl.Update, authen, rulePropertyAdminOrSubject)
 	app.Handle(http.MethodDelete, version, "/properties/:property_id/units/:unit_id", unitHdl.Delete, authen, tran, rulePropertyAdminOrSubject)

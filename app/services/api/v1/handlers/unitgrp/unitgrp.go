@@ -10,7 +10,6 @@ import (
 	"github.com/nhaancs/bhms/business/core/property"
 	"github.com/nhaancs/bhms/business/core/unit"
 	"github.com/nhaancs/bhms/business/data/transaction"
-	"github.com/nhaancs/bhms/business/web/mid"
 	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/web"
 	"net/http"
@@ -23,17 +22,9 @@ type Handlers struct {
 	unit     *unit.Core
 }
 
-func New(
-	property *property.Core,
-	block *block.Core,
-	floor *floor.Core,
-	unit *unit.Core,
-) *Handlers {
+func New(unit *unit.Core) *Handlers {
 	return &Handlers{
-		property: property,
-		block:    block,
-		floor:    floor,
-		unit:     unit,
+		unit: unit,
 	}
 }
 
@@ -48,43 +39,14 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	prprty := mid.GetProperty(ctx)
-	blcks, err := h.block.QueryByPropertyID(ctx, prprty.ID)
-	if err != nil {
-		switch {
-		case errors.Is(err, block.ErrNotFound):
-			return response.NewError(err, http.StatusNoContent)
-		default:
-			return fmt.Errorf("QueryByPropertyID: id[%s]: %w", prprty.ID, err)
-		}
-	}
-	if len(blcks) >= 1000 {
-		return response.NewError(errors.New("maximum number of units exceeded"), http.StatusBadRequest)
-	}
-
-	_, err = h.block.QueryByID(ctx, c.BlockID)
-	if err != nil {
-		switch {
-		case errors.Is(err, block.ErrNotFound):
-			return response.NewError(err, http.StatusNoContent)
-		default:
-			return fmt.Errorf("querybyid: block id[%s]: %w", c.BlockID, err)
-		}
-	}
-
-	_, err = h.floor.QueryByID(ctx, c.FloorID)
-	if err != nil {
-		switch {
-		case errors.Is(err, floor.ErrNotFound):
-			return response.NewError(err, http.StatusNoContent)
-		default:
-			return fmt.Errorf("querybyid: floor id[%s]: %w", c.FloorID, err)
-		}
-	}
-
 	unt, err := h.unit.Create(ctx, c)
 	if err != nil {
-		return fmt.Errorf("create: unit[%+v]: %w", app, err)
+		switch {
+		case errors.Is(err, unit.ErrLimitExceeded), errors.Is(err, unit.ErrBlockNotFound), errors.Is(err, unit.ErrFloorNotFound):
+			return response.NewError(err, http.StatusBadRequest)
+		default:
+			return fmt.Errorf("create: unit[%+v]: %w", app, err)
+		}
 	}
 
 	return web.Respond(ctx, w, toAppUnit(unt), http.StatusOK)
