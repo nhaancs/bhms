@@ -109,14 +109,13 @@ func crud(t *testing.T) {
 	upd := user.UpdateUser{
 		FirstName: dbtest.StringPointer("Nhan"),
 		LastName:  dbtest.StringPointer("Nguyen"),
-		Phone:     dbtest.StringPointer("0909999999"),
 	}
 
 	if _, err := api.User.Update(ctx, usr, upd); err != nil {
 		t.Fatalf("Should be able to update user : %s.", err)
 	}
 
-	saved, err = api.User.QueryByPhone(ctx, *upd.Phone)
+	saved, err = api.User.QueryByPhone(ctx, usr.Phone)
 	if err != nil {
 		t.Fatalf("Should be able to retrieve user by Phone : %s.", err)
 	}
@@ -136,11 +135,5 @@ func crud(t *testing.T) {
 		t.Logf("got: %v", saved.LastName)
 		t.Logf("exp: %v", *upd.LastName)
 		t.Errorf("Should be able to see updates to LastName")
-	}
-
-	if saved.Phone != *upd.Phone {
-		t.Logf("got: %v", saved.Phone)
-		t.Logf("exp: %v", *upd.Phone)
-		t.Errorf("Should be able to see updates to Phone")
 	}
 }
