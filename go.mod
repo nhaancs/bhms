@@ -1,6 +1,6 @@
 module github.com/nhaancs/bhms
 
-go 1.21.3
+go 1.21.4
 
 require (
 	github.com/ardanlabs/conf/v3 v3.1.6

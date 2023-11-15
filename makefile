@@ -313,7 +313,7 @@ lint:
 vuln-check:
 	govulncheck ./...
 
-test: test-only lint vuln-check
+test: test-only vuln-check #lint
 
 test-race: test-race lint vuln-check
 

@@ -10,6 +10,7 @@ import (
 	"github.com/nhaancs/bhms/business/core/property"
 	"github.com/nhaancs/bhms/business/core/unit"
 	"github.com/nhaancs/bhms/business/data/transaction"
+	"github.com/nhaancs/bhms/business/web/mid"
 	"github.com/nhaancs/bhms/business/web/response"
 	"github.com/nhaancs/bhms/foundation/web"
 	"net/http"
@@ -120,24 +121,6 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	prprtyIDStr := web.Param(r, "id")
-	prprtyID, err := uuid.Parse(prprtyIDStr)
-	if err != nil {
-		return response.NewError(errors.New("invalid property id"), http.StatusBadRequest)
-	}
-	prprty, err := h.property.QueryByID(ctx, prprtyID)
-	if err != nil {
-		switch {
-		case errors.Is(err, property.ErrNotFound):
-			return response.NewError(err, http.StatusNotFound)
-		default:
-			return fmt.Errorf("querybyid: ID[%s]: %w", prprtyID, err)
-		}
-	}
-
-	//if prprty.ManagerID != auth.GetUserID(ctx) {
-	//	return response.NewError(errors.New("no permission"), http.StatusForbidden)
-	//}
 
 	var app AppUpdateProperty
 	if err := web.Decode(r, &app); err != nil {
@@ -149,6 +132,7 @@ func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
+	prprty := mid.GetProperty(ctx)
 	prprty, err = h.property.Update(ctx, prprty, c)
 	if err != nil {
 		return fmt.Errorf("update: prprty[%+v]: %w", app, err)
@@ -163,47 +147,30 @@ func (h *Handlers) Delete(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return err
 	}
 
-	prprtyIDStr := web.Param(r, "id")
-	prprtyID, err := uuid.Parse(prprtyIDStr)
-	if err != nil {
-		return response.NewError(errors.New("invalid property id"), http.StatusBadRequest)
-	}
-	prprty, err := h.property.QueryByID(ctx, prprtyID)
-	if err != nil {
-		switch {
-		case errors.Is(err, property.ErrNotFound):
-			return response.NewError(err, http.StatusNotFound)
-		default:
-			return fmt.Errorf("querybyid: ID[%s]: %w", prprtyID, err)
-		}
-	}
+	prprty := mid.GetProperty(ctx)
 
-	//if prprty.ManagerID != auth.GetUserID(ctx) {
-	//	return response.NewError(errors.New("no permission"), http.StatusForbidden)
-	//}
-
-	if err = h.unit.DeleteByPropertyID(ctx, prprtyID); err != nil {
+	if err = h.unit.DeleteByPropertyID(ctx, prprty.ID); err != nil {
 		return err
 	}
 
-	if err = h.floor.DeleteByPropertyID(ctx, prprtyID); err != nil {
+	if err = h.floor.DeleteByPropertyID(ctx, prprty.ID); err != nil {
 		return err
 	}
 
-	if err = h.block.DeleteByPropertyID(ctx, prprtyID); err != nil {
+	if err = h.block.DeleteByPropertyID(ctx, prprty.ID); err != nil {
 		return err
 	}
 
 	prprty, err = h.property.Delete(ctx, prprty)
 	if err != nil {
-		return fmt.Errorf("delete: prprty id[%s]: %w", prprtyIDStr, err)
+		return fmt.Errorf("delete: prprty id[%s]: %w", prprty.ID.String(), err)
 	}
 
 	return web.Respond(ctx, w, toAppProperty(prprty), http.StatusOK)
 }
 
 func (h *Handlers) QueryByManagerID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	managerID := uuid.New() // auth.GetUserID(ctx)
+	managerID := mid.GetUserID(ctx)
 	prprties, err := h.property.QueryByManagerID(ctx, managerID)
 	if err != nil {
 		switch {

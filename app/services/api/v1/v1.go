@@ -77,8 +77,10 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 		app.EnableCORS(mid.Cors(opts.corsOrigin))
 	}
 
-	auth := mid.Authenticate(cfg.Auth)
+	authen := mid.Authenticate(cfg.Auth)
 	tran := mid.ExecuteInTransaction(cfg.Log, db.NewBeginner(cfg.DB))
+	ruleAny := mid.Authorize(cfg.Auth, auth.RuleAny)
+	ruleUserOnly := mid.Authorize(cfg.Auth, auth.RuleUserOnly)
 
 	// -------------------------------------------------------------------------
 	// Check routes
@@ -90,10 +92,11 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	// User routes
 	usrCore := user.NewCore(cfg.Log, usercache.NewStore(cfg.Log, userdb.NewStore(cfg.Log, cfg.DB)))
 	usrHdl := usergrp.New(usrCore, cfg.Auth, cfg.KeyID, cfg.SMS)
+	ruleUserAdminOrSubject := mid.AuthorizeUser(cfg.Auth, auth.RuleAdminOrSubject, usrCore)
 	app.Handle(http.MethodGet, version, "/users/token", usrHdl.Token)
 	app.Handle(http.MethodPost, version, "/users/register", usrHdl.Register)
 	app.Handle(http.MethodPost, version, "/users/verify-otp", usrHdl.VerifyOTP)
-	app.Handle(http.MethodPut, version, "/users", usrHdl.Update, auth)
+	app.Handle(http.MethodPut, version, "/users/:id", usrHdl.Update, authen, ruleUserAdminOrSubject)
 
 	// -------------------------------------------------------------------------
 	// Division routes
@@ -103,8 +106,8 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	}
 	divCore := division.NewCore(cfg.Log, divStore)
 	divHdl := divisiongrp.New(divCore)
-	app.Handle(http.MethodGet, version, "/divisions/provinces", divHdl.QueryProvinces, auth)
-	app.Handle(http.MethodGet, version, "/divisions/:parent_id", divHdl.QueryByParentID, auth)
+	app.Handle(http.MethodGet, version, "/divisions/provinces", divHdl.QueryProvinces, authen, ruleAny)
+	app.Handle(http.MethodGet, version, "/divisions/:parent_id", divHdl.QueryByParentID, authen, ruleAny)
 
 	// -------------------------------------------------------------------------
 	// Property routes
@@ -134,10 +137,12 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	unitCore := unit.NewCore(cfg.Log, unitStore)
 
 	propertyHdl := propertygrp.New(propertyCore, blockCore, floorCore, unitCore)
-	app.Handle(http.MethodGet, version, "/properties", propertyHdl.QueryByManagerID, auth)
-	app.Handle(http.MethodPost, version, "/properties", propertyHdl.Create, auth, tran)
-	app.Handle(http.MethodPut, version, "/properties/:id", propertyHdl.Update, auth)
-	app.Handle(http.MethodDelete, version, "/properties/:id", propertyHdl.Delete, auth, tran)
+	rulePropertyAdminOrSubject := mid.AuthorizeProperty(cfg.Auth, auth.RuleAdminOrSubject, propertyCore)
+
+	app.Handle(http.MethodGet, version, "/properties", propertyHdl.QueryByManagerID, authen, ruleUserOnly)
+	app.Handle(http.MethodPost, version, "/properties", propertyHdl.Create, authen, tran, ruleUserOnly)
+	app.Handle(http.MethodPut, version, "/properties/:id", propertyHdl.Update, authen, rulePropertyAdminOrSubject)
+	app.Handle(http.MethodDelete, version, "/properties/:id", propertyHdl.Delete, authen, tran, rulePropertyAdminOrSubject)
 
 	// update unit
 	// add unit

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/nhaancs/bhms/business/core/property"
+	"github.com/nhaancs/bhms/business/core/user"
 	"github.com/nhaancs/bhms/business/web/auth"
 )
 
@@ -13,6 +14,7 @@ type ctxKey int
 const (
 	claimKey ctxKey = iota + 1
 	userIDKey
+	userKey
 	propertyKey
 )
 
@@ -23,8 +25,8 @@ func setClaims(ctx context.Context, claims auth.Claims) context.Context {
 	return context.WithValue(ctx, claimKey, claims)
 }
 
-// GetClaims returns the claims from the context.
-func GetClaims(ctx context.Context) auth.Claims {
+// getClaims returns the claims from the context.
+func getClaims(ctx context.Context) auth.Claims {
 	v, ok := ctx.Value(claimKey).(auth.Claims)
 	if !ok {
 		return auth.Claims{}
@@ -56,6 +58,20 @@ func GetProperty(ctx context.Context) property.Property {
 	v, ok := ctx.Value(propertyKey).(property.Property)
 	if !ok {
 		return property.Property{}
+	}
+	return v
+}
+
+// =============================================================================
+
+func setUser(ctx context.Context, usr user.User) context.Context {
+	return context.WithValue(ctx, userKey, usr)
+}
+
+func GetUser(ctx context.Context) user.User {
+	v, ok := ctx.Value(userKey).(user.User)
+	if !ok {
+		return user.User{}
 	}
 	return v
 }

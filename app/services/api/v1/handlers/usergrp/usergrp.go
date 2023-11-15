@@ -76,24 +76,14 @@ func (h *Handlers) Register(ctx context.Context, w http.ResponseWriter, r *http.
 }
 
 func (h *Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	userID := mid.GetUserID(ctx)
-	usr, err := h.user.QueryByID(ctx, userID)
-	if err != nil {
-		switch {
-		case errors.Is(err, user.ErrNotFound):
-			return response.NewError(err, http.StatusNotFound)
-		default:
-			return fmt.Errorf("querybyid: userID[%s]: %w", userID, err)
-		}
-	}
-
 	var app AppUpdateUser
 	if err := web.Decode(r, &app); err != nil {
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
+	usr := mid.GetUser(ctx)
 	c := toCoreUpdateUser(app)
-	usr, err = h.user.Update(ctx, usr, c)
+	usr, err := h.user.Update(ctx, usr, c)
 	if err != nil {
 		if errors.Is(err, user.ErrUniquePhone) {
 			return response.NewError(err, http.StatusConflict)
