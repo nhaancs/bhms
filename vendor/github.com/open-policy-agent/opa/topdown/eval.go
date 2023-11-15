@@ -2417,9 +2417,10 @@ func (e evalVirtualPartial) evalEachRule(iter unifyIterator, unknown bool) error
 	}
 
 	result := e.empty
+	var visitedRefs []ast.Ref
 
 	for _, rule := range e.ir.Rules {
-		result, err = e.evalOneRulePreUnify(iter, rule, hint, result, unknown)
+		result, err = e.evalOneRulePreUnify(iter, rule, result, unknown, &visitedRefs)
 		if err != nil {
 			return err
 		}
@@ -2464,13 +2465,15 @@ func (e evalVirtualPartial) evalAllRules(iter unifyIterator, rules []*ast.Rule) 
 func (e evalVirtualPartial) evalAllRulesNoCache(rules []*ast.Rule) (*ast.Term, error) {
 	result := e.empty
 
+	var visitedRefs []ast.Ref
+
 	for _, rule := range rules {
 		child := e.e.child(rule.Body)
 		child.traceEnter(rule)
 		err := child.eval(func(*eval) error {
 			child.traceExit(rule)
 			var err error
-			result, _, err = e.reduce(rule, child.bindings, result)
+			result, _, err = e.reduce(rule, child.bindings, result, &visitedRefs)
 			if err != nil {
 				return err
 			}
@@ -2497,7 +2500,7 @@ func wrapInObjects(leaf *ast.Term, ref ast.Ref) *ast.Term {
 	return ast.ObjectTerm(ast.Item(key, val))
 }
 
-func (e evalVirtualPartial) evalOneRulePreUnify(iter unifyIterator, rule *ast.Rule, hint evalVirtualPartialCacheHint, result *ast.Term, unknown bool) (*ast.Term, error) {
+func (e evalVirtualPartial) evalOneRulePreUnify(iter unifyIterator, rule *ast.Rule, result *ast.Term, unknown bool, visitedRefs *[]ast.Ref) (*ast.Term, error) {
 
 	child := e.e.child(rule.Body)
 
@@ -2538,7 +2541,7 @@ func (e evalVirtualPartial) evalOneRulePreUnify(iter unifyIterator, rule *ast.Ru
 			} else {
 				var dup bool
 				var err error
-				result, dup, err = e.reduce(rule, child.bindings, result)
+				result, dup, err = e.reduce(rule, child.bindings, result, visitedRefs)
 				if err != nil {
 					return err
 				} else if !unknown && dup {
@@ -2691,35 +2694,31 @@ func (e evalVirtualPartial) partialEvalSupportRule(rule *ast.Rule, path ast.Ref)
 		// Skip this rule body if it fails to type-check.
 		// Type-checking failure means the rule body will never succeed.
 		if e.e.compiler.PassesTypeCheck(plugged) {
-			var key, value *ast.Term
-
-			if rule.Head.Key != nil {
-				key = child.bindings.PlugNamespaced(rule.Head.Key, e.e.caller.bindings)
-			}
+			var value *ast.Term
 
 			if rule.Head.Value != nil {
 				value = child.bindings.PlugNamespaced(rule.Head.Value, e.e.caller.bindings)
 			}
 
-			head := ast.NewHead(rule.Head.Name, key, value)
+			ref := e.e.namespaceRef(rule.Ref())
+			for i := 1; i < len(ref); i++ {
+				ref[i] = child.bindings.plugNamespaced(ref[i], e.e.caller.bindings)
+			}
+			pkg, ruleRef := splitPackageAndRule(ref)
 
-			ruleRef := e.e.namespaceRef(rule.Ref())
-			l := len(path)
-			if l <= len(ruleRef) {
-				ruleRef = ruleRef[l-1:] // safe; path always has the data document prefix
-				if s, ok := ruleRef[0].Value.(ast.String); ok {
-					ruleRef[0].Value = ast.Var(s)
-				}
-				for i := 1; i < len(ruleRef); i++ {
-					ruleRef[i] = child.bindings.plugNamespaced(ruleRef[i], e.e.caller.bindings)
-				}
-				head.Reference = ruleRef
-				if head.Name.Equal(ast.Var("")) && (len(ruleRef) == 1 || (len(ruleRef) == 2 && head.Key == nil)) {
-					head.Name = ruleRef[0].Value.(ast.Var)
-				}
-				if len(ruleRef) == 2 && head.Key == nil {
-					head.Key = ruleRef[len(ruleRef)-1]
-				}
+			head := ast.RefHead(ruleRef, value)
+
+			// key is also part of ref in single-value rules, and can be dropped
+			if rule.Head.Key != nil && rule.Head.RuleKind() == ast.MultiValue {
+				head.Key = child.bindings.PlugNamespaced(rule.Head.Key, e.e.caller.bindings)
+			}
+
+			if rule.Head.RuleKind() == ast.SingleValue && len(ruleRef) == 2 {
+				head.Key = ruleRef[len(ruleRef)-1]
+			}
+
+			if head.Name.Equal(ast.Var("")) && (len(ruleRef) == 1 || (len(ruleRef) == 2 && rule.Head.RuleKind() == ast.SingleValue)) {
+				head.Name = ruleRef[0].Value.(ast.Var)
 			}
 
 			if !e.e.inliningControl.shallow {
@@ -2729,7 +2728,7 @@ func (e evalVirtualPartial) partialEvalSupportRule(rule *ast.Rule, path ast.Ref)
 				plugged = applyCopyPropagation(cp, e.e.instr, plugged)
 			}
 
-			e.e.saveSupport.Insert(path, &ast.Rule{
+			e.e.saveSupport.InsertByPkg(pkg, &ast.Rule{
 				Head:    head,
 				Body:    plugged,
 				Default: rule.Default,
@@ -2824,7 +2823,19 @@ func getNestedObject(ref ast.Ref, rootObj *ast.Object, b *bindings, l *ast.Locat
 	return current, nil
 }
 
-func (e evalVirtualPartial) reduce(rule *ast.Rule, b *bindings, result *ast.Term) (*ast.Term, bool, error) {
+func hasCollisions(path ast.Ref, visitedRefs *[]ast.Ref, b *bindings) bool {
+	collisionPathTerm := b.Plug(ast.NewTerm(path))
+	collisionPath := collisionPathTerm.Value.(ast.Ref)
+	for _, c := range *visitedRefs {
+		if collisionPath.HasPrefix(c) && !collisionPath.Equal(c) {
+			return true
+		}
+	}
+	*visitedRefs = append(*visitedRefs, collisionPath)
+	return false
+}
+
+func (e evalVirtualPartial) reduce(rule *ast.Rule, b *bindings, result *ast.Term, visitedRefs *[]ast.Ref) (*ast.Term, bool, error) {
 
 	var exists bool
 	head := rule.Head
@@ -2841,6 +2852,12 @@ func (e evalVirtualPartial) reduce(rule *ast.Rule, b *bindings, result *ast.Term
 		//          |    leafKey
 		//          objPath
 		fullPath := rule.Ref()
+
+		collisionPath := fullPath[e.pos+1:]
+		if hasCollisions(collisionPath, visitedRefs, b) {
+			return nil, false, objectDocKeyConflictErr(head.Location)
+		}
+
 		objPath := fullPath[e.pos+1 : len(fullPath)-1] // the portion of the ref that generates nested objects
 		leafKey := b.Plug(fullPath[len(fullPath)-1])   // the portion of the ref that is the deepest nested key for the value
 
@@ -2851,7 +2868,7 @@ func (e evalVirtualPartial) reduce(rule *ast.Rule, b *bindings, result *ast.Term
 
 		if kind := head.RuleKind(); kind == ast.SingleValue {
 			// We're inserting into an object
-			val := b.Plug(head.Value)
+			val := b.Plug(head.Value) // head.Value instance is shared between rule enumerations;but this is ok, as we don't allow rules to modify each others values.
 
 			if curr := (*leafObj).Get(leafKey); curr != nil {
 				if !curr.Equal(val) {
@@ -3097,16 +3114,8 @@ func (e evalVirtualComplete) partialEvalSupportRule(rule *ast.Rule, path ast.Ref
 		// Skip this rule body if it fails to type-check.
 		// Type-checking failure means the rule body will never succeed.
 		if e.e.compiler.PassesTypeCheck(plugged) {
-			var name ast.Var
-			switch ref := rule.Head.Ref().GroundPrefix(); len(ref) {
-			case 1:
-				name = ref[0].Value.(ast.Var)
-			default:
-				s := ref[len(ref)-1].Value.(ast.String)
-				name = ast.Var(s)
-			}
-			// TODO: Do we need to deal with general refs here?
-			head := ast.NewHead(name, nil, child.bindings.PlugNamespaced(rule.Head.Value, e.e.caller.bindings))
+			pkg, ruleRef := splitPackageAndRule(path)
+			head := ast.RefHead(ruleRef, child.bindings.PlugNamespaced(rule.Head.Value, e.e.caller.bindings))
 
 			if !e.e.inliningControl.shallow {
 				cp := copypropagation.New(head.Vars()).
@@ -3115,7 +3124,7 @@ func (e evalVirtualComplete) partialEvalSupportRule(rule *ast.Rule, path ast.Ref
 				plugged = applyCopyPropagation(cp, e.e.instr, plugged)
 			}
 
-			e.e.saveSupport.Insert(path, &ast.Rule{
+			e.e.saveSupport.InsertByPkg(pkg, &ast.Rule{
 				Head:    head,
 				Body:    plugged,
 				Default: rule.Default,

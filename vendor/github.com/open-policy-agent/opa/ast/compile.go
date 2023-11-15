@@ -7,7 +7,6 @@ package ast
 import (
 	"fmt"
 	"io"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -117,14 +116,10 @@ type Compiler struct {
 	// with the key being the generated name and value being the original.
 	RewrittenVars map[Var]Var
 
-	localvargen  *localVarGenerator
-	moduleLoader ModuleLoader
-	ruleIndices  *util.HashMap
-	stages       []struct {
-		name       string
-		metricName string
-		f          func()
-	}
+	localvargen             *localVarGenerator
+	moduleLoader            ModuleLoader
+	ruleIndices             *util.HashMap
+	stages                  []stage
 	maxErrs                 int
 	sorted                  []string // list of sorted module names
 	pathExists              func([]string) (bool, error)
@@ -146,11 +141,26 @@ type Compiler struct {
 	keepModules             bool                          // whether to keep the unprocessed, parse modules (below)
 	parsedModules           map[string]*Module            // parsed, but otherwise unprocessed modules, kept track of when keepModules is true
 	useTypeCheckAnnotations bool                          // whether to provide annotated information (schemas) to the type checker
-	generalRuleRefsEnabled  bool
+	evalMode                CompilerEvalMode
 }
 
 // CompilerStage defines the interface for stages in the compiler.
 type CompilerStage func(*Compiler) *Error
+
+// CompilerEvalMode allows toggling certain stages that are only
+// needed for certain modes, Concretely, only "topdown" mode will
+// have the compiler build comprehension and rule indices.
+type CompilerEvalMode int
+
+const (
+	// EvalModeTopdown (default) instructs the compiler to build rule
+	// and comprehension indices used by topdown evaluation.
+	EvalModeTopdown CompilerEvalMode = iota
+
+	// EvalModeIR makes the compiler skip the stages for comprehension
+	// and rule indices.
+	EvalModeIR
+)
 
 // CompilerStageDefinition defines a compiler stage
 type CompilerStageDefinition struct {
@@ -268,6 +278,12 @@ type QueryCompilerStageDefinition struct {
 	Stage      QueryCompilerStage
 }
 
+type stage struct {
+	name       string
+	metricName string
+	f          func()
+}
+
 // NewCompiler returns a new empty compiler.
 func NewCompiler() *Compiler {
 
@@ -291,11 +307,7 @@ func NewCompiler() *Compiler {
 	c.ModuleTree = NewModuleTree(nil)
 	c.RuleTree = NewRuleTree(c.ModuleTree)
 
-	c.stages = []struct {
-		name       string
-		metricName string
-		f          func()
-	}{
+	c.stages = []stage{
 		// Reference resolution should run first as it may be used to lazily
 		// load additional modules. If any stages run before resolution, they
 		// need to be re-run after resolution.
@@ -334,8 +346,6 @@ func NewCompiler() *Compiler {
 		{"BuildRuleIndices", "compile_stage_rebuild_indices", c.buildRuleIndices},
 		{"BuildComprehensionIndices", "compile_stage_rebuild_comprehension_indices", c.buildComprehensionIndices},
 	}
-
-	_, c.generalRuleRefsEnabled = os.LookupEnv("EXPERIMENTAL_GENERAL_RULE_REFS")
 
 	return c
 }
@@ -437,6 +447,12 @@ func (c *Compiler) WithKeepModules(y bool) *Compiler {
 // WithUseTypeCheckAnnotations use schema annotations during type checking
 func (c *Compiler) WithUseTypeCheckAnnotations(enabled bool) *Compiler {
 	c.useTypeCheckAnnotations = enabled
+	return c
+}
+
+// WithEvalMode allows setting the CompilerEvalMode of the compiler
+func (c *Compiler) WithEvalMode(e CompilerEvalMode) *Compiler {
+	c.evalMode = e
 	return c
 }
 
@@ -783,6 +799,60 @@ func (c *Compiler) PassesTypeCheck(body Body) bool {
 	return len(errs) == 0
 }
 
+// PassesTypeCheckRules determines whether the given rules passes type checking
+func (c *Compiler) PassesTypeCheckRules(rules []*Rule) Errors {
+	elems := []util.T{}
+
+	for _, rule := range rules {
+		elems = append(elems, rule)
+	}
+
+	// Load the global input schema if one was provided.
+	if c.schemaSet != nil {
+		if schema := c.schemaSet.Get(SchemaRootRef); schema != nil {
+
+			var allowNet []string
+			if c.capabilities != nil {
+				allowNet = c.capabilities.AllowNet
+			}
+
+			tpe, err := loadSchema(schema, allowNet)
+			if err != nil {
+				return Errors{NewError(TypeErr, nil, err.Error())}
+			}
+			c.inputType = tpe
+		}
+	}
+
+	var as *AnnotationSet
+	if c.useTypeCheckAnnotations {
+		as = c.annotationSet
+	}
+
+	checker := newTypeChecker().WithSchemaSet(c.schemaSet).WithInputType(c.inputType)
+
+	if c.TypeEnv == nil {
+		if c.capabilities == nil {
+			c.capabilities = CapabilitiesForThisVersion()
+		}
+
+		c.builtins = make(map[string]*Builtin, len(c.capabilities.Builtins)+len(c.customBuiltins))
+
+		for _, bi := range c.capabilities.Builtins {
+			c.builtins[bi.Name] = bi
+		}
+
+		for name, bi := range c.customBuiltins {
+			c.builtins[name] = bi
+		}
+
+		c.TypeEnv = checker.Env(c.builtins)
+	}
+
+	_, errs := checker.CheckTypes(c.TypeEnv, elems, as)
+	return errs
+}
+
 // ModuleLoader defines the interface that callers can implement to enable lazy
 // loading of modules during compilation.
 type ModuleLoader func(resolved map[string]*Module) (parsed map[string]*Module, err error)
@@ -951,50 +1021,8 @@ func (c *Compiler) checkRuleConflicts() {
 			//   data.p.q[r][s] { r := input.r; s := input.s }
 			//   data.p[q].r.s { q := input.q }
 
-			if c.generalRuleRefsEnabled {
-				if r.Ref().IsGround() && len(node.Children) > 0 {
-					conflicts = node.flattenChildren()
-				}
-			} else { // TODO: Remove when general rule refs are enabled by default.
-				if r.Head.RuleKind() == SingleValue && len(node.Children) > 0 {
-					if len(ref) > 1 && !ref[len(ref)-1].IsGround() { // p.q[x] and p.q.s.t => check grandchildren
-						for _, c := range node.Children {
-							grandchildrenFound := false
-
-							if len(c.Values) > 0 {
-								childRules := extractRules(c.Values)
-								for _, childRule := range childRules {
-									childRef := childRule.Ref()
-									if childRule.Head.RuleKind() == SingleValue && !childRef[len(childRef)-1].IsGround() {
-										// The child is a partial object rule, so it's effectively "generating" grandchildren.
-										grandchildrenFound = true
-										break
-									}
-								}
-							}
-
-							if len(c.Children) > 0 {
-								grandchildrenFound = true
-							}
-
-							if grandchildrenFound {
-								conflicts = node.flattenChildren()
-								break
-							}
-						}
-					} else { // p.q.s and p.q.s.t => any children are in conflict
-						conflicts = node.flattenChildren()
-					}
-				}
-
-				// Multi-value rules may not have any other rules in their extent; e.g.:
-				//
-				// data.p[v] { v := ... }
-				// data.p.q := 42 # In direct conflict with data.p[v], which is constructing a set and cannot have values assigned to a sub-path.
-
-				if r.Head.RuleKind() == MultiValue && len(node.Children) > 0 {
-					conflicts = node.flattenChildren()
-				}
+			if r.Ref().IsGround() && len(node.Children) > 0 {
+				conflicts = node.flattenChildren()
 			}
 
 			if r.Head.RuleKind() == SingleValue && r.Head.Ref().IsGround() {
@@ -1428,7 +1456,8 @@ func (c *Compiler) checkUnsafeBuiltins() {
 
 func (c *Compiler) checkDeprecatedBuiltins() {
 	for _, name := range c.sorted {
-		errs := checkDeprecatedBuiltins(c.deprecatedBuiltinsMap, c.Modules[name], c.strict)
+		mod := c.Modules[name]
+		errs := checkDeprecatedBuiltins(c.deprecatedBuiltinsMap, mod, c.strict || mod.regoV1Compatible)
 		for _, err := range errs {
 			c.err(err)
 		}
@@ -1460,6 +1489,12 @@ func (c *Compiler) compile() {
 	}()
 
 	for _, s := range c.stages {
+		if c.evalMode == EvalModeIR {
+			switch s.name {
+			case "BuildRuleIndices", "BuildComprehensionIndices":
+				continue // skip these stages
+			}
+		}
 		c.runStage(s.metricName, s.f)
 		if c.Failed() {
 			return
@@ -1487,7 +1522,7 @@ func (c *Compiler) init() {
 
 	for _, bi := range c.capabilities.Builtins {
 		c.builtins[bi.Name] = bi
-		if c.strict && bi.IsDeprecated() {
+		if bi.IsDeprecated() {
 			c.deprecatedBuiltinsMap[bi.Name] = struct{}{}
 		}
 	}
@@ -1562,12 +1597,12 @@ func (c *Compiler) GetAnnotationSet() *AnnotationSet {
 }
 
 func (c *Compiler) checkDuplicateImports() {
-	if !c.strict {
-		return
-	}
-
 	for _, name := range c.sorted {
 		mod := c.Modules[name]
+		if !c.strict && !mod.regoV1Compatible {
+			continue
+		}
+
 		processedImports := map[Var]*Import{}
 
 		for _, imp := range mod.Imports {
@@ -1585,7 +1620,7 @@ func (c *Compiler) checkDuplicateImports() {
 func (c *Compiler) checkKeywordOverrides() {
 	for _, name := range c.sorted {
 		mod := c.Modules[name]
-		errs := checkKeywordOverrides(mod, c.strict)
+		errs := checkKeywordOverrides(mod, c.strict || mod.regoV1Compatible)
 		for _, err := range errs {
 			c.err(err)
 		}
@@ -1663,8 +1698,8 @@ func (c *Compiler) resolveAllRefs() {
 		if c.strict { // check for unused imports
 			for _, imp := range mod.Imports {
 				path := imp.Path.Value.(Ref)
-				if FutureRootDocument.Equal(path[0]) {
-					continue // ignore future imports
+				if FutureRootDocument.Equal(path[0]) || RegoRootDocument.Equal(path[0]) {
+					continue // ignore future and rego imports
 				}
 
 				for v, u := range globals {
@@ -1757,18 +1792,6 @@ func (c *Compiler) rewriteRuleHeadRefs() {
 			}
 
 			for i := 1; i < len(ref); i++ {
-				// NOTE: Unless enabled via the EXPERIMENTAL_GENERAL_RULE_REFS env var, non-string values in the refs are forbidden
-				// except for the last position, e.g.
-				//     OK: p.q.r[s]
-				// NOT OK: p[q].r.s
-				// TODO: Remove when general rule refs are enabled by default.
-				if !c.generalRuleRefsEnabled && i != len(ref)-1 { // last
-					if _, ok := ref[i].Value.(String); !ok {
-						c.err(NewError(TypeErr, rule.Loc(), "rule head must only contain string terms (except for last): %v", ref[i]))
-						continue
-					}
-				}
-
 				// Rewrite so that any non-scalar elements that in the last position of
 				// the rule are vars:
 				//     p.q.r[y.z] { ... }  =>  p.q.r[__local0__] { __local0__ = y.z }
@@ -2331,8 +2354,9 @@ func (c *Compiler) rewriteLocalVarsInRule(rule *Rule, unusedArgs VarSet, argsSta
 	// Rewrite assignments in body.
 	used := NewVarSet()
 
-	last := rule.Head.Ref()[len(rule.Head.Ref())-1]
-	used.Update(last.Vars())
+	for _, t := range rule.Head.Ref()[1:] {
+		used.Update(t.Vars())
+	}
 
 	if rule.Head.Key != nil {
 		used.Update(rule.Head.Key.Vars())
@@ -2622,6 +2646,12 @@ func (qc *queryCompiler) runStageAfter(metricName string, query Body, s QueryCom
 	return s(qc, query)
 }
 
+type queryStage = struct {
+	name       string
+	metricName string
+	f          func(*QueryContext, Body) (Body, error)
+}
+
 func (qc *queryCompiler) Compile(query Body) (Body, error) {
 	if len(query) == 0 {
 		return nil, Errors{NewError(CompileErr, nil, "empty query cannot be compiled")}
@@ -2629,11 +2659,7 @@ func (qc *queryCompiler) Compile(query Body) (Body, error) {
 
 	query = query.Copy()
 
-	stages := []struct {
-		name       string
-		metricName string
-		f          func(*QueryContext, Body) (Body, error)
-	}{
+	stages := []queryStage{
 		{"CheckKeywordOverrides", "query_compile_stage_check_keyword_overrides", qc.checkKeywordOverrides},
 		{"ResolveRefs", "query_compile_stage_resolve_refs", qc.resolveRefs},
 		{"RewriteLocalVars", "query_compile_stage_rewrite_local_vars", qc.rewriteLocalVars},
@@ -2648,7 +2674,9 @@ func (qc *queryCompiler) Compile(query Body) (Body, error) {
 		{"CheckTypes", "query_compile_stage_check_types", qc.checkTypes},
 		{"CheckUnsafeBuiltins", "query_compile_stage_check_unsafe_builtins", qc.checkUnsafeBuiltins},
 		{"CheckDeprecatedBuiltins", "query_compile_stage_check_deprecated_builtins", qc.checkDeprecatedBuiltins},
-		{"BuildComprehensionIndex", "query_compile_stage_build_comprehension_index", qc.buildComprehensionIndices},
+	}
+	if qc.compiler.evalMode == EvalModeTopdown {
+		stages = append(stages, queryStage{"BuildComprehensionIndex", "query_compile_stage_build_comprehension_index", qc.buildComprehensionIndices})
 	}
 
 	qctx := qc.qctx.Copy()
@@ -3976,8 +4004,8 @@ func getGlobals(pkg *Package, rules []Ref, imports []*Import) map[Var]*usedRef {
 	// Populate globals with imports.
 	for _, imp := range imports {
 		path := imp.Path.Value.(Ref)
-		if FutureRootDocument.Equal(path[0]) {
-			continue // ignore future imports
+		if FutureRootDocument.Equal(path[0]) || RegoRootDocument.Equal(path[0]) {
+			continue // ignore future and rego imports
 		}
 		globals[imp.Name()] = &usedRef{ref: path}
 	}

@@ -286,6 +286,7 @@ var DefaultBuiltins = [...]*Builtin{
 
 	// UUIDs
 	UUIDRFC4122,
+	UUIDParse,
 
 	// SemVers
 	SemVerIsValid,
@@ -1418,6 +1419,19 @@ var UUIDRFC4122 = &Builtin{
 	Nondeterministic: true,
 }
 
+var UUIDParse = &Builtin{
+	Name:        "uuid.parse",
+	Description: "Parses the string value as an UUID and returns an object with the well-defined fields of the UUID if valid.",
+	Categories:  nil,
+	Decl: types.NewFunction(
+		types.Args(
+			types.Named("uuid", types.S),
+		),
+		types.Named("result", types.NewObject(nil, types.NewDynamicProperty(types.S, types.A))).Description("Properties of UUID if valid (version, variant, etc). Undefined otherwise."),
+	),
+	Relation: false,
+}
+
 /**
  * JSON
  */
@@ -2456,7 +2470,7 @@ var WalkBuiltin = &Builtin{
 				types.A,
 			},
 			nil,
-		)).Description("pairs of `path` and `value`: `path` is an array representing the pointer to `value` in `x`"),
+		)).Description("pairs of `path` and `value`: `path` is an array representing the pointer to `value` in `x`. If `path` is assigned a wildcard (`_`), the `walk` function will skip path creation entirely for faster evaluation."),
 	),
 	Categories: graphs,
 }
