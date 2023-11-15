@@ -3,17 +3,18 @@ package mid
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/nhaancs/bhms/business/core/property"
 	"github.com/nhaancs/bhms/business/web/auth"
 )
 
 // ctxKey represents the type of value for the context key.
 type ctxKey int
 
-// key is used to store/retrieve a Claims value from a context.Context.
-const claimKey ctxKey = 1
-
-// key is used to store/retrieve a user value from a context.Context.
-const userKey ctxKey = 2
+const (
+	claimKey ctxKey = iota + 1
+	userIDKey
+	propertyKey
+)
 
 // =============================================================================
 
@@ -33,16 +34,28 @@ func GetClaims(ctx context.Context) auth.Claims {
 
 // =============================================================================
 
-// setUserID stores the user id from the request in the context.
 func setUserID(ctx context.Context, userID uuid.UUID) context.Context {
-	return context.WithValue(ctx, userKey, userID)
+	return context.WithValue(ctx, userIDKey, userID)
 }
 
-// GetUserID returns the claims from the context.
 func GetUserID(ctx context.Context) uuid.UUID {
-	v, ok := ctx.Value(userKey).(uuid.UUID)
+	v, ok := ctx.Value(userIDKey).(uuid.UUID)
 	if !ok {
 		return uuid.UUID{}
+	}
+	return v
+}
+
+// =============================================================================
+
+func setProperty(ctx context.Context, prprty property.Property) context.Context {
+	return context.WithValue(ctx, propertyKey, prprty)
+}
+
+func GetProperty(ctx context.Context) property.Property {
+	v, ok := ctx.Value(propertyKey).(property.Property)
+	if !ok {
+		return property.Property{}
 	}
 	return v
 }
