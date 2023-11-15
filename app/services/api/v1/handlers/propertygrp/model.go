@@ -232,12 +232,12 @@ func toCoreNewUnit(a AppNewUnit, propertyID, blockID, floorID uuid.UUID) unit.Ne
 // ===============================================================
 
 type AppUpdateProperty struct {
-	Name            *string `json:"name" validate:"required"`
-	AddressLevel1ID *uint32 `json:"addressLevel1ID" validate:"required,min=1"`
-	AddressLevel2ID *uint32 `json:"addressLevel2ID" validate:"required,min=1"`
-	AddressLevel3ID *uint32 `json:"addressLevel3ID" validate:"required,min=1"`
-	Street          *string `json:"street" validate:"required"`
-	Status          *string `json:"status" validate:"required"`
+	Name            *string `json:"name"`
+	AddressLevel1ID *uint32 `json:"addressLevel1ID" validate:"omitempty,min=1"`
+	AddressLevel2ID *uint32 `json:"addressLevel2ID" validate:"omitempty,min=1"`
+	AddressLevel3ID *uint32 `json:"addressLevel3ID" validate:"omitempty,min=1"`
+	Street          *string `json:"street"`
+	Status          *string `json:"status"`
 }
 
 func toCoreUpdateProperty(a AppUpdateProperty) (property.UpdateProperty, error) {

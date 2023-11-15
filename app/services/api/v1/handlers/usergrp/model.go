@@ -55,17 +55,15 @@ func (r AppRegister) Validate() error {
 // ===============================================================
 
 type AppUpdateUser struct {
-	FirstName *string `json:"firstName" validate:"required"`
+	FirstName *string `json:"firstName"`
 	LastName  *string `json:"lastName"`
-	Phone     *string `json:"phone" validate:"required,number,startswith=0,len=10"`
-	Password  *string `json:"password" validate:"required,min=6"`
+	Password  *string `json:"password" validate:"omitempty,min=6"`
 }
 
 func toCoreUpdateUser(a AppUpdateUser) user.UpdateUser {
 	return user.UpdateUser{
 		FirstName: a.FirstName,
 		LastName:  a.LastName,
-		Phone:     a.Phone,
 		Password:  a.Password,
 	}
 }

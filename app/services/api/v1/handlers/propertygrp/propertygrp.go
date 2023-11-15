@@ -47,7 +47,7 @@ func (h *Handlers) Create(ctx context.Context, w http.ResponseWriter, r *http.Re
 	if err := web.Decode(r, &app); err != nil {
 		return response.NewError(err, http.StatusBadRequest)
 	}
-	//app.ManagerID = auth.GetUserID(ctx)
+	app.ManagerID = mid.GetUserID(ctx)
 
 	if len(app.Blocks) > 5 {
 		return response.NewError(errors.New("maximum number of blocks exceeded"), http.StatusBadRequest)

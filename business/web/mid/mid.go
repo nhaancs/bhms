@@ -50,20 +50,6 @@ func GetUserID(ctx context.Context) uuid.UUID {
 
 // =============================================================================
 
-func setProperty(ctx context.Context, prprty property.Property) context.Context {
-	return context.WithValue(ctx, propertyKey, prprty)
-}
-
-func GetProperty(ctx context.Context) property.Property {
-	v, ok := ctx.Value(propertyKey).(property.Property)
-	if !ok {
-		return property.Property{}
-	}
-	return v
-}
-
-// =============================================================================
-
 func setUser(ctx context.Context, usr user.User) context.Context {
 	return context.WithValue(ctx, userKey, usr)
 }
@@ -72,6 +58,20 @@ func GetUser(ctx context.Context) user.User {
 	v, ok := ctx.Value(userKey).(user.User)
 	if !ok {
 		return user.User{}
+	}
+	return v
+}
+
+// =============================================================================
+
+func setProperty(ctx context.Context, prprty property.Property) context.Context {
+	return context.WithValue(ctx, propertyKey, prprty)
+}
+
+func GetProperty(ctx context.Context) property.Property {
+	v, ok := ctx.Value(propertyKey).(property.Property)
+	if !ok {
+		return property.Property{}
 	}
 	return v
 }

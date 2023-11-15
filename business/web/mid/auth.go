@@ -76,7 +76,7 @@ func AuthorizeUser(a *auth.Auth, rule string, usrCore *user.Core) web.Middleware
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			var userID uuid.UUID
 
-			if id := web.Param(r, "id"); id != "" {
+			if id := web.Param(r, "user_id"); id != "" {
 				var err error
 				userID, err = uuid.Parse(id)
 				if err != nil {
@@ -117,7 +117,7 @@ func AuthorizeProperty(a *auth.Auth, rule string, prprtyCore *property.Core) web
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			var userID uuid.UUID
 
-			if id := web.Param(r, "id"); id != "" {
+			if id := web.Param(r, "property_id"); id != "" {
 				var err error
 				propertyID, err := uuid.Parse(id)
 				if err != nil {

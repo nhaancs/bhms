@@ -87,10 +87,6 @@ func (c *Core) Update(ctx context.Context, o User, n UpdateUser) (User, error) {
 		o.LastName = *n.LastName
 	}
 
-	if n.Phone != nil {
-		o.Phone = *n.Phone
-	}
-
 	if n.Roles != nil {
 		o.Roles = n.Roles
 	}

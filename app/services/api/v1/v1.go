@@ -5,6 +5,7 @@ import (
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/checkgrp"
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/divisiongrp"
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/propertygrp"
+	"github.com/nhaancs/bhms/app/services/api/v1/handlers/unitgrp"
 	"github.com/nhaancs/bhms/app/services/api/v1/handlers/usergrp"
 	"github.com/nhaancs/bhms/business/core/block"
 	"github.com/nhaancs/bhms/business/core/block/stores/blockdb"
@@ -96,7 +97,7 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 	app.Handle(http.MethodGet, version, "/users/token", usrHdl.Token)
 	app.Handle(http.MethodPost, version, "/users/register", usrHdl.Register)
 	app.Handle(http.MethodPost, version, "/users/verify-otp", usrHdl.VerifyOTP)
-	app.Handle(http.MethodPut, version, "/users/:id", usrHdl.Update, authen, ruleUserAdminOrSubject)
+	app.Handle(http.MethodPut, version, "/users/:user_id", usrHdl.Update, authen, ruleUserAdminOrSubject)
 
 	// -------------------------------------------------------------------------
 	// Division routes
@@ -141,13 +142,17 @@ func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) (http.Handler, err
 
 	app.Handle(http.MethodGet, version, "/properties", propertyHdl.QueryByManagerID, authen, ruleUserOnly)
 	app.Handle(http.MethodPost, version, "/properties", propertyHdl.Create, authen, tran, ruleUserOnly)
-	app.Handle(http.MethodPut, version, "/properties/:id", propertyHdl.Update, authen, rulePropertyAdminOrSubject)
-	app.Handle(http.MethodDelete, version, "/properties/:id", propertyHdl.Delete, authen, tran, rulePropertyAdminOrSubject)
+	app.Handle(http.MethodPut, version, "/properties/:property_id", propertyHdl.Update, authen, rulePropertyAdminOrSubject)
+	app.Handle(http.MethodDelete, version, "/properties/:property_id", propertyHdl.Delete, authen, tran, rulePropertyAdminOrSubject)
 
-	// update unit
-	// add unit
-	// delete unit (check related tables)
+	// -------------------------------------------------------------------------
+	// Unit routes
+
+	unitHdl := unitgrp.New(propertyCore, blockCore, floorCore, unitCore)
+	app.Handle(http.MethodPost, version, "/properties/:property_id/units", unitHdl.Create, authen, rulePropertyAdminOrSubject)
+	app.Handle(http.MethodPut, version, "/properties/:property_id/units/:unit_id", unitHdl.Update, authen, rulePropertyAdminOrSubject)
+	app.Handle(http.MethodDelete, version, "/properties/:property_id/units/:unit_id", unitHdl.Delete, authen, tran, rulePropertyAdminOrSubject)
+
 	// TODO: app idea: fast navigation to a specific block, floor, unit
-
 	return app, nil
 }

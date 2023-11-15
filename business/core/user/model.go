@@ -33,7 +33,6 @@ type NewUser struct {
 type UpdateUser struct {
 	FirstName *string
 	LastName  *string
-	Phone     *string
 	Roles     []Role
 	Password  *string
 	Status    *Status
