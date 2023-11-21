@@ -22,6 +22,15 @@ class MyHomePage extends ConsumerWidget {
       body: ListView.builder(
         itemCount: activeTodos.length + 1,
         itemBuilder: (context, index) {
+          if (activeTodos.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.only(top: 300.0),
+              child: Center(
+                child: Text("Add a todo  using the button below"),
+              ),
+            );
+          }
+
           if (index == activeTodos.length) {
             if (completedTodos.isEmpty) {
               return Container();
@@ -36,6 +45,7 @@ class MyHomePage extends ConsumerWidget {
               ),
             );
           }
+
           return Slidable(
             startActionPane: ActionPane(
               motion: const ScrollMotion(),
@@ -63,7 +73,15 @@ class MyHomePage extends ConsumerWidget {
                 )
               ],
             ),
-            child: ListTile(title: Text(activeTodos[index].content)),
+            child: Container(
+              margin: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: const BorderRadius.all(Radius.circular(20)),
+              ),
+              child: ListTile(title: Text(activeTodos[index].content)),
+            ),
           );
         },
       ),
@@ -72,6 +90,7 @@ class MyHomePage extends ConsumerWidget {
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => const AddTodo()));
         },
+        backgroundColor: Colors.black,
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );

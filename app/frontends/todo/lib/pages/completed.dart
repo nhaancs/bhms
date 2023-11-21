@@ -14,7 +14,7 @@ class CompletedTodo extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Todo App"),
+        title: const Text("Completed todos"),
       ),
       body: ListView.builder(
         itemCount: completedTodos.length,
@@ -33,7 +33,15 @@ class CompletedTodo extends ConsumerWidget {
                 )
               ],
             ),
-            child: ListTile(title: Text(completedTodos[index].content)),
+            child: Container(
+              margin: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: const BorderRadius.all(Radius.circular(20)),
+              ),
+              child: ListTile(title: Text(completedTodos[index].content)),
+            ),
           );
         },
       ),
