@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:todo/pages/add.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -17,7 +17,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: const Center(),
       floatingActionButton: FloatingActionButton(
-        onPressed: (){},
+        onPressed: () {
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => const AddTodo()));
+        },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
