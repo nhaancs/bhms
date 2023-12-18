@@ -49,11 +49,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
-            ...currentQuestion.getShuffledAnswers().map(
-                  (a) => AnswerButton(a, () {
-                    answerQuestion(a);
-                  }),
-                ),
+            ...currentQuestion.shuffledAnswers.map(
+              (a) => AnswerButton(a, () {
+                answerQuestion(a);
+              }),
+            ),
           ],
         ),
       ),
