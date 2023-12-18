@@ -5,7 +5,7 @@ import 'package:quiz_app/results_screen.dart';
 import 'package:quiz_app/start_screen.dart';
 
 const startScreen = "start-screen";
-const questionsScreen = "questions-screen";
+const questionScreen = "question-screen";
 const resultsScreen = "results-screen";
 
 class Quiz extends StatefulWidget {
@@ -34,7 +34,7 @@ class _QuizState extends State<Quiz> {
 
   void switchToQuestionScreen() {
     setState(() {
-      activeScreen = questionsScreen;
+      activeScreen = questionScreen;
     });
   }
 
@@ -44,7 +44,7 @@ class _QuizState extends State<Quiz> {
     switch (activeScreen) {
       case startScreen:
         screen = StartScreen(switchToQuestionScreen);
-      case questionsScreen:
+      case questionScreen:
         screen = QuestionScreen(onSelectAnswer: chooseAnswer);
       case resultsScreen:
         screen = const ResultsScreen();
