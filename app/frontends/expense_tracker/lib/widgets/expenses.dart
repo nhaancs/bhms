@@ -34,6 +34,12 @@ class _ExpensesState extends State<Expenses> {
     });
   }
 
+  void _removeExpense(Expense expense) {
+    setState(() {
+      _registeredExpenses.remove(expense);
+    });
+  }
+
   void _openAddExpenseOverlay() {
     showModalBottomSheet(
       isScrollControlled: true,
@@ -59,7 +65,10 @@ class _ExpensesState extends State<Expenses> {
       body: Column(
         children: [
           const Text("the chart"),
-          ExpensesList(expenses: _registeredExpenses),
+          ExpensesList(
+            expenses: _registeredExpenses,
+            onRemoveExpense: _removeExpense,
+          ),
         ],
       ),
     );
